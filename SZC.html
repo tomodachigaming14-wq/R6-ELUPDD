@@ -3649,7 +3649,7 @@ function confirmSavePoint() {
             currentActiveLayer = null,
             classColorMap = new Map();
         const BACKEND_URL =
-            "https://script.google.com/macros/s/AKfycbz1OCTwE_aaIm4bTAWQM3mXJq4m7LMREa3QlCl5FAY_XwZ1P1ohRaGJFzLWKDSVET1Q/exec";
+            "https://script.google.com/macros/s/AKfycbzVdXiS44K6awUGSPBBTf-uG4sGuusw99g0tKfFUSxtLcY5bIPj5ERzVPUhZEqC7R_5mg/exec";
         let defaultRows = [
             {
                 from: "Corner 1",
@@ -6389,32 +6389,30 @@ function confirmSavePoint() {
         function encodePassword(p) {
             return btoa(p);
         }
+		
         function checkSession() {
-            const raw = localStorage.getItem("dhsud_session");
-            if (raw) {
-                try {
-                    const s = JSON.parse(raw);
-                    const diff = (new Date() - new Date(s.loggedInAt)) / (1000 * 60 * 60);
-                    if (diff < 12 && s.email) {
-                        currentUser = s;
-                        return true;
-                    } else {
-                        localStorage.removeItem("dhsud_session");
-                        // Redirect to login page if session expired
-                        window.location.href = "login.html";
-                        return false;
-                    }
-                } catch (e) {
-                    localStorage.removeItem("dhsud_session");
-                    window.location.href = "login.html";
-                    return false;
-                }
+    const raw = localStorage.getItem("dhsud_session");
+    if (raw) {
+        try {
+            const s = JSON.parse(raw);
+            const diff = (new Date() - new Date(s.loggedInAt)) / (1000 * 60 * 60);
+            if (diff < 12 && s.email) {
+                currentUser = s;
+                return true;
+            } else {
+                localStorage.removeItem("dhsud_session");
+                currentUser = null;
+                return false;
             }
+        } catch (e) {
+            localStorage.removeItem("dhsud_session");
             currentUser = null;
-            // Redirect to login page if no session exists
-            window.location.href = "login.html";
             return false;
         }
+    }
+    currentUser = null;
+    return false;
+}
 
         function getUserInitials(n) {
             if (!n) return "U";
@@ -6428,93 +6426,128 @@ function confirmSavePoint() {
             return "👁️ Viewer";
         }
     function renderMainNavigation() {
-        const container = document.getElementById("mainNavContainer");
-        if (!container) return;
-        let navHtml = `<a href="index.html">Home</a>`;
-        if (currentUser) {
-            navHtml += `<div class="dropdown" id="certDropdown"><button class="dropbtn">Certification</button><div class="dropdown-content"><a href="lc.html">Locational Clearance</a><a href="SZC.html">Site Zoning Clarification</a></div></div>
-              <div class="dropdown" id="landUseDropdown"><button class="dropbtn">Land Use Plans</button><div class="dropdown-content"><div class="dropdown-submenu" id="clupSubmenu"><button class="submenu-trigger">CLUP & ZO <span class="arrow-right">▸</span></button><div class="submenu-content"><a href="inventory.html">Inventory</a><a href="status.html">Status</a></div></div><a href="status.html">PDPFP</a></div></div>
-              <a href="lgu-info.html">LGU Information</a><a href="report.html">Reports</a><a href="calendar.html">Calendar of Activities</a><a href="issuance.html">Issuances</a><a href="#about">About</a><a href="#contact">Contact</a>`;
-        } else { navHtml += `<a href="#about">About</a><a href="#contact">Contact</a>`; }
-        container.innerHTML = navHtml;
-        // Keep click functionality for submenu items if needed
-        setTimeout(() => {
-            document.querySelectorAll(".dropdown-submenu .submenu-trigger").forEach((trigger) => {
-                trigger.addEventListener("click", (e) => {
-                    e.stopPropagation();
-                    const submenu = trigger.closest(".dropdown-submenu");
-                    if (submenu) submenu.classList.toggle("open");
-                });
-            });
-            document.addEventListener("click", function (e) {
-                if (!e.target.closest(".dropdown-submenu")) {
-                    document.querySelectorAll(".dropdown-submenu.open").forEach((s) => s.classList.remove("open"));
-                }
-            });
-        }, 10);
+    const container = document.getElementById("mainNavContainer");
+    if (!container) return;
+    
+    let navHtml = `<a href="index.html">Home</a>`;
+    
+    if (currentUser) {
+        navHtml += `
+            <div class="dropdown" id="certDropdown">
+                <button class="dropbtn">Certification</button>
+                <div class="dropdown-content">
+                    <a href="lc.html">Locational Clearance</a>
+                    <a href="SZC.html">Site Zoning Clarification</a>
+                </div>
+            </div>
+            <div class="dropdown" id="landUseDropdown">
+                <button class="dropbtn">Land Use Plans</button>
+                <div class="dropdown-content">
+                    <div class="dropdown-submenu" id="clupSubmenu">
+                        <button class="submenu-trigger">CLUP & ZO <span class="arrow-right">▸</span></button>
+                        <div class="submenu-content">
+                            <a href="inventory.html">Inventory</a>
+                            <a href="status.html">Status</a>
+                        </div>
+                    </div>
+                    <a href="status.html">PDPFP</a>
+                </div>
+            </div>
+            <a href="lgu-info.html">LGU Information</a>
+            <a href="report.html">Reports</a>
+            <a href="calendar.html">Calendar of Activities</a>
+            <a href="issuance.html">Issuances</a>
+            <a href="#about">About</a>
+            <a href="#contact">Contact</a>
+        `;
+    } else {
+        navHtml += `
+            <a href="#about">About</a>
+            <a href="#contact">Contact</a>
+        `;
     }
-
-        function renderUserMenu() {
-            const container = document.getElementById("userMenuContainer");
-            if (!container) return;
-
-            if (currentUser) {
-                const initials = getUserInitials(currentUser.fullName);
-                const firstName = currentUser.fullName?.split(" ")[0] || "User";
-
-                // Build the menu HTML
-                let menuHtml = `<div class="user-menu" id="userMenuDropdown">
-                                    <div class="user-avatar">${initials}</div>
-                                    <span class="user-name">${escapeHtml(firstName)}</span>
-                                    <span class="role-badge-header ${currentUser.role === "admin" ? "admin" : "staff"}">${getRoleLabel(currentUser.role)}</span>
-                                    <span style="font-size:0.7rem;">▼</span>
-                                    <div class="user-dropdown-menu">
-                                        <div class="user-dropdown-item">👤 ${escapeHtml(currentUser.email)}</div>
-                                        <div class="user-dropdown-item">🏢 ${escapeHtml(currentUser.office || "ELUPDD")}</div>`;
-
-                if (currentUser.role === "admin") {
-                    menuHtml += `<div class="user-dropdown-item" id="manageUsersBtn" ">👑 Manage Users (Admin Panel)</div>`;
-                }
-
-                menuHtml += `<div class="user-dropdown-item" id="logoutDropdownBtn" style="color:#dc2626;">🚪 Sign Out</div>
-                                        </div>
-                                    </div>`;
-
-                container.innerHTML = menuHtml;
-
-                const userDiv = document.getElementById("userMenuDropdown");
-                if (userDiv) {
-                    userDiv.addEventListener("click", (e) => {
-                        e.stopPropagation();
-                        const menu = userDiv.querySelector(".user-dropdown-menu");
-                        if (menu) menu.style.display = menu.style.display === "block" ? "none" : "block";
-                    });
-                    document.addEventListener("click", () => {
-                        const menu = userDiv.querySelector(".user-dropdown-menu");
-                        if (menu) menu.style.display = "none";
-                    });
-                }
-
-                const manageUsersBtn = document.getElementById("manageUsersBtn");
-                if (manageUsersBtn) {
-                    manageUsersBtn.addEventListener("click", () => {
-                        window.location.href = "admin.html";
-                    });
-                }
-
-                const logoutBtn = document.getElementById("logoutDropdownBtn");
-                if (logoutBtn)
-                    logoutBtn.addEventListener("click", () => {
-                        localStorage.removeItem("dhsud_session");
-                        showToast("Logged out. Redirecting to login page...", "info");
-                        setTimeout(() => {
-                            window.location.href = "login.html";
-                        }, 1000);
-                    });
-            } else {
-                container.innerHTML = `<div class="login-prompt" onclick="openLoginModal()">🔐 Sign In</div>`;
+    
+    container.innerHTML = navHtml;
+    
+    setTimeout(() => {
+        document.querySelectorAll(".dropdown-submenu .submenu-trigger").forEach((trigger) => {
+            trigger.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const submenu = trigger.closest(".dropdown-submenu");
+                if (submenu) submenu.classList.toggle("open");
+            });
+        });
+        document.addEventListener("click", function (e) {
+            if (!e.target.closest(".dropdown-submenu")) {
+                document.querySelectorAll(".dropdown-submenu.open").forEach((s) => s.classList.remove("open"));
             }
+        });
+    }, 10);
+}
+
+       function renderUserMenu() {
+    const container = document.getElementById("userMenuContainer");
+    if (!container) return;
+
+    if (currentUser) {
+        const initials = getUserInitials(currentUser.fullName);
+        const firstName = currentUser.fullName?.split(" ")[0] || "User";
+
+        let menuHtml = `
+            <div class="user-menu" id="userMenuDropdown">
+                <div class="user-avatar">${initials}</div>
+                <span class="user-name">${escapeHtml(firstName)}</span>
+                <span class="role-badge-header ${currentUser.role === "admin" ? "admin" : "staff"}">${getRoleLabel(currentUser.role)}</span>
+                <span style="font-size:0.7rem;">▼</span>
+                <div class="user-dropdown-menu">
+                    <div class="user-dropdown-item">👤 ${escapeHtml(currentUser.email)}</div>
+                    <div class="user-dropdown-item">🏢 ${escapeHtml(currentUser.office || "ELUPDD")}</div>
+        `;
+
+        if (currentUser.role === "admin") {
+            menuHtml += `<div class="user-dropdown-item" id="manageUsersBtn">👑 Manage Users (Admin Panel)</div>`;
         }
+
+        menuHtml += `
+                    <div class="user-dropdown-item" id="logoutDropdownBtn" style="color:#dc2626;">🚪 Sign Out</div>
+                </div>
+            </div>
+        `;
+
+        container.innerHTML = menuHtml;
+
+        const userDiv = document.getElementById("userMenuDropdown");
+        if (userDiv) {
+            userDiv.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const menu = userDiv.querySelector(".user-dropdown-menu");
+                if (menu) menu.style.display = menu.style.display === "block" ? "none" : "block";
+            });
+            document.addEventListener("click", () => {
+                const menu = userDiv.querySelector(".user-dropdown-menu");
+                if (menu) menu.style.display = "none";
+            });
+        }
+
+        const manageUsersBtn = document.getElementById("manageUsersBtn");
+        if (manageUsersBtn) {
+            manageUsersBtn.addEventListener("click", () => {
+                window.location.href = "admin.html";
+            });
+        }
+
+        const logoutBtn = document.getElementById("logoutDropdownBtn");
+        if (logoutBtn) {
+            logoutBtn.addEventListener("click", () => {
+                localStorage.removeItem("dhsud_session");
+                showToast("Logged out. Refreshing...", "info");
+                setTimeout(() => window.location.reload(), 1000);
+            });
+        }
+    } else {
+        container.innerHTML = `<div class="login-prompt" onclick="openLoginModal()">🔐 Sign In</div>`;
+    }
+}
 
         function openLoginModal() {
             document.getElementById("loginModal").classList.add("active");
