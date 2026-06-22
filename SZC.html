@@ -2785,6 +2785,7 @@ th:hover .sort-icon {
     <input type="text" id="mapSearchInput" class="map-search-input" placeholder="Search address, place, or saved point..." autocomplete="off">
     <button class="search-btn" onclick="searchMapLocation()">🔍 Search</button>
     <button class="saved-points-btn" onclick="toggleSavedPointsPanel()">📌 My Saved Points <span class="badge-count" id="savedPointsBadge">0</span></button>
+	<button class="tool-btn primary" onclick="syncAllExistingPoints()" style="background: #059669;">🔄 Sync to Sheet</button>
     <div id="searchResultsDropdown" class="search-results-dropdown"></div>
 </div>
             </div>
@@ -2906,7 +2907,6 @@ th:hover .sort-icon {
                 <div class="button-group">
     <button class="tool-btn" id="toggleSavePointBtn">💾 Save Point Mode: OFF</button>
     <button class="tool-btn success" onclick="loadSavedPoints()">📌 Load All Points</button>
-    <button class="tool-btn primary" onclick="syncAllExistingPoints()" style="background: #059669;">🔄 Sync to Sheet</button>
 </div>
                 <div style="margin-top: 8px;">
                     <small style="color: #64748b; font-size: 0.65rem;" id="savePointHint">
@@ -3649,7 +3649,7 @@ function confirmSavePoint() {
         let geoJsonLayers = [],
             currentActiveLayer = null,
             classColorMap = new Map();
-        const BACKEND_URL = "https://script.google.com/macros/s/AKfycbwbz8QyUDZ3VxwAshtk2_N57flhmoNlueTdGg3LHHR4lIPAfxzqRoCqnsyuEKU6elBjBg/exec";
+        const BACKEND_URL = "https://script.google.com/macros/s/AKfycbx5-SFdaezTZwKd-AprGDQcR_ik4NkYrqUN2MuZ9XBfztsFU8cqh8RPKjkcnAWVUmOvqg/exec";
         let defaultRows = [
             {
                 from: "Corner 1",
