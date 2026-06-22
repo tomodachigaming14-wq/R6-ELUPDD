@@ -3649,8 +3649,7 @@ function confirmSavePoint() {
         let geoJsonLayers = [],
             currentActiveLayer = null,
             classColorMap = new Map();
-        const BACKEND_URL =
-            "https://script.google.com/macros/s/AKfycbzVdXiS44K6awUGSPBBTf-uG4sGuusw99g0tKfFUSxtLcY5bIPj5ERzVPUhZEqC7R_5mg/exec";
+        const BACKEND_URL = "https://script.google.com/macros/s/AKfycbz1OCTwE_aaIm4bTAWQM3mXJq4m7LMREa3QlCl5FAY_XwZ1P1ohRaGJFzLWKDSVET1Q/exec";
         let defaultRows = [
             {
                 from: "Corner 1",
@@ -3751,14 +3750,34 @@ function confirmSavePoint() {
             document.getElementById("reportModal").classList.remove("active");
         }
         function getNextCertNumber() {
-            let max = 0;
-            zoningCertifications.forEach((r) => {
-                let m = r.certificationNo?.match(/-(\d+)$/);
-                if (m) max = Math.max(max, parseInt(m[1]));
-            });
-            let year = new Date().getFullYear().toString().slice(-2);
-            return `SZC-RVI${year}-${(max + 1).toString().padStart(3, "0")}`;
+    // Try to get from zoningCertifications first
+    let max = 0;
+    
+    // Check if zoningCertifications has data
+    if (zoningCertifications && zoningCertifications.length > 0) {
+        zoningCertifications.forEach((r) => {
+            let m = r.certificationNo?.match(/-(\d+)$/);
+            if (m) max = Math.max(max, parseInt(m[1]));
+        });
+    } else {
+        // If empty, try to load from localStorage directly
+        try {
+            const stored = localStorage.getItem("zoningCertifications");
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                parsed.forEach((r) => {
+                    let m = r.certificationNo?.match(/-(\d+)$/);
+                    if (m) max = Math.max(max, parseInt(m[1]));
+                });
+            }
+        } catch (e) {
+            console.warn("Could not read from localStorage");
         }
+    }
+    
+    let year = new Date().getFullYear().toString().slice(-2);
+    return `SZC-RVI${year}-${(max + 1).toString().padStart(3, "0")}`;
+}
         function refreshCertNumber() {
             document.getElementById("certificationNo").value = getNextCertNumber();
         }
@@ -3823,10 +3842,31 @@ function confirmSavePoint() {
             }
         }
         async function fetchCertifications() {
+    try {
+        const resp = await fetch(`${BACKEND_URL}?action=get&data_type=zoning&_=${Date.now()}`);
+        const data = await resp.json();
+        zoningCertifications = Array.isArray(data) ? data : [];
+        zoningCertifications = zoningCertifications.map((r) => {
+            if (r.landHoldings && typeof r.landHoldings === "string")
+                try {
+                    r.landHoldings = JSON.parse(r.landHoldings);
+                } catch (e) {
+                    r.landHoldings = [];
+                }
+            if (!r.landHoldings) r.landHoldings = [];
+            if (!r.status) r.status = "For Review";
+            return r;
+        });
+        localStorage.setItem("zoningCertifications", JSON.stringify(zoningCertifications));
+        renderAllTables();
+        showToast(`Loaded ${zoningCertifications.length} records`);
+    } catch (e) {
+        // FALLBACK: Load from localStorage
+        const stored = localStorage.getItem("zoningCertifications");
+        if (stored) {
             try {
-                const resp = await fetch(`${BACKEND_URL}?action=get&data_type=zoning&_=${Date.now()}`);
-                const data = await resp.json();
-                zoningCertifications = Array.isArray(data) ? data : [];
+                zoningCertifications = JSON.parse(stored);
+                // Ensure each record has proper structure
                 zoningCertifications = zoningCertifications.map((r) => {
                     if (r.landHoldings && typeof r.landHoldings === "string")
                         try {
@@ -3838,15 +3878,20 @@ function confirmSavePoint() {
                     if (!r.status) r.status = "For Review";
                     return r;
                 });
-                localStorage.setItem("zoningCertifications", JSON.stringify(zoningCertifications));
                 renderAllTables();
-                showToast(`Loaded ${zoningCertifications.length} records`);
+                showToast(`📁 Offline mode: ${zoningCertifications.length} records loaded from cache`);
             } catch (e) {
-                zoningCertifications = JSON.parse(localStorage.getItem("zoningCertifications") || "[]");
+                zoningCertifications = [];
                 renderAllTables();
-                showToast("Offline mode");
+                showToast("⚠️ No cached data found. Starting fresh.");
             }
+        } else {
+            zoningCertifications = [];
+            renderAllTables();
+            showToast("⚠️ No data available. Please check your connection.");
         }
+    }
+}
         async function fetchClupRecords() {
             try {
                 const resp = await fetch(`${BACKEND_URL}?action=get&data_type=clup&_=${Date.now()}`);
