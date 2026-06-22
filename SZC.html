@@ -3238,74 +3238,128 @@ function confirmSavePoint() {
 }
 
         // Save point to localStorage
-        function savePointToStorage(lat, lng, certNo, requestedBy) {
-            const newPoint = {
-                id: Date.now(),
-                lat: lat,
-                lng: lng,
-                certificationNo: certNo,
-                requestedBy: requestedBy,
-                dateSaved: new Date().toISOString()
-            };
-            
-            savedPoints.push(newPoint);
-            localStorage.setItem('savedMapPoints', JSON.stringify(savedPoints));
-            
-            // Update badge
-            const badge = document.getElementById('savedPointsBadge');
-            if (badge) badge.textContent = savedPoints.length;
-            
-            // Also try to sync to backend (optional)
-            syncPointToSheet(newPoint);
-            
-            // Log for debugging
-            console.log("Point saved:", newPoint);
-            console.log("Total saved points:", savedPoints.length);
-        }
+       function savePointToStorage(lat, lng, certNo, requestedBy) {
+    const newPoint = {
+        id: Date.now(),
+        lat: lat,
+        lng: lng,
+        certificationNo: certNo,
+        requestedBy: requestedBy,
+        dateSaved: new Date().toISOString(),
+        timestamp: new Date().toISOString()  // ← ADD THIS
+    };
+    
+    savedPoints.push(newPoint);
+    localStorage.setItem('savedMapPoints', JSON.stringify(savedPoints));
+    
+    // Update badge
+    const badge = document.getElementById('savedPointsBadge');
+    if (badge) badge.textContent = savedPoints.length;
+    const panelCount = document.getElementById('panelPointCount');
+    if (panelCount) panelCount.textContent = savedPoints.length;
+    
+    // Sync to Google Sheets
+    syncPointToSheet(newPoint);
+    
+    console.log("Point saved:", newPoint);
+}
 
         // Load all saved points from storage
-        function loadSavedPoints() {
+        async function loadSavedPoints() {
+    console.log("Loading saved points...");
+    
+    // Reset savedPoints array
+    savedPoints = [];
+    
+    // Try to load from Google Sheets first
+    try {
+        const url = `${BACKEND_URL}?action=get&data_type=map_points&_=${Date.now()}`;
+        console.log("Fetching from:", url);
+        
+        const resp = await fetch(url);
+        const data = await resp.json();
+        console.log("Server response:", data);
+        
+        if (data.success && data.data && data.data.length > 0) {
+            // Convert sheet data to proper format
+            savedPoints = data.data.map(row => ({
+                id: row.id || Date.now(),
+                lat: parseFloat(row.lat) || 0,
+                lng: parseFloat(row.lng) || 0,
+                certificationNo: row.certificationNo || "",
+                requestedBy: row.requestedBy || "",
+                dateSaved: row.dateSaved || row.timestamp || new Date().toISOString()
+            }));
+            // Save to localStorage as backup
+            localStorage.setItem('savedMapPoints', JSON.stringify(savedPoints));
+            console.log("Loaded from server:", savedPoints.length);
+        } else {
+            console.log("No data from server, checking localStorage");
+            // Fallback to localStorage
             const stored = localStorage.getItem('savedMapPoints');
             if (stored) {
                 savedPoints = JSON.parse(stored);
-                console.log("Loading saved points:", savedPoints.length);
-                savedPoints.forEach(point => {
-                    addSavedPointMarker(point.lat, point.lng, point.certificationNo, point.requestedBy);
-                });
-                
-                // Update badge
-                const badge = document.getElementById('savedPointsBadge');
-                if (badge) badge.textContent = savedPoints.length;
-                
-                showToast(`Loaded ${savedPoints.length} saved points`);
+                console.log("Loaded from localStorage:", savedPoints.length);
             } else {
-                console.log("No saved points found");
-                const badge = document.getElementById('savedPointsBadge');
-                if (badge) badge.textContent = '0';
+                console.log("No saved points found anywhere");
             }
         }
+    } catch (e) {
+        console.error("Error loading from server:", e);
+        // Fallback to localStorage
+        const stored = localStorage.getItem('savedMapPoints');
+        if (stored) {
+            savedPoints = JSON.parse(stored);
+            console.log("Loaded from localStorage:", savedPoints.length);
+        }
+    }
+    
+    // Render points on map
+    if (popupMap) {
+        savedPoints.forEach(point => {
+            addSavedPointMarker(point.lat, point.lng, point.certificationNo, point.requestedBy);
+        });
+        console.log("Rendered", savedPoints.length, "points on map");
+    }
+    
+    // Update badge
+    const badge = document.getElementById('savedPointsBadge');
+    if (badge) badge.textContent = savedPoints.length;
+    const panelCount = document.getElementById('panelPointCount');
+    if (panelCount) panelCount.textContent = savedPoints.length;
+}
 
         // Sync point to Google Sheets
-        async function syncPointToSheet(point) {
-            try {
-                const resp = await fetch(BACKEND_URL, {
-                    method: "POST",
-                    mode: "cors",
-                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                    body: new URLSearchParams({ 
-                        action: "add", 
-                        data_type: "map_points", 
-                        data: JSON.stringify(point) 
-                    }),
-                });
-                const res = await resp.json();
-                if (res.success) {
-                    console.log("Point synced to sheet");
-                }
-            } catch (e) {
-                console.log("Point saved locally only");
-            }
+       async function syncPointToSheet(point) {
+    try {
+        console.log("Syncing point to sheet:", point);
+        
+        const resp = await fetch(BACKEND_URL, {
+            method: "POST",
+            mode: "cors",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({ 
+                action: "add", 
+                data_type: "map_points", 
+                data: JSON.stringify(point) 
+            }),
+        });
+        
+        const res = await resp.json();
+        console.log("Sync response:", res);
+        
+        if (res.success) {
+            console.log("Point synced to sheet successfully");
+            return true;
+        } else {
+            console.error("Sync failed:", res.error);
+            return false;
         }
+    } catch (e) {
+        console.error("Sync error:", e);
+        return false;
+    }
+}
 
         // Add a permanent marker to the map
         function addSavedPointMarker(lat, lng, certNo, requestedBy) {
@@ -6506,17 +6560,20 @@ function confirmSavePoint() {
         }
 
         async function init() {
-            checkSession();
-            renderMainNavigation();
-            renderUserMenu();
-            await fetchClupRecords();
-            await fetchCertifications();
-            refreshCertNumber();
-            document.getElementById("landHoldingsContainer").innerHTML = "";
-            document.getElementById("landHoldingsContainer").appendChild(createLandHoldingRow("", "", "", "0", ""));
-            document.getElementById("parcels").value = 1;
-            switchZoningView("dataEntry");
-        }
+    checkSession();
+    renderMainNavigation();
+    renderUserMenu();
+    await fetchClupRecords();
+    await fetchCertifications();
+    refreshCertNumber();
+    document.getElementById("landHoldingsContainer").innerHTML = "";
+    document.getElementById("landHoldingsContainer").appendChild(createLandHoldingRow("", "", "", "0", ""));
+    document.getElementById("parcels").value = 1;
+    switchZoningView("dataEntry");
+    
+    // 🔥 Load saved points from server
+    await loadSavedPoints();
+}
         init();
         
         // ========== MAP VIEW FUNCTIONS - ADD THIS MISSING FUNCTION ==========
