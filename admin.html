@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>DHSUD Region VI - Admin Console | User Management (Blue)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* [ADMIN STYLES - unchanged] */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+	     font-family: 'Inter', sans-serif; 
+		 background: #f0f4f8; 
+		 min-height: 100vh; 
+		 padding: 1.5rem; 
+		 }
+		 
+    .admin-container { 
+	     max-width: 1400px; 
+	     margin: 0 auto; 
+		 }
+    
+	.admin-header { 
+	     background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); 
+	     border-radius: 1.5rem; 
+	     padding: 1.2rem 2rem; 
+	     margin-bottom: 2rem; display: flex; 
+	     justify-content: space-between; 
+	     align-items: center; 
+	     flex-wrap: wrap; 
+		 gap: 1rem; 
+		 box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+		 }
+		 		 
+    .logo-area h1 { 
+	     color: white; 
+		 font-size: 1.4rem; 
+		 font-weight: 700; 
+		 }
+    
+	.logo-area p { 
+	     color: rgba(255,255,255,0.7); font-size: 0.7rem; 
+		 }
+    
+	.admin-badge { 
+	     background: rgba(255,255,255,0.2); 
+		 padding: 0.5rem 1rem; 
+		 border-radius: 2rem; 
+		 color: white; 
+		 font-size: 0.8rem; 
+		 font-weight: 500; 
+		 }
+		 
+    .user-info { 
+	     display: flex; 
+		 align-items: center; 
+		 gap: 1rem; 
+		 background: rgba(255,255,255,0.15); 
+		 padding: 0.5rem 1.2rem; 
+		 border-radius: 2rem; 
+		 }
+    
+	.user-avatar { 
+	     width: 36px; 
+		 height: 36px; 
+		 background: #3b82f6; 
+		 border-radius: 50%; 
+		 display: flex; 
+		 align-items: center; 
+		 justify-content: center; 
+		 color: white; 
+		 font-weight: bold; 
+		 }
+		 
+    .user-details {
+	     color: white; 
+		 font-size: 0.85rem; }
+	
+    .role-tag { 
+	     background: #fbbf24; 
+		 color: #1e293b; 
+		 padding: 0.2rem 0.6rem; 
+		 border-radius: 1rem; 
+		 font-size: 0.7rem; 
+		 font-weight: 700; 
+		 }
+    
+	.logout-btn { 
+	     background: rgba(255,255,255,0.2);
+		 border: none; 
+		 color: white; 
+		 padding: 0.5rem 1rem; 
+		 border-radius: 2rem; 
+		 cursor: pointer; 
+		 font-weight: 500; 
+		 transition: all 0.2s; 
+		 }
+		 
+    .logout-btn:hover { 
+	     background: #ef4444; 
+		 }
+    
+	.back-home-btn {
+         background: 
+		 rgba(255,255,255,0.2); 
+		 border: none; 
+		 color: white; 
+		 padding: 0.5rem 1rem; 
+		 border-radius: 2rem; 
+		 cursor: pointer; 
+		 font-weight: 500; 
+		 transition: all 0.2s; 
+		 text-decoration: none; 
+		 display: inline-flex; 
+		 align-items: center; 
+		 gap: 0.5rem; 
+		 }
+		 
+    .back-home-btn:hover { 
+	     background: #2563eb; 
+		 }
+    
+	.stats-grid { 
+	     display: grid; 
+		 grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); 
+		 gap: 1rem; 
+		 margin-bottom: 2rem; 
+		 }
+		 
+    .stat-card { 
+	     background: white; 
+		 border-radius: 1rem; 
+		 padding: 1.2rem; 
+		 box-shadow: 0 1px 3px rgba(0,0,0,0.05); 
+		 border: 1px solid #e2e8f0; 
+		 }
+		 
+    .stat-title { 
+	font-size: 0.7rem; 
+	text-transform: uppercase; 
+	color: #64748b; letter-spacing: 0.5px; 
+	}
+    
+	.stat-number { 
+	font-size: 2rem; 
+	font-weight: 800; 
+	color: #1e3a8a; 
+	margin-top: 0.3rem; 
+	}
+    
+	.admin-grid { 
+	display: grid; 
+	grid-template-columns: 1fr 1.5fr; 
+	gap: 1.5rem; 
+	}
+	
+    @media (max-width: 900px) { .admin-grid { grid-template-columns: 1fr; } }
+    .card { 
+	  background: white; 
+	  border-radius: 1.2rem; 
+	  box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+	  overflow: hidden; 
+	  border: 1px solid #e2e8f0; }
+	  
+    .card-header { 
+	  background: #f8fafc; 
+	  padding: 1rem 1.5rem; 
+	  border-bottom: 1px solid #e2e8f0; 
+	  font-weight: 700; 
+	  display: flex; 
+	  justify-content: space-between; 
+	  align-items: center; 
+	  }
+	  
+    .card-body { 
+	  padding: 1.5rem; 
+	  }
+   
+    .form-group { 
+	  margin-bottom: 1rem; 
+	  position: relative; 
+	  }
+	  
+    .form-group label { 
+	  display: block; 
+	  font-size: 0.75rem; 
+	  font-weight: 600; 
+	  color: #475569; margin-bottom: 0.3rem; 
+	  }
+	  
+    .form-group input, .form-group select { 
+	  width: 100%; 
+	  padding: 0.7rem 0.9rem; 
+	  border: 1.5px solid #e2e8f0; 
+	  border-radius: 0.8rem; 
+	  font-family: 'Inter', sans-serif; 
+	  font-size: 0.85rem; 
+	  transition: all 0.2s; 
+	  }
+	  
+    .form-group input:focus, .form-group select:focus { 
+	  outline: none; 
+	  border-color: #2563eb; 
+	  box-shadow: 0 0 0 3px rgba(37,99,235,0.1); 
+	  }
+    
+	.toggle-password {
+      position: absolute; 
+	  right: 12px; 
+	  top: 32px; 
+	  cursor: pointer; 
+	  font-size: 1rem; 
+	  background: none; 
+	  border: none; 
+	  color: #94a3b8; 
+	  }
+    
+	.btn-primary { 
+	  background: #2563eb; 
+	  color: white; 
+	  border: none; 
+	  padding: 0.75rem 1.2rem; 
+	  border-radius: 0.8rem; 
+	  font-weight: 600; 
+	  cursor: pointer; 
+	  width: 100%; 
+	  transition: all 0.2s; 
+	  }
+	  
+    .btn-primary:hover { 
+	  background: #1d4ed8; 
+	  transform: translateY(-1px); 
+	  }
+    
+	.users-table-container {
+  	  overflow-x: auto; 
+	  }
+    
+	.users-table { 
+	  width: 100%; 
+	  border-collapse: collapse; 
+	  font-size: 0.8rem; 
+	  }
+    
+	.users-table th { 
+	  text-align: left; 
+	  padding: 0.75rem 0.5rem; 
+	  background: #f1f5f9; 
+	  color: #334155; 
+	  font-weight: 600; 
+	  }
+    
+	.users-table td { 
+	  padding: 0.7rem 0.5rem; 
+	  border-bottom: 1px solid #e2e8f0; 
+	  vertical-align: middle; 
+	  }
+    
+	.role-badge { 
+	  display: inline-block; 
+	  padding: 0.2rem 0.6rem; 
+	  border-radius: 2rem; 
+	  font-size: 0.7rem; 
+	  font-weight: 600; 
+	  }
+	  
+    .role-admin { 
+	  background: #dcfce7; 
+	  color: #166534; 
+	  }
+    
+	.role-staff { 
+	  background: #dbeafe; 
+	  color: #1e40af; 
+	  }
+    
+	.role-viewer { 
+	  background: #fef9c3; 
+	  color: #854d0e; 
+	  }
+    
+	.action-icons { 
+	  display: flex; 
+	  gap: 0.5rem; 
+	  }
+    
+	.action-btn { 
+	  background: none; 
+	  border: none; 
+	  cursor: pointer; 
+	  font-size: 1rem; 
+	  padding: 0.2rem; 
+	  border-radius: 0.3rem; 
+	  transition: 0.1s; 
+	  }
+	  
+    .edit-btn { 
+	  color: #2563eb; 
+	  }
+	  
+    .edit-btn:hover { 
+	  background: #dbeafe; 
+	  }
+    
+	.delete-btn { 
+	  color: #ef4444; 
+	  }
+    
+	.delete-btn:hover { 
+	  background: #fee2e2; 
+	  }
+    
+	.toast { 
+	  position: fixed; 
+	  bottom: 2rem; 
+	  left: 50%; 
+	  transform: translateX(-50%); 
+	  background: #1e293b; 
+	  color: white; 
+	  padding: 0.7rem 1.5rem; 
+	  border-radius: 2rem; 
+	  font-size: 0.8rem; 
+	  z-index: 1000; 
+	  animation: fadeUp 0.3s ease; 
+	  white-space: nowrap; 
+	  }
+	
+    @keyframes fadeUp { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+    .toast.success { 
+	  background: #166534; 
+	  }
+	  
+    .toast.error {
+      background: #b91c1c; 
+	  }
+	  
+    .empty-row td { 
+	  text-align: center; 
+	  padding: 2rem; 
+	  color: #94a3b8; 
+	  }
+	  
+    .sync-status { 
+	  font-size: 0.7rem;
+	  margin-top: 1rem; 
+	  text-align: center; 
+	  color: #64748b; 
+	  }
+	  
+    .modal-overlay { 
+	  display: none; position: fixed; 
+	  top: 0; left: 0; width: 100%; 
+	  height: 100%; 
+	  background: rgba(0,0,0,0.5); 
+	  backdrop-filter: blur(4px); 
+	  z-index: 2000; 
+	  justify-content: center; 
+	  align-items: center; 
+	  }
+	  
+    .modal-overlay.active { 
+	  display: flex; 
+	  }
+    
+	.modal-content { 
+	  background: white; 
+	  border-radius: 1.5rem; 
+	  max-width: 500px; 
+	  width: 90%; 
+	  padding: 1.5rem; 
+	  animation: modalSlideIn 0.2s ease; 
+	  }
+	  
+    @keyframes modalSlideIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+    .modal-header { 
+	  display: flex; 
+	  justify-content: space-between; 
+	  align-items: center; 
+	  margin-bottom: 1.2rem; 
+	  padding-bottom: 0.8rem; 
+	  border-bottom: 2px solid #eef2ff; 
+	  }
+	  
+    .modal-header h3 { 
+	  font-size: 1.2rem; 
+	  font-weight: 700; 
+	  color: #0f172a; 
+	  }
+	  
+    .close-modal { 
+	  background: none; 
+	  border: none; 
+	  font-size: 1.5rem; 
+	  cursor: pointer;
+	  color: #94a3b8; 
+	  }
+	  
+    .close-modal:hover { 
+	  color: #ef4444; 
+	  }
+	  
+    .modal-footer { 
+	  display: flex; 
+	  gap: 0.8rem; 
+	  margin-top: 1.5rem; 
+	  }
+	  
+    .modal-footer button { 
+	  flex: 1; 
+	  padding: 0.7rem; 
+	  border-radius: 0.8rem; 
+	  font-weight: 600; 
+	  cursor: pointer; 
+	  border: none; 
+	  }
+	  
+    .modal-save-btn { 
+	  background: #2563eb; 
+	  color: white; 
+	  }
+	  
+    .modal-save-btn:hover {
+   	  background: #1d4ed8; 
+	  }
+	  
+    .modal-cancel-btn { 
+	  background: #f1f5f9; 
+	  color: #475569; 
+	  }
+	  
+    .readonly-field {
+ 	  background: #f1f5f9; 
+	  color: #64748b; 
+	  cursor: not-allowed; 
+	  }
+	  
+    .header-actions { 
+	  display: flex; 
+	  gap: 1rem; 
+	  align-items: center; 
+	  }
+	  
+    .two-column-layout { 
+	  display: flex; 
+	  gap: 2rem; 
+	  align-items: flex-start; 
+	  flex-wrap: wrap;
+	  }
+	  
+    .create-user-card { 
+	  flex: 1; 
+	  min-width: 380px; 
+	  }
+	  
+    .registered-users-card { 
+	  flex: 1.5; 
+	  min-width
+: 500px; 
+	  }
+	  
+    @media (max-width: 1000px) { .two-column-layout { flex-direction: column; } .create-user-card, .registered-users-card { min-width: auto; width: 100%; } }
+    
+    /* Header styles matching SZC.html */
+	
+    header { 
+	  background: white; 
+	  border-bottom: 1px solid #eef2ff; 
+	  position: sticky; 
+	  top: 0; z-index: 100; 
+	  backdrop-filter: blur(8px); 
+	  background: rgba(255,255,255,0.96); 
+	   }
+	
+    .navbar { 
+	  display: flex; 
+	  justify-content: space-between; 
+	  align-items: center; 
+	  padding: 1rem 0; 
+	  flex-wrap: wrap; 
+	  gap: 1rem; 
+	  }
+	  
+    .logo-area-header { 
+	  display: flex; 
+	  align-items: center; 
+	  gap: 16px; 
+	  }
+	  
+    .header-logo-img { 
+	  height: 42px; 
+	  background: #f1f5f9; 
+	  padding: 4px 16px; 
+	  border-radius: 40px; 
+	  display: inline-flex; 
+	  align-items: center; 
+	  gap: 10px; 
+	  font-weight: 600; 
+	  font-size: 0.95rem; 
+	  color: #1e3a8a; 
+	  }
+	  
+    .header-logo-img img { 
+	  height: 32px; 
+	  width: auto; 
+	  }
+	  
+    .nav-links { 
+	  display: flex; 
+	  align-items: center; 
+	  gap: 1.2rem; 
+	  flex-wrap: wrap; 
+	  margin-left: auto; 
+	  }
+	  
+    .nav-links a { 
+	  text-decoration: none; 
+	  color: #334155; 
+	  font-weight: 500; 
+	  font-size: 0.9rem; 
+	  transition: 0.2s; 
+	  }
+	  
+    .nav-links a:hover { 
+	  color: #2563eb; 
+	  }
+	  
+    .dropdown { 
+	  position: relative; 
+	  display: inline-block; 
+	  }
+	  
+    .dropbtn { 
+	  background: none; 
+	  border: none; 
+	  font-weight: 500; 
+	  font-size: 0.9rem; 
+	  color: #334155; 
+	  cursor: pointer; 
+	  font-family: inherit; 
+	  padding: 0.4rem 0; 
+	  }
+	  
+    .dropdown-content { 
+	  display: none; 
+	  position: absolute; 
+	  background: white; 
+	  min-width: 220px; 
+	  box-shadow: 0 12px 28px rgba(0,0,0,0.1); 
+	  border-radius: 16px; z-index: 1000; 
+	  top: 30px; left: 0; 
+	  border: 1px solid #eef2ff; 
+	  padding: 0.3rem 0; 
+	  }
+	  
+    .dropdown-content a { 
+	  display: block; 
+	  padding: 0.7rem 1.2rem; 
+	  color: #1e293b; 
+	  font-size: 0.8rem; 
+	  text-decoration: none; 
+	  }
+	  
+    .dropdown-content a:hover { 
+	  background: #eff6ff; 
+	  }
+	  
+    .dropdown.open .dropdown-content { 
+	  display: block; 
+	  }
+	  
+    .dropdown-submenu { 
+	  position: relative; 
+	  }
+	  
+    .submenu-trigger { 
+	  background: none; 
+	  border: none; 
+	  width: 100%; 
+	  text-align: left; 
+	  padding: 0.7rem 1.2rem; 
+	  font-size: 0.8rem; 
+	  font-weight: 500; 
+	  color: #1e293b; 
+	  cursor: pointer; 
+	  display: flex; 
+	  justify-content: space-between; 
+	  align-items: center; 
+	  font-family: inherit; 
+	  }
+	  
+    .submenu-trigger:hover { 
+	  background: #eff6ff; 
+	  }
+	  
+    .arrow-right { 
+	  font-size: 0.7rem; 
+	  margin-left: 1rem; 
+	  }
+	  
+    .submenu-content { 
+	  display: none; 
+	  position: absolute; 
+	  left: 100%; 
+	  top: 0; 
+	  background: white; 
+	  min-width: 180px; 
+	  box-shadow: 0 12px 28px rgba(0,0,0,0.1);
+	  border-radius: 16px; 
+	  border: 1px solid #eef2ff; 
+	  z-index: 1001; 
+	  padding: 0.3rem 0; 
+	  }
+	  
+    .dropdown-submenu.open .submenu-content { 
+	  display: block; 
+	  }
+	  
+    .user-menu { 
+	  display: flex; 
+	  align-items: center; 
+	  gap: 0.5rem; 
+	  background: #f1f5f9; 
+	  padding: 0.3rem 0.8rem 0.3rem 1rem; 
+	  border-radius: 60px; 
+	  cursor: pointer; 
+	  position: relative; 
+	  }
+	  
+    .user-avatar { 
+	  width: 32px; 
+	  height: 32px; 
+	  background: #2563eb; 
+	  border-radius: 50%; 
+	  display: flex; 
+	  align-items: center; 
+	  justify-content: center; 
+	  color: white; 
+	  font-weight: 700; 
+	  }
+	  
+    .login-prompt { 
+	  background: #f1f5f9; 
+	  padding: 0.3rem 1rem; 
+	  border-radius: 40px; 
+	  cursor: pointer; 
+	  font-size: 0.85rem; 
+	  font-weight: 500; 
+	  }
+	  
+    .role-badge-header { 
+	  background: #e2e8f0; 
+	  padding: 0.2rem 0.6rem; 
+	  border-radius: 20px; 
+	  font-size: 0.65rem; 
+	  font-weight: 600; 
+	  margin-left: 0.5rem; 
+	  }
+	  
+	  
+    .role-badge-header.admin { 
+	  background: #dcfce7; 
+	  color: #166534; 
+	  }
+	  
+    .role-badge-header.staff { 
+	  background: #dbeafe; 
+	  color: #1e40af; 
+	  }
+	  
+    .btn-outline { 
+	  border: 1.5px solid #2563eb; 
+	  border-radius: 40px; 
+	  padding: 6px 18px; 
+	  background: transparent; 
+	  color: #2563eb; 
+	  font-weight: 600; 
+	  cursor: pointer; 
+	  }
+	  
+  </style>
+</head>
+<body>
+  <!-- NEW HEADER from SZC.html -->
+  <header>
+    <div class="admin-container" style="max-width: 1400px; margin: 0 auto; padding: 0 24px;">
+      <div class="navbar">
+        <div class="logo-area-header">
+          <div class="header-logo-img">
+            <img src="DHSUD_LOGO.png" alt="DHSUD Logo">
+            <span></span> DHSUD VI - ELUPDD Integrated Database and Information System
+          </div>
+        </div>
+          <div id="userMenuContainer"></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ORIGINAL ADMIN CONTENT (unchanged) -->
+  <div class="admin-container">
+    <div class="admin-header">
+      <div class="logo-area">
+        <h1>🏛️ DHSUD Region VI | Admin Console</h1>
+        <p>User Management · Role Assignment · System Control</p>
+      </div>
+      <div class="header-actions">
+        <a href="index.html" class="back-home-btn">🏠 Back to Home</a>
+        <div class="admin-badge">👑 ADMIN ACCESS</div>
+        <div class="user-info" id="userInfoDisplay">
+          <div class="user-avatar" id="userAvatar">AD</div>
+          <div class="user-details"><span id="adminName">Administrator</span><br><span class="role-tag" id="adminRoleBadge">Admin</span></div>
+        </div>
+        <button class="logout-btn" onclick="handleLogout()">🚪 Logout</button>
+      </div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-title">Total Users</div>
+        <div class="stat-number" id="totalUsersCount">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">Admin Users</div>
+        <div class="stat-number" id="adminCount">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">Staff/Officer Users</div>
+        <div class="stat-number" id="staffCount">0</div>
+      </div>
+    </div>
+    <div class="two-column-layout">
+      <div class="card create-user-card">
+        <div class="card-header"><span>➕ Create New User Account</span><span style="font-size:0.7rem; color:#64748b;">🔒 Passwords are securely hashed</span></div>
+        <div class="card-body">
+          <form id="createUserForm">
+            <div class="form-group"><label>👤 Full Name *</label><input type="text" id="newFullName" placeholder="e.g., Maria R. Santos" required></div>
+            <div class="form-group"><label>📧 Email Address *</label><input type="email" id="newEmail" placeholder="name@dhsud.gov.ph" required></div>
+            <div class="form-group"><label>🏢 Office / Division</label><input type="text" id="newOffice" placeholder="e.g., ELUPDD, Legal"></div>
+            <div class="form-group">
+              <label>🎭 Assign Role *</label>
+              <select id="newRole">
+                <option value="staff">📋 Staff/Officer (Can encode data, no user management)</option>
+                <option value="admin">👑 Admin (Full access + can create accounts)</option>
+              </select>
+            </div>
+            <div class="form-group"><label>🔒 Password (min 6 chars) *</label><input type="password" id="newPassword" placeholder="••••••" required><button type="button" class="toggle-password" onclick="togglePassword('newPassword')">👁️</button></div>
+            <div class="form-group"><label>✓ Confirm Password *</label><input type="password" id="newConfirmPassword" placeholder="Confirm password" required><button type="button" class="toggle-password" onclick="togglePassword('newConfirmPassword')">👁️</button></div>
+            <button type="submit" class="btn-primary">✅ Create Account</button>
+          </form>
+        </div>
+      </div>
+      <div class="card registered-users-card">
+        <div class="card-header"><span>📋 Registered Users</span><button id="refreshUsersBtn" style="background:none; border:none; cursor:pointer; font-size:1rem;">🔄 Refresh</button></div>
+        <div class="card-body" style="padding:0;">
+          <div class="users-table-container">
+            <table class="users-table">
+              <thead>
+                <tr><th>Name</th><th>Email</th><th>Role</th><th>Office</th><th style="width:90px">Actions</th></tr>
+              </thead>
+              <tbody id="usersTableBody">
+                <tr class="empty-row"><td colspan="5">Loading users...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="sync-status" id="syncMessage">📡 Synced with Google Sheets</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="editModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>✏️ Edit User Account</h3>
+        <button class="close-modal" onclick="closeEditModal()">&times;</button>
+      </div>
+      <form id="editUserForm">
+        <input type="hidden" id="editUserId">
+        <div class="form-group"><label>👤 Full Name</label><input type="text" id="editFullName" class="readonly-field" readonly></div>
+        <div class="form-group"><label>📧 Email Address</label><input type="email" id="editEmail" class="readonly-field" readonly></div>
+        <div class="form-group"><label>🏢 Office / Division</label><input type="text" id="editOffice" placeholder="e.g., ELUPDD, Legal"></div>
+        <div class="form-group">
+          <label>🎭 Role *</label>
+          <select id="editRole">
+            <option value="staff">📋 Staff/Officer</option>
+            <option value="admin">👑 Admin</option>
+          </select>
+        </div>
+        <div class="form-group"><label>🔒 New Password</label><input type="password" id="editPassword" placeholder="Leave blank to keep unchanged"><button type="button" class="toggle-password" onclick="togglePassword('editPassword')">👁️</button></div>
+        <div class="form-group"><label>✓ Confirm New Password</label><input type="password" id="editConfirmPassword" placeholder="Confirm new password"><button type="button" class="toggle-password" onclick="togglePassword('editConfirmPassword')">👁️</button></div>
+        <div class="modal-footer"><button type="button" class="modal-cancel-btn" onclick="closeEditModal()">Cancel</button><button type="submit" class="modal-save-btn">💾 Save Changes</button></div>
+      </form>
+    </div>
+  </div>
+  <script>
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1OCTwE_aaIm4bTAWQM3mXJq4m7LMREa3QlCl5FAY_XwZ1P1ohRaGJFzLWKDSVET1Q/exec";
+    let currentUsers = [];
+    let currentAdminSession = null;
+    
+    function encodePassword(p) { return btoa(p); }
+    function togglePassword(f) { let field = document.getElementById(f); field.type = field.type === "password" ? "text" : "password"; }
+    function showToast(message, type = "info") {
+      const existing = document.querySelector(".toast");
+      if (existing) existing.remove();
+      const toast = document.createElement("div");
+      toast.className = `toast ${type}`;
+      toast.innerHTML = message;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3500);
+    }
+    function checkAdminSession() {
+      const sessionRaw = localStorage.getItem("dhsud_session");
+      if (!sessionRaw) { window.location.href = "login.html"; return false; }
+      try {
+        const session = JSON.parse(sessionRaw);
+        if (session.role !== "admin") {
+          showToast("Access Denied: Admin privileges required.", "error");
+          setTimeout(() => { window.location.href = "index.html"; }, 1500);
+          return false;
+        }
+        currentAdminSession = session;
+        document.getElementById("adminName").innerText = session.fullName || session.email;
+        document.getElementById("userAvatar").innerText = (session.fullName || "AD").charAt(0).toUpperCase();
+        return true;
+      } catch (e) { window.location.href = "login.html"; return false; }
+    }
+    async function fetchUsers() {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=get&data_type=users&_=${Date.now()}`, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (response.ok) {
+          const data = await response.json();
+          let users = Array.isArray(data) ? data : [];
+          users = users.map(u => ({ id: u.id, fullName: u.fullName || u.fullname || "User", email: (u.email || "").toLowerCase(), password: u.password || "", office: u.office || "ELUPDD", role: u.role || "viewer" }));
+          localStorage.setItem("dhsud_users_v2", JSON.stringify(users));
+          currentUsers = users;
+          document.getElementById("syncMessage").innerHTML = "✅ Synced with Google Sheets";
+          return users;
+        } else throw new Error();
+      } catch (error) {
+        console.error("Fetch error:", error);
+        const cached = localStorage.getItem("dhsud_users_v2");
+        if (cached) { currentUsers = JSON.parse(cached); document.getElementById("syncMessage").innerHTML = "⚠️ Offline mode · Using cached users"; return currentUsers; }
+        return [];
+      }
+    }
+    async function addUserToBackend(userObj) {
+      try {
+        const formBody = new URLSearchParams();
+        formBody.append("action", "add");
+        formBody.append("data_type", "users");
+        formBody.append("data", JSON.stringify(userObj));
+        const response = await fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: formBody });
+        const result = await response.json();
+        return result.success === true;
+      } catch (e) { return false; }
+    }
+    async function updateUserInBackend(userId, updatedData) {
+      try {
+        const formBody = new URLSearchParams();
+        formBody.append("action", "update");
+        formBody.append("data_type", "users");
+        formBody.append("id", userId);
+        formBody.append("data", JSON.stringify(updatedData));
+        const response = await fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: formBody });
+        const result = await response.json();
+        return result.success === true;
+      } catch (e) { return false; }
+    }
+    async function deleteUserFromBackend(userId) {
+      try {
+        const formBody = new URLSearchParams();
+        formBody.append("action", "delete");
+        formBody.append("data_type", "users");
+        formBody.append("id", userId);
+        const response = await fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: formBody });
+        const result = await response.json();
+        return result.success === true;
+      } catch (e) { return false; }
+    }
+    function renderUsersTable() {
+      const tbody = document.getElementById("usersTableBody");
+      if (!currentUsers.length) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="5">No users found. Create one!</td></tr>';
+        document.getElementById("totalUsersCount").innerText = "0";
+        document.getElementById("adminCount").innerText = "0";
+        document.getElementById("staffCount").innerText = "0";
+        return;
+      }
+      let adminCnt = 0, staffCnt = 0;
+      const rows = currentUsers.map(user => {
+        if (user.role === "admin") adminCnt++;
+        else if (user.role === "staff" || user.role === "encoder") staffCnt++;
+        const roleLabel = user.role === "admin" ? "👑 Admin" : (user.role === "staff" || user.role === "encoder" ? "📋 Staff/Officer" : "👁️ Viewer");
+        const roleClass = user.role === "admin" ? "role-admin" : (user.role === "staff" || user.role === "encoder" ? "role-staff" : "role-viewer");
+        const isSelf = currentAdminSession && currentAdminSession.email === user.email;
+        return `
+          <tr>
+            <td><strong>${escapeHtml(user.fullName || "—")}</strong></td>
+            <td>${escapeHtml(user.email)}</td>
+            <td><span class="role-badge ${roleClass}">${roleLabel}</span></td>
+            <td>${escapeHtml(user.office || "ELUPDD")}</td>
+            <td class="action-icons">
+              ${!isSelf ? `<button class="action-btn edit-btn" onclick="openEditModal('${user.id}','${escapeHtml(user.fullName)}','${escapeHtml(user.email)}','${escapeHtml(user.office || "ELUPDD")}','${user.role}')" title="Edit User">✏️</button>` : '<span style="font-size:0.7rem;color:#94a3b8;">Self</span>'}
+              ${!isSelf ? `<button class="action-btn delete-btn" onclick="deleteUser('${user.id}','${escapeHtml(user.email)}')" title="Delete User">🗑️</button>` : ''}
+            </td>
+          </tr>`;
+      }).join("");
+      tbody.innerHTML = rows;
+      document.getElementById("totalUsersCount").innerText = currentUsers.length;
+      document.getElementById("adminCount").innerText = adminCnt;
+      document.getElementById("staffCount").innerText = staffCnt;
+    }
+    function escapeHtml(str) { if (!str) return ""; return String(str).replace(/[&<>]/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[m]); }
+    window.openEditModal = function(userId, fullName, email, office, role) {
+      document.getElementById("editUserId").value = userId;
+      document.getElementById("editFullName").value = fullName;
+      document.getElementById("editEmail").value = email;
+      document.getElementById("editOffice").value = office;
+      document.getElementById("editRole").value = role;
+      document.getElementById("editPassword").value = "";
+      document.getElementById("editConfirmPassword").value = "";
+      document.getElementById("editModal").classList.add("active");
+    };
+    function closeEditModal() { document.getElementById("editModal").classList.remove("active"); document.getElementById("editUserForm").reset(); }
+    async function saveEditUser(event) {
+      event.preventDefault();
+      const userId = document.getElementById("editUserId").value;
+      const office = document.getElementById("editOffice").value.trim();
+      const role = document.getElementById("editRole").value;
+      const newPassword = document.getElementById("editPassword").value;
+      const confirmPassword = document.getElementById("editConfirmPassword").value;
+      if (newPassword && newPassword !== confirmPassword) { showToast("Passwords do not match.", "error"); return; }
+      if (newPassword && newPassword.length < 6) { showToast("Password must be at least 6 characters.", "error"); return; }
+      const originalUser = currentUsers.find(u => u.id == userId);
+      if (!originalUser) { showToast("User not found.", "error"); closeEditModal(); return; }
+      const updatedUser = { ...originalUser, office: office || "ELUPDD", role: role };
+      if (newPassword) updatedUser.password = encodePassword(newPassword);
+      const saveBtn = document.querySelector("#editUserForm .modal-save-btn");
+      saveBtn.innerText = "⏳ Saving...";
+      saveBtn.disabled = true;
+      try {
+        const backendSuccess = await updateUserInBackend(userId, updatedUser);
+        if (backendSuccess) {
+          const index = currentUsers.findIndex(u => u.id == userId);
+          if (index !== -1) currentUsers[index] = updatedUser;
+          localStorage.setItem("dhsud_users_v2", JSON.stringify(currentUsers));
+          renderUsersTable();
+          showToast("✅ User updated successfully!", "success");
+          closeEditModal();
+        } else {
+          showToast("⚠️ Backend update failed. Changes saved locally only.", "error");
+          const index = currentUsers.findIndex(u => u.id == userId);
+          if (index !== -1) currentUsers[index] = updatedUser;
+          localStorage.setItem("dhsud_users_v2", JSON.stringify(currentUsers));
+          renderUsersTable();
+          closeEditModal();
+        }
+      } catch (err) { showToast("Network error.", "error"); }
+      finally { saveBtn.innerText = "💾 Save Changes"; saveBtn.disabled = false; }
+    }
+    async function createUser(event) {
+      event.preventDefault();
+      const fullName = document.getElementById("newFullName").value.trim();
+      const email = document.getElementById("newEmail").value.trim().toLowerCase();
+      let office = document.getElementById("newOffice").value.trim();
+      const role = document.getElementById("newRole").value;
+      const password = document.getElementById("newPassword").value;
+      const confirmPass = document.getElementById("newConfirmPassword").value;
+      if (!fullName || !email || !password) { showToast("Please fill all required fields.", "error"); return; }
+      if (password !== confirmPass) { showToast("Passwords do not match.", "error"); return; }
+      if (password.length < 6) { showToast("Password must be at least 6 characters.", "error"); return; }
+      if (currentUsers.some(u => u.email === email)) { showToast("Email already exists.", "error"); return; }
+      if (!office) office = "ELUPDD";
+      const encodedPassword = encodePassword(password);
+      const newUser = { id: Date.now().toString(), fullName: fullName, email: email, password: encodedPassword, office: office, role: role, registeredAt: new Date().toISOString(), registeredBy: currentAdminSession.email };
+      const submitBtn = document.querySelector("#createUserForm button");
+      submitBtn.innerText = "⏳ Creating...";
+      submitBtn.disabled = true;
+      try {
+        const backendSuccess = await addUserToBackend(newUser);
+        if (backendSuccess) {
+          currentUsers.push(newUser);
+          localStorage.setItem("dhsud_users_v2", JSON.stringify(currentUsers));
+          renderUsersTable();
+          showToast(`✅ User "${fullName}" created! Password: "${password}"`, "success");
+          document.getElementById("createUserForm").reset();
+        } else {
+          currentUsers.push(newUser);
+          localStorage.setItem("dhsud_users_v2", JSON.stringify(currentUsers));
+          renderUsersTable();
+          showToast(`⚠️ Created locally. Password: "${password}"`, "info");
+          document.getElementById("createUserForm").reset();
+        }
+      } catch (err) {
+        showToast("Network error. User saved locally.", "error");
+        currentUsers.push(newUser);
+        localStorage.setItem("dhsud_users_v2", JSON.stringify(currentUsers));
+        renderUsersTable();
+      } finally { submitBtn.innerText = "✅ Create Account"; submitBtn.disabled = false; }
+    }
+    window.deleteUser = async function(userId, userEmail) {
+      if (!confirm(`Delete user: ${userEmail}? This will also remove from Google Sheets.`)) return;
+      if (currentAdminSession && currentAdminSession.email === userEmail) { showToast("Cannot delete your own account.", "error"); return; }
+      const deleteBtn = event?.target;
+      if (deleteBtn) { deleteBtn.innerText = "⏳"; deleteBtn.disabled = true; }
+      try {
+        const formBody = new URLSearchParams();
+        formBody.append("action", "delete");
+        formBody.append("data_type", "users");
+        formBody.append("data", JSON.stringify({ id: userId.toString() }));
+        const response = await fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: formBody, mode: "cors" });
+        const result = await response.json();
+        if (result && result.success === true) {
+          currentUsers = currentUsers.filter(u => u.id != userId && u.email !== userEmail);
+          localStorage.setItem("dhsud_users_v2", JSON.stringify(currentUsers));
+          renderUsersTable();
+          showToast(`✅ User "${userEmail}" deleted successfully from Google Sheets!`, "success");
+        } else {
+          currentUsers = currentUsers.filter(u => u.id != userId && u.email !== userEmail);
+          localStorage.setItem("dhsud_users_v2", JSON.stringify(currentUsers));
+          renderUsersTable();
+          showToast(`⚠️ User deleted locally only. Backend sync failed.`, "error");
+        }
+      } catch (error) {
+        currentUsers = currentUsers.filter(u => u.id != userId && u.email !== userEmail);
+        localStorage.setItem("dhsud_users_v2", JSON.stringify(currentUsers));
+        renderUsersTable();
+        showToast(`⚠️ User deleted locally only. Network error.`, "error");
+      } finally { if (deleteBtn) { deleteBtn.innerText = "🗑️"; deleteBtn.disabled = false; } }
+    };
+    async function refreshData() { await fetchUsers(); renderUsersTable(); showToast("Refreshed.", "info"); }
+    function handleLogout() { localStorage.removeItem("dhsud_session"); window.location.href = "login.html"; }
+    async function initAdminPanel() {
+      if (!checkAdminSession()) return;
+      await fetchUsers();
+      renderUsersTable();
+      document.getElementById("refreshUsersBtn").addEventListener("click", refreshData);
+      document.getElementById("createUserForm").addEventListener("submit", createUser);
+      document.getElementById("editUserForm").addEventListener("submit", saveEditUser);
+      document.getElementById("editModal").addEventListener("click", (e) => { if (e.target === document.getElementById("editModal")) closeEditModal(); });
+    }
+    initAdminPanel();
+  </script>
+</body>
+</html>

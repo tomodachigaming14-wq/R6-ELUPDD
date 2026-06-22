@@ -1,0 +1,1789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>Calendar of Activities</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+/* Your existing CSS - keeping it the same */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
+    font-family: "Inter", sans-serif;
+    background: #f4f7fc;
+    color: #0f2b3a;
+    line-height: 1.5;
+}
+.container {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 0 1.8rem;
+}
+header {
+    background: white;
+    border-bottom: 1px solid #eef2ff;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+    background: rgba(255, 255, 255, 0.96);
+}
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem 0;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+.logo-area-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.header-logo-img {
+    height: 42px;
+    background: #f1f5f9;
+    padding: 4px 16px;
+    border-radius: 40px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #1e3a8a;
+    white-space: nowrap;
+}
+.header-logo-img img {
+    height: 32px;
+    width: auto;
+}
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.user-menu {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #f1f5f9;
+    padding: 0.3rem 0.8rem 0.3rem 1rem;
+    border-radius: 60px;
+    cursor: pointer;
+    position: relative;
+}
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    background: #2563eb;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+}
+.login-prompt {
+    background: #f1f5f9;
+    padding: 0.3rem 1rem;
+    border-radius: 40px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+.role-badge-header {
+    background: #e2e8f0;
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
+.role-badge-header.admin {
+    background: #dcfce7;
+    color: #166534;
+}
+.role-badge-header.staff {
+    background: #dbeafe;
+    color: #1e40af;
+}
+.user-dropdown-menu {
+    position: absolute;
+    top: 48px;
+    right: 0;
+    background: white;
+    border-radius: 20px;
+    min-width: 180px;
+    box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.15);
+    border: 1px solid #eef2ff;
+    overflow: hidden;
+    display: none;
+    z-index: 200;
+}
+.user-dropdown-item {
+    padding: 0.8rem 1.2rem;
+    border-bottom: 1px solid #f1f5f9;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+.user-dropdown-item:hover {
+    background: #f8fafc;
+}
+.user-name {
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+.nav-bottom {
+    background: #ffffff;
+    border-top: 1px solid #eef2ff;
+    padding: 0.5rem 0;
+}
+.main-nav-links {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+.main-nav-links a,
+.main-nav-links .dropdown {
+    text-decoration: none;
+    color: #334155;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: 0.2s;
+}
+.main-nav-links a:hover,
+.main-nav-links .dropbtn:hover {
+    color: #2563eb;
+}
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+.dropbtn {
+    background: none;
+    border: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: #334155;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 0.4rem 0;
+}
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background: white;
+    min-width: 220px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+    z-index: 1000;
+    top: 30px;
+    left: 0;
+    border: 1px solid #eef2ff;
+    padding: 0.3rem 0;
+}
+/* ADD THIS - Show dropdown on hover */
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+.dropdown-content a {
+    display: block;
+    padding: 0.7rem 1.2rem;
+    color: #1e293b;
+    font-size: 0.8rem;
+    text-decoration: none;
+}
+.dropdown-content a:hover {
+    background: #eff6ff;
+}
+.dropdown.open .dropdown-content {
+    display: block;
+}
+.dropdown-submenu {
+    position: relative;
+}
+.submenu-trigger {
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    padding: 0.7rem 1.2rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #1e293b;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: inherit;
+}
+.submenu-trigger:hover {
+    background: #eff6ff;
+}
+.arrow-right {
+    font-size: 0.7rem;
+    margin-left: 1rem;
+}
+.submenu-content {
+    display: none;
+    position: absolute;
+    left: 100%;
+    top: 0;
+    background: white;
+    min-width: 180px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+    border: 1px solid #eef2ff;
+    z-index: 1001;
+    padding: 0.3rem 0;
+}
+/* ADD THIS - Show submenu on hover */
+.dropdown-submenu:hover .submenu-content {
+    display: block;
+}
+.submenu-content a {
+    padding: 0.7rem 1.2rem;
+}
+.dropdown-submenu.open .submenu-content {
+    display: block;
+}
+.hero-banner {
+    background: linear-gradient(135deg, #0f2b3a 0%, #1e4a6e 100%);
+    padding: 1.8rem 0;
+    margin-bottom: 2rem;
+    text-align: center;
+    color: white;
+    border-radius: 0 0 2rem 2rem;
+}
+.split-layout {
+    display: flex;
+    gap: 1.8rem;
+    flex-wrap: wrap;
+}
+.calendar-panel {
+    flex: 1.2;
+    min-width: 280px;
+    background: white;
+    border-radius: 28px;
+    border: 1px solid #eef2ff;
+    overflow: hidden;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.03);
+}
+.list-panel {
+    flex: 0.9;
+    min-width: 320px;
+    background: white;
+    border-radius: 28px;
+    border: 1px solid #eef2ff;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.03);
+}
+.panel-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #eef2ff;
+    background: #ffffff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+}
+.panel-header h2 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin: 0;
+}
+.calendar-container {
+    padding: 1rem;
+    overflow-x: auto;
+}
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+.month-nav button,
+.today-btn {
+    background: #f1f5f9;
+    border: 1px solid #eef2ff;
+    border-radius: 40px;
+    padding: 0.4rem 0.8rem;
+    cursor: pointer;
+    font-size: 0.75rem;
+}
+.current-month {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1e3a8a;
+}
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    background: #eef2ff;
+    border-radius: 20px;
+    overflow: hidden;
+    min-width: 560px;
+    border: 1px solid #eef2ff;
+}
+.calendar-weekday {
+    background: #1e3a8a;
+    color: white;
+    padding: 0.7rem 0.2rem;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.75rem;
+    border-bottom: 2px solid #3b82f6;
+}
+.calendar-day {
+    background: white;
+    min-height: 100px;
+    padding: 0.5rem 0.3rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #eef2ff;
+    border-bottom: 1px solid #eef2ff;
+    vertical-align: top;
+    overflow-y: auto;
+}
+.calendar-day:hover {
+    background: #dbeafe;
+}
+.calendar-day.empty {
+    background: #f9fafb;
+    cursor: default;
+    color: #94a3b8;
+}
+.day-number {
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+    display: inline-block;
+    width: 28px;
+    text-align: center;
+    line-height: 1.4;
+}
+.day-number.today {
+    background: #d4a017;
+    color: white;
+    border-radius: 30px;
+    width: 28px;
+    display: inline-block;
+}
+.day-events {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    margin-top: 0.2rem;
+}
+.event-item {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.3rem;
+    border-radius: 6px;
+    white-space: normal;
+    word-break: break-word;
+    cursor: pointer;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.event-meeting {
+    background: #3b82f6;
+    color: white;
+}
+.event-workshop {
+    background: #f59e0b;
+    color: white;
+}
+.event-training {
+    background: #10b981;
+    color: white;
+}
+.event-seminar {
+    background: #8b5cf6;
+    color: white;
+}
+.event-hearing {
+    background: #ef4444;
+    color: white;
+}
+.event-deadline {
+    background: #ec489a;
+    color: white;
+}
+.event-other {
+    background: #6b7280;
+    color: white;
+}
+.legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 1rem;
+    padding: 0.6rem;
+    background: #f8fafc;
+    border-radius: 16px;
+    font-size: 0.7rem;
+}
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+}
+.list-content {
+    padding: 1rem;
+    overflow-y: auto;
+    flex: 1;
+}
+.search-bar {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+    align-items: center;
+}
+.search-bar input,
+.search-bar select {
+    padding: 0.4rem 0.8rem;
+    border-radius: 40px;
+    border: 1px solid #e2e8f0;
+    font-size: 0.75rem;
+    flex: 1;
+}
+.stats-row {
+    display: flex;
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+.stat-card {
+    background: #f1f5f9;
+    padding: 0.3rem 0.8rem;
+    border-radius: 40px;
+    font-size: 0.7rem;
+}
+.stat-number {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e3a8a;
+}
+.list-responsive {
+    overflow-x: auto;
+    max-height: 55vh;
+    overflow-y: auto;
+}
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.7rem;
+    min-width: 600px;
+}
+.data-table th,
+.data-table td {
+    padding: 0.5rem 0.5rem;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+}
+.data-table th {
+    background: #f1f5f9;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+}
+.status-badge {
+    padding: 0.15rem 0.5rem;
+    border-radius: 20px;
+    font-size: 0.65rem;
+    font-weight: 600;
+}
+.status-upcoming {
+    background: #fef9c3;
+    color: #854d0e;
+}
+.status-ongoing {
+    background: #dcfce7;
+    color: #166534;
+}
+.status-completed {
+    background: #e2e8f0;
+    color: #334155;
+}
+.type-badge {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 20px;
+    font-size: 0.65rem;
+    color: white;
+    font-weight: 500;
+}
+.action-btn {
+    padding: 0.2rem 0.5rem;
+    border-radius: 20px;
+    font-size: 0.65rem;
+    border: none;
+    cursor: pointer;
+    background: #f1f5f9;
+    margin: 0 2px;
+}
+.action-btn.view {
+    background: #dbeafe;
+    color: #1e40af;
+}
+.action-btn.edit {
+    background: #fef9c3;
+    color: #854d0e;
+}
+.action-btn.delete {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+.btn-small {
+    padding: 0.3rem 0.8rem;
+    font-size: 0.7rem;
+    border-radius: 30px;
+    cursor: pointer;
+    border: none;
+}
+.btn-success {
+    background: #10b981;
+    color: white;
+}
+.btn-primary {
+    background: #2563eb;
+    color: white;
+}
+.join-link-btn {
+    background: #10b981;
+    color: white;
+    padding: 0.15rem 0.4rem;
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: 0.6rem;
+}
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(3px);
+}
+.modal.active {
+    display: flex;
+}
+.modal-content {
+    background: white;
+    border-radius: 28px;
+    max-width: 750px;
+    width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 1.5rem;
+}
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+.form-group.full-width {
+    grid-column: span 2;
+}
+.form-control {
+    width: 100%;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+}
+.attendee-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+footer {
+    background: #0f2b3a;
+    color: #cbd5e1;
+    padding: 2rem 0 1.5rem;
+    margin-top: 2rem;
+}
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+.copyright {
+    margin-top: 2rem;
+    text-align: center;
+    border-top: 1px solid #2d3a4a;
+    padding-top: 1.5rem;
+    font-size: 0.8rem;
+}
+@media (max-width: 900px) {
+    .split-layout {
+        flex-direction: column;
+    }
+    .container {
+        padding: 0 1rem;
+    }
+}
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+.login-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+.login-modal.active {
+    display: flex;
+}
+.login-modal-content {
+    background: white;
+    border-radius: 32px;
+    max-width: 450px;
+    width: 90%;
+    overflow: hidden;
+    animation: modalSlideIn 0.3s ease;
+}
+.login-modal-header {
+    background: linear-gradient(135deg, #1e3a8a, #2563eb);
+    padding: 1.5rem;
+    text-align: center;
+    color: white;
+}
+.login-modal-header .seal-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+.login-modal-header h3 {
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+.login-modal-body {
+    padding: 1.5rem;
+}
+.input-group {
+    margin-bottom: 1.2rem;
+    position: relative;
+}
+.input-group label {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #54708f;
+    margin-bottom: 0.4rem;
+}
+.input-group input {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 1rem;
+    font-size: 0.9rem;
+    font-family: "Inter", sans-serif;
+    padding-right: 45px;
+}
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    top: 38px;
+    cursor: pointer;
+    font-size: 1rem;
+    background: none;
+    border: none;
+    color: #94a3b8;
+}
+.login-submit-btn {
+    width: 100%;
+    padding: 0.9rem;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 1.2rem;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    margin-top: 0.5rem;
+}
+.login-submit-btn:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+}
+.login-modal-footer {
+    border-top: 1px solid #eef2ff;
+    padding: 1rem;
+    text-align: center;
+    font-size: 0.65rem;
+    color: #94a3b8;
+    background: #fafcff;
+}
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+.toast-msg {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #1e293b;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 40px;
+    z-index: 9999;
+    font-size: 0.8rem;
+}
+
+/* Table form styling */
+.modal-content table tr:last-child td {
+    border-bottom: none;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Attendee tag styling */
+.attendee-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    align-items: center;
+}
+
+.attendee-row .form-control {
+    flex: 1;
+}
+
+.attendee-row .remove-attendee {
+    background: #fee2e2;
+    color: #b91c1c;
+    border: none;
+    border-radius: 20px;
+    padding: 4px 8px;
+    cursor: pointer;
+}
+
+/* ADD THIS - Dropdown arrow indicator */
+.dropbtn::after {
+    content: " ▾";
+    font-size: 0.7rem;
+    opacity: 0.6;
+}
+.dropdown:hover .dropbtn::after {
+    content: " ▾";
+    opacity: 1;
+}
+
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container" style="max-width: 1600px; margin: 0 auto; padding: 0 1.8rem;">
+      <div class="top-bar">
+        <div class="logo-area-header">
+          <div class="header-logo-img">
+            <img src="DHSUD_LOGO.png" alt="DHSUD Logo">
+            <span>DHSUD VI - ELUPDD Integrated Database and Information System</span>
+          </div>
+        </div>
+        <div class="nav-right" id="userMenuContainer"></div>
+      </div>
+    </div>
+    <div class="nav-bottom">
+      <div class="container" style="max-width: 1600px; margin: 0 auto; padding: 0 1.8rem;">
+        <div class="main-nav-links" id="mainNavContainer"></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="hero-banner"><div class="container"></div></div>
+
+  <main class="container">
+    <div class="split-layout">
+      <div class="calendar-panel">
+        <div class="panel-header"><h2>📅 Calendar View</h2><button class="btn btn-success btn-small" onclick="openAddModal()">➕ Add Activity</button></div>
+        <div class="calendar-container">
+          <div class="calendar-header"><div class="month-nav"><button onclick="prevMonth()">◀</button><button onclick="nextMonth()">▶</button></div><div class="current-month" id="currentMonth">May 2026</div><button class="today-btn" onclick="goToToday()">Today</button></div>
+          <div id="calendarGrid" class="calendar-grid"></div>
+          <div class="legend">
+            <span class="legend-item"><span class="legend-color" style="background:#3b82f6;"></span> Meeting</span>
+            <span class="legend-item"><span class="legend-color" style="background:#f59e0b;"></span> Workshop</span>
+            <span class="legend-item"><span class="legend-color" style="background:#10b981;"></span> Training</span>
+            <span class="legend-item"><span class="legend-color" style="background:#8b5cf6;"></span> Seminar</span>
+            <span class="legend-item"><span class="legend-color" style="background:#ef4444;"></span> Hearing</span>
+            <span class="legend-item"><span class="legend-color" style="background:#ec489a;"></span> Deadline</span>
+            <span class="legend-item"><span class="legend-color" style="background:#6b7280;"></span> Other</span>
+            <span class="legend-item"><span class="legend-color" style="background:#2dd4bf;"></span> Has Link</span>
+          </div>
+        </div>
+      </div>
+      <div class="list-panel">
+        <div class="panel-header"><h2>📋 List View</h2><button class="btn btn-primary btn-small" onclick="exportToExcel()">📥 Export</button></div>
+        <div class="list-content">
+          <div class="search-bar"><input type="text" id="searchInput" placeholder="🔍 Search..." onkeyup="filterList()"><select id="typeFilter" onchange="filterList()"><option value="all">All Types</option><option>Meeting</option><option>Workshop</option><option>Training</option><option>Seminar</option><option>Hearing</option><option>Deadline</option></select><select id="statusFilterList" onchange="filterList()"><option value="all">All Status</option><option value="upcoming">Upcoming</option><option value="ongoing">Ongoing</option><option value="completed">Completed</option></select><button class="btn-secondary btn-small" onclick="clearListFilters()">✖ Clear</button></div>
+          <div class="stats-row" id="statsPanel"><div class="stat-card"><span class="stat-number" id="totalCount">0</span> Total</div><div class="stat-card"><span class="stat-number" id="upcomingCount">0</span> Upcoming</div><div class="stat-card"><span class="stat-number" id="ongoingCount">0</span> Ongoing</div><div class="stat-card"><span class="stat-number" id="completedCount">0</span> Completed</div></div>
+          <div class="list-responsive"><table class="data-table" id="activitiesTable"><thead><tr><th>Activity</th><th>Type</th><th>Start</th><th>Status</th><th>Link</th><th>Actions</th></tr></thead><tbody id="listTableBody"></tbody></table></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="activityModal" class="modal">
+  <div class="modal-content">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+      <h3 id="modalTitle">Add New Activity</h3>
+      <button class="close-btn" onclick="closeModal()">&times;</button>
+    </div>
+    
+    <form id="activityForm" onsubmit="return saveActivity(event)">
+      <input type="hidden" id="activityId">
+      
+      <table style="width:100%; border-collapse:collapse;">
+        <!-- Activity Name -->
+        <tr>
+          <td style="width:30%; padding:10px 8px; font-weight:600; vertical-align:top; border-bottom:1px solid #eef2ff;">
+            <label>📋 Activity Name <span style="color:red;">*</span></label>
+          </td>
+          <td style="width:70%; padding:10px 8px; border-bottom:1px solid #eef2ff;">
+            <input type="text" id="activityName" class="form-control" style="width:100%;" required>
+          </td>
+        </tr>
+        
+        <!-- Type & Status (2 columns) -->
+        <tr>
+          <td style="width:30%; padding:10px 8px; font-weight:600; vertical-align:top; border-bottom:1px solid #eef2ff;">
+            <label>🏷️ Type <span style="color:red;">*</span></label>
+          </td>
+          <td style="width:70%; padding:10px 8px; border-bottom:1px solid #eef2ff;">
+            <div style="display:flex; gap:1rem;">
+              <select id="activityType" class="form-control" style="flex:1;">
+                <option value="Meeting">Meeting</option>
+                <option value="Workshop">Workshop</option>
+                <option value="Training">Training</option>
+                <option value="Seminar">Seminar</option>
+                <option value="Hearing">Hearing</option>
+                <option value="Deadline">Deadline</option>
+                <option value="Other">Other</option>
+              </select>
+              
+              <div style="flex:1;">
+                <label style="display:block; font-size:0.7rem; color:#64748b; margin-bottom:4px;">Status</label>
+                <select id="statusSelect" class="form-control" style="width:100%;">
+                  <option value="upcoming">🟡 Upcoming</option>
+                  <option value="ongoing">🟢 Ongoing</option>
+                  <option value="completed">🔵 Completed</option>
+                </select>
+              </div>
+            </div>
+          </td>
+        </tr>
+        
+        <!-- Date/Time Row (2 columns) -->
+        <tr>
+          <td style="width:30%; padding:10px 8px; font-weight:600; vertical-align:top; border-bottom:1px solid #eef2ff;">
+            <label>📅 Date & Time <span style="color:red;">*</span></label>
+          </td>
+          <td style="width:70%; padding:10px 8px; border-bottom:1px solid #eef2ff;">
+            <div style="display:flex; gap:1rem;">
+              <div style="flex:1;">
+                <label style="display:block; font-size:0.7rem; color:#64748b; margin-bottom:4px;">Start</label>
+                <input type="datetime-local" id="startDateTime" class="form-control" style="width:100%;" required>
+              </div>
+              <div style="flex:1;">
+                <label style="display:block; font-size:0.7rem; color:#64748b; margin-bottom:4px;">End</label>
+                <input type="datetime-local" id="endDateTime" class="form-control" style="width:100%;" required>
+              </div>
+            </div>
+          </td>
+        </tr>
+        
+        <!-- Location & Link (2 columns) -->
+        <tr>
+          <td style="width:30%; padding:10px 8px; font-weight:600; vertical-align:top; border-bottom:1px solid #eef2ff;">
+            <label>📍 Location</label>
+          </td>
+          <td style="width:70%; padding:10px 8px; border-bottom:1px solid #eef2ff;">
+            <div style="display:flex; gap:1rem;">
+              <input type="text" id="location" class="form-control" placeholder="Venue or address" style="flex:1;">
+              <span style="display:inline-flex; align-items:center; color:#94a3b8; font-size:0.7rem;">📌</span>
+            </div>
+          </td>
+        </tr>
+        
+        <tr>
+          <td style="width:30%; padding:10px 8px; font-weight:600; vertical-align:top; border-bottom:1px solid #eef2ff;">
+            <label>🔗 Meeting Link</label>
+          </td>
+          <td style="width:70%; padding:10px 8px; border-bottom:1px solid #eef2ff;">
+            <div style="display:flex; gap:0.5rem;">
+              <input type="url" id="meetingLink" class="form-control" placeholder="https://zoom.us/..." style="flex:1;">
+              <button type="button" class="btn-secondary btn-small" onclick="testMeetingLink()" style="white-space:nowrap;">Test Link</button>
+            </div>
+          </td>
+        </tr>
+        
+        <!-- Attendees -->
+        <tr>
+          <td style="width:30%; padding:10px 8px; font-weight:600; vertical-align:top; border-bottom:1px solid #eef2ff;">
+            <label>👥 Attendees</label>
+          </td>
+          <td style="width:70%; padding:10px 8px; border-bottom:1px solid #eef2ff;">
+            <div id="attendeesContainer"></div>
+            <button type="button" class="btn-secondary btn-small" onclick="addAttendeeField()" style="margin-top:8px;">➕ Add Attendee</button>
+          </td>
+        </tr>
+        
+        <!-- Purpose -->
+        <tr>
+          <td style="width:30%; padding:10px 8px; font-weight:600; vertical-align:top; border-bottom:1px solid #eef2ff;">
+            <label>📝 Purpose <span style="color:red;">*</span></label>
+          </td>
+          <td style="width:70%; padding:10px 8px; border-bottom:1px solid #eef2ff;">
+            <textarea id="purpose" class="form-control" rows="3" placeholder="Describe the purpose of this activity..." required></textarea>
+          </td>
+        </tr>
+      </table>
+      
+      <!-- Form Actions -->
+      <div style="display:flex; justify-content:flex-end; gap:1rem; margin-top:1.5rem; padding-top:1rem; border-top:1px solid #eef2ff;">
+        <button type="button" class="btn-secondary btn-small" onclick="closeModal()" style="padding:0.5rem 1.5rem;">Cancel</button>
+        <button type="submit" class="btn-success btn-small" style="padding:0.5rem 1.5rem;">💾 Save Activity</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+  <div id="viewModal" class="modal">
+  <div class="modal-content" style="max-width: 600px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:2px solid #2563eb; padding-bottom:0.75rem;">
+      <h3 style="color:#1e3a8a;">📋 Activity Details</h3>
+      <button class="close-btn" onclick="closeViewModal()">&times;</button>
+    </div>
+    <div id="viewModalBody" style="padding:0.5rem 0;"></div>
+    <div style="display:flex; justify-content:flex-end; gap:1rem; margin-top:1.5rem; padding-top:1rem; border-top:1px solid #eef2ff;">
+      <button class="btn-primary btn-small" onclick="closeViewModal()" style="padding:0.5rem 1.5rem;">Close</button>
+    </div>
+  </div>
+</div>
+
+  <div id="loginModal" class="login-modal"><div class="login-modal-content"><div class="login-modal-header"><div class="seal-icon">🏛️</div><h3>DHSUD Region VI</h3><p>Sign in to access your account</p></div><div class="login-modal-body"><form id="modalLoginForm" onsubmit="return handleModalLogin(event)"><div class="input-group"><label>Email</label><input type="email" id="modalLoginEmail" placeholder="name@dhsud.gov.ph" required></div><div class="input-group"><label>Password</label><input type="password" id="modalLoginPassword" required><button type="button" class="toggle-password" onclick="toggleModalPassword()">👁️</button></div><button type="submit" class="login-submit-btn">Sign In</button></form></div><div class="login-modal-footer">Role-Based Access</div></div></div>
+ 
+
+<script>
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyo6ZpiwB94M_OO6Uc0oJdcJ4zF2LLyEdOShXgBMfMUVGLPEQ3JWtgxfKfsH25g4ICgFg/exec";
+    let activities = [], currentEditId = null, currentDisplayDate = new Date();
+    let currentUser = null;
+
+    function escapeHtml(s) { return s ? String(s).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]) : ''; }
+    function formatDateTime(dt) { if(!dt) return ""; const d = new Date(dt); return isNaN(d.getTime()) ? dt : d.toLocaleString(); }
+    function showToastMessage(msg, type) { let t = document.querySelector(".toast-msg"); if(t) t.remove(); let toast = document.createElement("div"); toast.className = "toast-msg"; toast.style.background = type === "error" ? "#b91c1c" : "#166534"; toast.innerText = msg; document.body.appendChild(toast); setTimeout(() => toast.remove(), 3000); }
+    function encodePassword(p) { return btoa(p); }
+
+    // FIXED: Save activity to Google Sheets - DIRECT APPROACH
+    async function saveActivityToGoogleSheets(activity) {
+    try {
+        console.log("Saving to Google Sheets:", activity);
+        
+        // Use GET method with parameters (bypasses CORS issues)
+        const params = new URLSearchParams({
+            action: "add",
+            data_type: "calendar",
+            data: JSON.stringify(activity)
+        });
+        
+        const url = `${GOOGLE_SCRIPT_URL}?${params.toString()}`;
+        console.log("Sending to URL:", url);
+        
+        const response = await fetch(url, {
+            method: "GET",
+            mode: "no-cors"
+        });
+        
+        showToastMessage("Activity saved to Google Sheets!", "success");
+        return true;
+        
+    } catch (error) {
+        console.error("Error saving:", error);
+        showToastMessage("Failed to save: " + error.message, "error");
+        return false;
+    }
+}
+
+    // FIXED: Save activity with backend sync - REMOVE no-cors
+    async function saveActivity(e) { 
+        e.preventDefault(); 
+        const name=document.getElementById("activityName").value.trim(); 
+        const type=document.getElementById("activityType").value; 
+        const start=document.getElementById("startDateTime").value; 
+        const end=document.getElementById("endDateTime").value; 
+        const purpose=document.getElementById("purpose").value.trim(); 
+        const location=document.getElementById("location").value.trim(); 
+        const meetingLink=document.getElementById("meetingLink").value.trim(); 
+        const status=document.getElementById("statusSelect").value; 
+        const attendees=getAttendeesFromForm(); 
+        
+        if(!name||!start||!end||!purpose) { 
+            alert("Please fill required fields."); 
+            return false; 
+        } 
+        
+        if(new Date(end)<new Date(start)) { 
+            alert("End must be after start."); 
+            return false; 
+        } 
+        
+        const id=parseInt(document.getElementById("activityId").value)||Date.now(); 
+        const activity={id,name,type,startDateTime:start,endDateTime:end,purpose,location,meetingLink,status,attendees}; 
+        
+        const isUpdate = currentEditId !== null;
+        
+        if(currentEditId) { 
+            const idx=activities.findIndex(a=>a.id===currentEditId); 
+            if(idx!==-1) activities[idx]=activity; 
+        } else { 
+            activities.push(activity); 
+        } 
+        
+        // Save to localStorage
+        saveToLocalStorage(); 
+        
+        // Save to Google Sheets
+        const sheetSaved = await saveActivityToGoogleSheets(activity);
+        
+        renderCalendar(); 
+        renderList(); 
+        updateStats(); 
+        closeModal(); 
+        
+        if (sheetSaved) {
+            showToastMessage(isUpdate ? "Activity updated and saved to Google Sheets!" : "Activity added and saved to Google Sheets!", "success");
+        } else {
+            showToastMessage(isUpdate ? "Activity updated (local only)" : "Activity added (local only)", "error");
+        }
+        return false; 
+    }
+    
+    // Test function to verify connection
+    async function testGoogleSheetsConnection() {
+    showToastMessage("Testing connection...", "info");
+    
+    const testActivity = {
+        id: Date.now(),
+        name: "TEST CONNECTION " + new Date().toLocaleTimeString(),
+        type: "Meeting",
+        startDateTime: new Date().toISOString().slice(0, 16),
+        endDateTime: new Date(Date.now() + 3600000).toISOString().slice(0, 16),
+        purpose: "This is a test to verify Google Sheets connection",
+        location: "Test Location",
+        meetingLink: "",
+        status: "upcoming",
+        attendees: ["Test User"]
+    };
+    
+    try {
+        // ADD THIS LINE TO CHECK IF URL IS SET
+        if (GOOGLE_SCRIPT_URL === "YOUR_DEPLOYMENT_URL_HERE") {
+            showToastMessage("❌ Please update the GOOGLE_SCRIPT_URL in the code first!", "error");
+            console.error("GOOGLE_SCRIPT_URL not configured!");
+            return;
+        }
+        
+        console.log("Testing URL:", GOOGLE_SCRIPT_URL);
+        
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            mode: "cors",  // Explicitly set CORS mode
+            body: JSON.stringify({
+                action: "add",
+                data_type: "calendar",
+                data: testActivity
+            })
+        });
+        
+        console.log("Response status:", response.status);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        console.log("Test result:", result);
+        
+        if (result.success) {
+            showToastMessage("✅ Connection successful! Check your Google Sheet!", "success");
+            await loadActivitiesFromBackend();
+        } else {
+            showToastMessage("❌ Connection failed: " + (result.error || "Unknown error"), "error");
+        }
+    } catch (error) {
+        console.error("Test failed:", error);
+        showToastMessage("❌ Connection failed: " + error.message, "error");
+    }
+}
+
+    // Add test button to UI
+    function addTestButton() {
+        const panelHeader = document.querySelector(".calendar-panel .panel-header");
+        if (panelHeader) {
+            const testBtn = document.createElement("button");
+            testBtn.className = "btn btn-primary btn-small";
+            testBtn.style.marginLeft = "0.5rem";
+            testBtn.style.background = "#6b7280";
+            testBtn.innerHTML = "🔌 Test Connection";
+            testBtn.onclick = testGoogleSheetsConnection;
+            panelHeader.appendChild(testBtn);
+        }
+    }
+
+    // Rest of your existing functions...
+    function updateActivityStatus(a) { 
+        const now=new Date(), start=new Date(a.startDateTime), end=new Date(a.endDateTime); 
+        if(end<now) return "completed"; 
+        if(start<=now && end>=now) return "ongoing"; 
+        return "upcoming"; 
+    }
+    
+    function saveToLocalStorage() { 
+        localStorage.setItem("calendarActivities",JSON.stringify(activities)); 
+    }
+    
+    async function loadActivitiesFromBackend() {
+    try {
+        const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=get&data_type=calendar&_=${Date.now()}`);
+        const result = await response.json();
+        
+        // Check if result has data property or is directly the array
+        let data = result;
+        if (result && result.data && Array.isArray(result.data)) {
+            data = result.data;
+        } else if (result && result.success && result.data) {
+            data = result.data;
+        }
+        
+        if (data && Array.isArray(data) && data.length > 0) {
+            activities = data.map(activity => ({
+                ...activity,
+                attendees: activity.attendees ? (typeof activity.attendees === 'string' ? JSON.parse(activity.attendees) : activity.attendees) : []
+            }));
+            activities.forEach(a => a.status = updateActivityStatus(a));
+            saveToLocalStorage();
+            showToastMessage(`Loaded ${activities.length} activities from Google Sheets`, "success");
+        } else {
+            loadFromLocalStorage();
+        }
+        renderCalendar();
+        renderList();
+        updateStats();
+    } catch (error) {
+        console.error("Error loading from backend:", error);
+        loadFromLocalStorage();
+    }
+}
+    
+    function loadFromLocalStorage() {
+        const stored = localStorage.getItem("calendarActivities");
+        if(stored) { 
+            activities = JSON.parse(stored);
+            activities.forEach(a => a.status = updateActivityStatus(a));
+        } else { 
+            initializeSampleData();
+        }
+        renderCalendar();
+        renderList();
+        updateStats();
+    }
+    
+    function initializeSampleData() {
+        const today = new Date().toISOString().split('T')[0];
+        const tomorrow = new Date(Date.now()+86400000).toISOString().split('T')[0];
+        const nextWeek = new Date(Date.now()+604800000).toISOString().split('T')[0];
+        activities = [ 
+            { id:101, name:"CLUP Formulation Workshop", type:"Workshop", startDateTime:`${tomorrow}T09:00`, endDateTime:`${tomorrow}T17:00`, purpose:"CLUP formulation workshop", location:"DHSUD Hall", status:"upcoming", attendees:["Dr. Santos","EnP. Reyes"], meetingLink:"" },
+            { id:102, name:"Zoning Ordinance Review", type:"Meeting", startDateTime:`${today}T10:00`, endDateTime:`${today}T16:00`, purpose:"Review amendments", location:"Zoom", status:"ongoing", attendees:["Atty. Cruz"], meetingLink:"https://zoom.us/j/123" },
+            { id:103, name:"GIS Training", type:"Training", startDateTime:`${nextWeek}T08:00`, endDateTime:`${nextWeek}T17:00`, purpose:"Basic GIS", location:"Lab", status:"upcoming", attendees:["Planners"], meetingLink:"" }
+        ];
+        activities.forEach(a=>a.status=updateActivityStatus(a));
+        saveToLocalStorage();
+    }
+    
+    // Authentication functions (keep your existing ones)
+    function openLoginModal() { document.getElementById("loginModal").classList.add("active"); }
+    function closeLoginModal() { document.getElementById("loginModal").classList.remove("active"); }
+    function toggleModalPassword() { let pwd = document.getElementById("modalLoginPassword"); pwd.type = pwd.type === "password" ? "text" : "password"; }
+    
+    async function handleModalLogin(e) {
+        e.preventDefault();
+        const email = document.getElementById("modalLoginEmail").value.trim().toLowerCase();
+        const password = document.getElementById("modalLoginPassword").value;
+        const btn = e.submitter; 
+        const originalText = btn.innerHTML;
+        btn.innerHTML = "⏳ Authenticating..."; 
+        btn.disabled = true;
+        try {
+            const resp = await fetch(`${GOOGLE_SCRIPT_URL}?action=get&data_type=users&_=${Date.now()}`);
+            const users = await resp.json();
+            const user = users.find(u => u.email?.toLowerCase() === email);
+            if (!user) { 
+                showToastMessage("Account not found.", "error"); 
+                btn.innerHTML = originalText; 
+                btn.disabled = false; 
+                return false; 
+            }
+            const encodedPassword = encodePassword(password);
+            if (user.password === encodedPassword) {
+                const session = { 
+                    userId: user.id, 
+                    email: user.email, 
+                    fullName: user.fullName, 
+                    office: user.office || "ELUPDD", 
+                    role: user.role, 
+                    loggedInAt: new Date().toISOString() 
+                };
+                localStorage.setItem("dhsud_session", JSON.stringify(session));
+                showToastMessage(`Welcome ${user.fullName?.split(" ")[0] || ""}!`, "success");
+                closeLoginModal();
+                setTimeout(() => window.location.reload(), 1000);
+            } else { 
+                showToastMessage("Invalid password.", "error"); 
+            }
+        } catch(error) { 
+            showToastMessage("Connection error. Please try again.", "error"); 
+        } finally { 
+            btn.innerHTML = originalText; 
+            btn.disabled = false; 
+        }
+        return false;
+    }
+
+    function checkSession() { 
+    const raw = localStorage.getItem("dhsud_session"); 
+    if (raw) { 
+        try { 
+            const s = JSON.parse(raw); 
+            const diff = (new Date() - new Date(s.loggedInAt)) / (1000 * 60 * 60); 
+            if (diff < 12 && s.email) { 
+                currentUser = s; 
+                return true; 
+            } else {
+                localStorage.removeItem("dhsud_session");
+                // Redirect to login page if session expired
+                window.location.href = "login.html";
+                return false;
+            } 
+        } catch(e) { 
+            localStorage.removeItem("dhsud_session");
+            window.location.href = "login.html";
+            return false;
+        } 
+    }
+    currentUser = null;
+    // Redirect to login page if no session exists
+    window.location.href = "login.html";
+    return false; 
+}
+    
+    function getUserInitials(n) { if(!n) return "U"; let p = n.split(" "); if(p.length>=2) return (p[0][0]+p[1][0]).toUpperCase(); return n.substring(0,2).toUpperCase(); }
+    function getRoleLabel(r) { if(r==="admin") return "👑 Admin"; if(r==="encoder"||r==="staff") return "📋 Staff/Officer"; return "👁️ Viewer"; }
+    function getRoleClass(r) { if(r==="admin") return "admin"; if(r==="encoder"||r==="staff") return "staff"; return "viewer"; }
+
+   function renderMainNavigation() {
+    const container = document.getElementById("mainNavContainer");
+    if (!container) return;
+    let navHtml = `<a href="index.html">Home</a>`;
+    if (currentUser) {
+        navHtml += `<div class="dropdown" id="certDropdown"><button class="dropbtn">Certification</button><div class="dropdown-content"><a href="lc.html">Locational Clearance</a><a href="SZC.html">Site Zoning Clarification</a></div></div>
+          <div class="dropdown" id="landUseDropdown"><button class="dropbtn">Land Use Plans</button><div class="dropdown-content"><div class="dropdown-submenu" id="clupSubmenu"><button class="submenu-trigger">CLUP & ZO <span class="arrow-right">▸</span></button><div class="submenu-content"><a href="inventory.html">Inventory</a><a href="status.html">Status</a></div></div><a href="status.html">PDPFP</a></div></div>
+          <a href="lgu-info.html">LGU Information</a><a href="report.html">Reports</a><a href="calendar.html">Calendar of Activities</a><a href="issuance.html">Issuances</a><a href="#about">About</a><a href="#contact">Contact</a>`;
+    } else { navHtml += `<a href="#about">About</a><a href="#contact">Contact</a>`; }
+    container.innerHTML = navHtml;
+    // Keep click functionality for submenu items if needed
+    setTimeout(() => {
+        document.querySelectorAll(".dropdown-submenu .submenu-trigger").forEach((trigger) => {
+            trigger.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const submenu = trigger.closest(".dropdown-submenu");
+                if (submenu) submenu.classList.toggle("open");
+            });
+        });
+        document.addEventListener("click", function (e) {
+            if (!e.target.closest(".dropdown-submenu")) {
+                document.querySelectorAll(".dropdown-submenu.open").forEach((s) => s.classList.remove("open"));
+            }
+        });
+    }, 10);
+}
+
+    function renderUserMenu() {
+        const container = document.getElementById("userMenuContainer"); 
+        if(!container) return;
+        if (currentUser) {
+            const initials = getUserInitials(currentUser.fullName);
+            const firstName = currentUser.fullName?.split(" ")[0] || "User";
+            const isAdmin = currentUser.role === "admin";
+            const roleLabel = getRoleLabel(currentUser.role);
+            const roleClass = getRoleClass(currentUser.role);
+            container.innerHTML = `<div class="user-menu" id="userMenuDropdown"><div class="user-avatar">${initials}</div><span class="user-name">${escapeHtml(firstName)}</span><span class="role-badge-header ${roleClass}">${roleLabel}</span><span style="font-size:0.7rem;">▼</span><div class="user-dropdown-menu"><div class="user-dropdown-item">👤 ${escapeHtml(currentUser.email)}</div><div class="user-dropdown-item">🏢 ${escapeHtml(currentUser.office||"ELUPDD")}</div>${isAdmin ? `<div class="user-dropdown-item" id="adminConsoleLink">⚙️ Manage Users (Admin Panel)</div>` : ""}<div class="user-dropdown-item" id="logoutDropdownBtn" style="color:#dc2626;">🚪 Sign Out</div></div></div>`;
+            const userDiv = document.getElementById("userMenuDropdown");
+            if (userDiv) { 
+                userDiv.addEventListener("click", (e) => { 
+                    e.stopPropagation(); 
+                    const menu = userDiv.querySelector(".user-dropdown-menu"); 
+                    if(menu) menu.style.display = menu.style.display === "block" ? "none" : "block"; 
+                }); 
+                document.addEventListener("click", () => { 
+                    const menu = userDiv.querySelector(".user-dropdown-menu"); 
+                    if(menu) menu.style.display = "none"; 
+                }); 
+            }
+            if (isAdmin) { 
+                const adminBtn = document.getElementById("adminConsoleLink"); 
+                if(adminBtn) adminBtn.addEventListener("click", () => window.location.href = "admin.html"); 
+            }
+            const logoutBtn = document.getElementById("logoutDropdownBtn"); 
+if(logoutBtn) logoutBtn.addEventListener("click", () => { 
+    localStorage.removeItem("dhsud_session"); 
+    showToastMessage("Logged out successfully. Redirecting to login page...", "info"); 
+    setTimeout(() => {
+        window.location.href = "login.html";
+    }, 1000);
+});
+        } else {
+            container.innerHTML = `<div class="login-prompt" onclick="openLoginModal()">🔐 Sign In</div>`;
+        }
+    }
+
+    // Calendar rendering functions
+    function getTypeColor(t) { return { Meeting:"#3b82f6", Workshop:"#f59e0b", Training:"#10b981", Seminar:"#8b5cf6", Hearing:"#ef4444", Deadline:"#ec489a", Other:"#6b7280" }[t]||"#6b7280"; }
+    function getTypeClass(t) { return "event-"+t.toLowerCase(); }
+    
+    function renderCalendar() {
+        const year = currentDisplayDate.getFullYear(), month = currentDisplayDate.getMonth();
+        const firstDayOfMonth = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month+1, 0).getDate();
+        const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+        const todayStr = new Date().toISOString().split("T")[0];
+        document.getElementById("currentMonth").innerHTML = `${monthNames[month]} ${year}`;
+        let html = `<div class="calendar-weekday">Sun</div><div class="calendar-weekday">Mon</div><div class="calendar-weekday">Tue</div><div class="calendar-weekday">Wed</div><div class="calendar-weekday">Thu</div><div class="calendar-weekday">Fri</div><div class="calendar-weekday">Sat</div>`;
+        let dayCounter = 1;
+        for(let i = 0; i < 42; i++) {
+            if(i < firstDayOfMonth || dayCounter > daysInMonth) { 
+                html += `<div class="calendar-day empty"></div>`; 
+                if(i >= firstDayOfMonth) dayCounter++; 
+            } else { 
+                const dateStr = `${year}-${String(month+1).padStart(2,"0")}-${String(dayCounter).padStart(2,"0")}`; 
+                const dayActivities = activities.filter(a=>{ 
+                    const sd=new Date(a.startDateTime).toISOString().split("T")[0], ed=new Date(a.endDateTime).toISOString().split("T")[0]; 
+                    return sd <= dateStr && ed >= dateStr; 
+                }); 
+                const isToday = dateStr === todayStr; 
+                html += `<div class="calendar-day" onclick="openAddModalForDate('${dateStr}')"><div class="day-number ${isToday ? 'today' : ''}">${dayCounter}</div><div class="day-events">`; 
+                const displayEvents = dayActivities.slice(0, 3); 
+                displayEvents.forEach(a => { 
+                    const hasLink = a.meetingLink ? "🔗 " : ""; 
+                    html += `<div class="event-item ${getTypeClass(a.type)}" onclick="event.stopPropagation();viewActivity(${a.id})" title="${escapeHtml(a.name)}">${hasLink}${escapeHtml(a.name.length>18?a.name.substring(0,16)+'..':a.name)}</div>`; 
+                }); 
+                if(dayActivities.length > 3) html += `<div style="font-size:0.55rem; color:#2563eb;">+${dayActivities.length-3} more</div>`; 
+                html += `</div></div>`; 
+                dayCounter++; 
+            } 
+        }
+        document.getElementById("calendarGrid").innerHTML = html;
+    }
+    
+    function renderList() { 
+        const search=document.getElementById("searchInput")?.value.toLowerCase()||""; 
+        const typeFilter=document.getElementById("typeFilter")?.value||"all"; 
+        const statusFilter=document.getElementById("statusFilterList")?.value||"all"; 
+        let filtered=activities.filter(a=>(search===""||a.name.toLowerCase().includes(search)||a.purpose.toLowerCase().includes(search)) && (typeFilter==="all"||a.type===typeFilter) && (statusFilter==="all"||a.status===statusFilter)); 
+        filtered.sort((a,b)=>new Date(a.startDateTime)-new Date(b.startDateTime)); 
+        const tbody=document.getElementById("listTableBody"); 
+        if(!filtered.length) { 
+            tbody.innerHTML='<tr><td colspan="6">No activities found. Add one. </td></tr>'; 
+            return; 
+        } 
+        tbody.innerHTML=filtered.map(a=>`<tr><td><strong>${escapeHtml(a.name)}</strong><br><span style="font-size:0.6rem;">${escapeHtml(a.purpose.substring(0,40))}</span></td><td><span class="type-badge" style="background:${getTypeColor(a.type)};">${a.type}</span></td><td>${formatDateTime(a.startDateTime)}</td><td><span class="status-badge status-${a.status}">${a.status==="upcoming"?"Upcoming":a.status==="ongoing"?"Ongoing":"Completed"}</span></td><td>${a.meetingLink?`<a href="${escapeHtml(a.meetingLink)}" target="_blank" class="join-link-btn">Join</a>`:"—"}</td><td><button class="action-btn view" onclick="viewActivity(${a.id})">👁️</button><button class="action-btn edit" onclick="editActivity(${a.id})">✏️</button><button class="action-btn delete" onclick="deleteActivity(${a.id})">🗑️</button></td></tr>`).join(""); 
+        updateStats(); 
+    }
+    
+    function updateStats() { 
+        document.getElementById("totalCount").innerText=activities.length; 
+        document.getElementById("upcomingCount").innerText=activities.filter(a=>a.status==="upcoming").length; 
+        document.getElementById("ongoingCount").innerText=activities.filter(a=>a.status==="ongoing").length; 
+        document.getElementById("completedCount").innerText=activities.filter(a=>a.status==="completed").length; 
+    }
+    
+    function filterList() { renderList(); }
+    function clearListFilters() { document.getElementById("searchInput").value=""; document.getElementById("typeFilter").value="all"; document.getElementById("statusFilterList").value="all"; renderList(); }
+    function prevMonth() { currentDisplayDate.setMonth(currentDisplayDate.getMonth()-1); renderCalendar(); }
+    function nextMonth() { currentDisplayDate.setMonth(currentDisplayDate.getMonth()+1); renderCalendar(); }
+    function goToToday() { currentDisplayDate=new Date(); renderCalendar(); }
+    function openAddModal() { currentEditId=null; document.getElementById("modalTitle").innerText="Add New Activity"; document.getElementById("activityForm").reset(); document.getElementById("activityId").value=""; document.getElementById("attendeesContainer").innerHTML=""; addAttendeeField(); document.getElementById("activityModal").classList.add("active"); }
+    function openAddModalForDate(dateStr) { openAddModal(); document.getElementById("startDateTime").value=`${dateStr}T09:00`; document.getElementById("endDateTime").value=`${dateStr}T17:00`; }
+    
+    function editActivity(id) { 
+        const a=activities.find(x=>x.id===id); 
+        if(!a) return; 
+        currentEditId=id; 
+        document.getElementById("modalTitle").innerText="Edit Activity"; 
+        document.getElementById("activityId").value=a.id; 
+        document.getElementById("activityName").value=a.name; 
+        document.getElementById("activityType").value=a.type; 
+        document.getElementById("startDateTime").value=a.startDateTime; 
+        document.getElementById("endDateTime").value=a.endDateTime; 
+        document.getElementById("purpose").value=a.purpose; 
+        document.getElementById("location").value=a.location||""; 
+        document.getElementById("meetingLink").value=a.meetingLink||""; 
+        document.getElementById("statusSelect").value=a.status; 
+        document.getElementById("attendeesContainer").innerHTML=""; 
+        if(a.attendees?.length) a.attendees.forEach(att=>addAttendeeField(att)); 
+        else addAttendeeField(); 
+        document.getElementById("activityModal").classList.add("active"); 
+    }
+    
+    function addAttendeeField(v="") { 
+        const c=document.getElementById("attendeesContainer"); 
+        const d=document.createElement("div"); 
+        d.className="attendee-row"; 
+        d.innerHTML=`<input type="text" class="form-control attendee-input" placeholder="Full name" value="${escapeHtml(v)}"><button type="button" class="btn-secondary btn-small remove-attendee">✖</button>`; 
+        d.querySelector(".remove-attendee").onclick=()=>d.remove(); 
+        c.appendChild(d); 
+    }
+    
+    function getAttendeesFromForm() { 
+        return Array.from(document.querySelectorAll("#attendeesContainer .attendee-input")).map(i=>i.value.trim()).filter(v=>v); 
+    }
+    
+    async function deleteActivity(id) {
+    if (confirm("⚠️ Delete this activity permanently? This action cannot be undone.")) {
+        // Show loading state
+        const deleteButtons = document.querySelectorAll(`.action-btn.delete[onclick*="deleteActivity(${id})"]`);
+        deleteButtons.forEach(btn => {
+            btn.innerHTML = "⏳";
+            btn.disabled = true;
+        });
+        
+        const activity = activities.find(a => a.id === id);
+        
+        if (!activity) {
+            showToastMessage("Activity not found", "error");
+            return;
+        }
+        
+        try {
+            // Delete from Google Sheets
+            const deleteResult = await deleteFromGoogleSheets(activity);
+            
+            if (deleteResult.success) {
+                // Remove from local array
+                activities = activities.filter(a => a.id !== id);
+                
+                // Save to localStorage
+                saveToLocalStorage();
+                
+                // Re-render UI
+                renderCalendar();
+                renderList();
+                updateStats();
+                
+                showToastMessage("✅ Activity deleted from Google Sheets!", "success");
+            } else {
+                // If Google Sheets delete fails, still delete locally but warn user
+                if (confirm("⚠️ Could not delete from Google Sheets. Delete locally only?")) {
+                    activities = activities.filter(a => a.id !== id);
+                    saveToLocalStorage();
+                    renderCalendar();
+                    renderList();
+                    updateStats();
+                    showToastMessage("⚠️ Deleted locally only (Google Sheets sync failed)", "error");
+                } else {
+                    showToastMessage("Delete cancelled", "info");
+                }
+            }
+        } catch (error) {
+            console.error("Delete error:", error);
+            showToastMessage("Delete failed: " + error.message, "error");
+        } finally {
+            // Reset button states
+            deleteButtons.forEach(btn => {
+                btn.innerHTML = "🗑️";
+                btn.disabled = false;
+            });
+        }
+    }
+}
+    
+	async function deleteFromGoogleSheets(activity) {
+    try {
+        console.log("Deleting from Google Sheets:", activity);
+        
+        // Use GET method with parameters to bypass CORS
+        const params = new URLSearchParams({
+            action: "delete",
+            data_type: "calendar",
+            id: activity.id.toString()
+        });
+        
+        const url = `${GOOGLE_SCRIPT_URL}?${params.toString()}`;
+        console.log("Delete URL:", url);
+        
+        const response = await fetch(url, {
+            method: "GET",
+            mode: "no-cors"
+        });
+        
+        // Since no-cors mode doesn't give us the response body,
+        // we need to assume success and then verify by fetching again
+        showToastMessage("Checking if delete was successful...", "info");
+        
+        // Verify deletion by fetching fresh data
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        const verifyResponse = await fetch(`${GOOGLE_SCRIPT_URL}?action=get&data_type=calendar&_=${Date.now()}`);
+        const verifyText = await verifyResponse.text();
+        
+        let verifyData;
+        try {
+            verifyData = JSON.parse(verifyText);
+            if (verifyData && verifyData.data) {
+                verifyData = verifyData.data;
+            }
+        } catch(e) {
+            verifyData = verifyText;
+        }
+        
+        // Check if the activity still exists
+        let stillExists = false;
+        if (Array.isArray(verifyData)) {
+            stillExists = verifyData.some(item => item.id == activity.id);
+        }
+        
+        if (stillExists) {
+            // Try POST method as fallback
+            console.log("GET delete didn't work, trying POST...");
+            const postResponse = await fetch(GOOGLE_SCRIPT_URL, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                mode: "no-cors",
+                body: JSON.stringify({
+                    action: "delete",
+                    data_type: "calendar",
+                    data: { id: activity.id }
+                })
+            });
+            
+            // Wait a bit and check again
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            const verifyResponse2 = await fetch(`${GOOGLE_SCRIPT_URL}?action=get&data_type=calendar&_=${Date.now()}`);
+            const verifyText2 = await verifyResponse2.text();
+            let verifyData2;
+            try {
+                verifyData2 = JSON.parse(verifyText2);
+                if (verifyData2 && verifyData2.data) {
+                    verifyData2 = verifyData2.data;
+                }
+            } catch(e) {
+                verifyData2 = verifyText2;
+            }
+            
+            if (Array.isArray(verifyData2)) {
+                stillExists = verifyData2.some(item => item.id == activity.id);
+            }
+        }
+        
+        return { success: !stillExists };
+        
+    } catch (error) {
+        console.error("Error deleting from Google Sheets:", error);
+        return { success: false, error: error.message };
+    }
+}
+	
+    function viewActivity(id) { 
+    const a = activities.find(x => x.id === id); 
+    if (!a) return; 
+    
+    const statusColors = {
+        upcoming: { bg: "#fef9c3", color: "#854d0e", text: "🟡 Upcoming" },
+        ongoing: { bg: "#dcfce7", color: "#166534", text: "🟢 Ongoing" },
+        completed: { bg: "#e2e8f0", color: "#334155", text: "🔵 Completed" }
+    };
+    const statusStyle = statusColors[a.status] || statusColors.upcoming;
+    
+    const typeColors = {
+        Meeting: "#3b82f6", Workshop: "#f59e0b", Training: "#10b981",
+        Seminar: "#8b5cf6", Hearing: "#ef4444", Deadline: "#ec489a", Other: "#6b7280"
+    };
+    
+    const linkHtml = a.meetingLink ? `
+        <tr style="border-bottom:1px solid #eef2ff;">
+            <td style="padding:12px 8px; font-weight:600; width:35%; vertical-align:top;">🔗 Meeting Link</td>
+            <td style="padding:12px 8px;">
+                <a href="${escapeHtml(a.meetingLink)}" target="_blank" style="color:#2563eb; text-decoration:none;">${escapeHtml(a.meetingLink)}</a>
+                <button onclick="copyToClipboard('${escapeHtml(a.meetingLink)}')" style="margin-left:8px; padding:2px 8px; border-radius:20px; border:1px solid #cbd5e1; background:white; cursor:pointer;">📋 Copy</button>
+            </td>
+        </tr>
+    ` : "";
+    
+    const locationHtml = a.location ? `
+        <tr style="border-bottom:1px solid #eef2ff;">
+            <td style="padding:12px 8px; font-weight:600; width:35%; vertical-align:top;">📍 Location</td>
+            <td style="padding:12px 8px;">${escapeHtml(a.location)}</td>
+        </tr>
+    ` : "";
+    
+    const attendeesHtml = a.attendees && a.attendees.length ? `
+        <tr style="border-bottom:1px solid #eef2ff;">
+            <td style="padding:12px 8px; font-weight:600; width:35%; vertical-align:top;">👥 Attendees</td>
+            <td style="padding:12px 8px;">
+                ${a.attendees.map(att => `<span style="display:inline-block; background:#f1f5f9; padding:4px 10px; border-radius:20px; margin:2px 4px 2px 0; font-size:0.75rem;">${escapeHtml(att)}</span>`).join('')}
+            </td>
+        </tr>
+    ` : "";
+    
+    document.getElementById("viewModalBody").innerHTML = `
+        <table style="width:100%; border-collapse:collapse;">
+            <tr style="border-bottom:2px solid #eef2ff;">
+                <td style="padding:12px 8px; font-weight:600; width:35%; background:#f8fafc;">📋 Activity Name</td>
+                <td style="padding:12px 8px; font-weight:600; font-size:1rem;">${escapeHtml(a.name)}</td>
+            </tr>
+            <tr style="border-bottom:1px solid #eef2ff;">
+                <td style="padding:12px 8px; font-weight:600;">🏷️ Type</td>
+                <td style="padding:12px 8px;">
+                    <span style="display:inline-block; background:${typeColors[a.type]}; color:white; padding:4px 12px; border-radius:20px; font-size:0.75rem;">${a.type}</span>
+                </td>
+            </tr>
+            <tr style="border-bottom:1px solid #eef2ff;">
+                <td style="padding:12px 8px; font-weight:600;">📅 Start Date & Time</td>
+                <td style="padding:12px 8px;">${formatDateTime(a.startDateTime)}</td>
+            </tr>
+            <tr style="border-bottom:1px solid #eef2ff;">
+                <td style="padding:12px 8px; font-weight:600;">⏰ End Date & Time</td>
+                <td style="padding:12px 8px;">${formatDateTime(a.endDateTime)}</td>
+            </tr>
+            ${locationHtml}
+            <tr style="border-bottom:1px solid #eef2ff;">
+                <td style="padding:12px 8px; font-weight:600;">📝 Purpose</td>
+                <td style="padding:12px 8px; line-height:1.5;">${escapeHtml(a.purpose)}</td>
+            </tr>
+            ${linkHtml}
+            ${attendeesHtml}
+            <tr>
+                <td style="padding:12px 8px; font-weight:600;">📊 Status</td>
+                <td style="padding:12px 8px;">
+                    <span style="display:inline-block; background:${statusStyle.bg}; color:${statusStyle.color}; padding:4px 12px; border-radius:20px; font-size:0.75rem; font-weight:600;">${statusStyle.text}</span>
+                </td>
+            </tr>
+        </table>
+    `; 
+    document.getElementById("viewModal").classList.add("active"); 
+}
+    
+    function copyToClipboard(t) { navigator.clipboard.writeText(t); showToastMessage("Copied!", "success"); }
+    function closeModal() { document.getElementById("activityModal").classList.remove("active"); }
+    function closeViewModal() { document.getElementById("viewModal").classList.remove("active"); }
+    
+    function exportToExcel() { 
+        if(!activities.length){alert("No data");return;} 
+        const data=activities.map(a=>({"Name":a.name,"Type":a.type,"Start":formatDateTime(a.startDateTime),"End":formatDateTime(a.endDateTime),"Purpose":a.purpose,"Location":a.location||"","Link":a.meetingLink||"","Status":a.status})); 
+        const ws=XLSX.utils.json_to_sheet(data); 
+        const wb=XLSX.utils.book_new(); 
+        XLSX.utils.book_append_sheet(wb,ws,"Calendar"); 
+        XLSX.writeFile(wb,`Calendar_${new Date().toISOString().slice(0,10)}.xlsx`); 
+        showToastMessage("Exported!", "success"); 
+    }
+
+    async function init() {
+        checkSession();
+        renderMainNavigation();
+        renderUserMenu();
+        // addTestButton();  // Commented out - hides the test button
+        await loadActivitiesFromBackend();
+        
+        setInterval(()=>{ 
+            let changed=false; 
+            activities.forEach(a=>{ 
+                const ns=updateActivityStatus(a); 
+                if(a.status!==ns){
+                    a.status=ns;
+                    changed=true;
+                }
+            }); 
+            if(changed){
+                saveToLocalStorage();
+                renderCalendar();
+                renderList();
+                updateStats();
+            }
+        }, 60000);
+    }
+    
+    init();
+    
+    window.onclick=e=>{ 
+        const lm=document.getElementById("loginModal"); 
+        if(e.target===lm) lm.classList.remove("active"); 
+        const am=document.getElementById("activityModal"); 
+        if(e.target===am) am.classList.remove("active"); 
+        const vm=document.getElementById("viewModal"); 
+        if(e.target===vm) vm.classList.remove("active"); 
+    };
+	
+	function testMeetingLink() {
+    const link = document.getElementById("meetingLink").value;
+    if (link && link.trim()) {
+        window.open(link, "_blank");
+    } else {
+        alert("Please enter a meeting link first.");
+    }
+}
+</script> 
+</body>
+</html>

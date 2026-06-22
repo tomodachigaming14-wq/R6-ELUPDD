@@ -1,0 +1,1920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>DHSUD - LGU Management Suite (Blue)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: "Inter", sans-serif;
+      background: #f4f7fc;
+      color: #0f2b3a;
+      line-height: 1.45;
+    }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+    header {
+      background: white;
+      border-bottom: 1px solid #eef2ff;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(8px);
+      background: rgba(255, 255, 255, 0.96);
+    }
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.8rem 0;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .logo-area-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .header-logo-img {
+      height: 42px;
+      background: #f1f5f9;
+      padding: 4px 16px;
+      border-radius: 40px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #1e3a8a;
+      white-space: nowrap;
+    }
+    .header-logo-img img {
+      height: 32px;
+      width: auto;
+    }
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .user-menu {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #f1f5f9;
+      padding: 0.3rem 0.8rem 0.3rem 1rem;
+      border-radius: 60px;
+      cursor: pointer;
+      position: relative;
+    }
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      background: #2563eb;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+    }
+    .login-prompt {
+      background: #f1f5f9;
+      padding: 0.3rem 1rem;
+      border-radius: 40px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+    .role-badge-header {
+      background: #e2e8f0;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      margin-left: 0.5rem;
+    }
+    .role-badge-header.admin {
+      background: #dcfce7;
+      color: #166534;
+    }
+    .role-badge-header.staff {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+    .user-dropdown-menu {
+      position: absolute;
+      top: 48px;
+      right: 0;
+      background: white;
+      border-radius: 20px;
+      min-width: 180px;
+      box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.15);
+      border: 1px solid #eef2ff;
+      overflow: hidden;
+      display: none;
+      z-index: 200;
+    }
+    .user-dropdown-item {
+      padding: 0.8rem 1.2rem;
+      border-bottom: 1px solid #f1f5f9;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+    .user-dropdown-item:hover {
+      background: #f8fafc;
+    }
+    .user-name {
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+    .nav-bottom {
+      background: #ffffff;
+      border-top: 1px solid #eef2ff;
+      padding: 0.5rem 0;
+    }
+    .main-nav-links {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .main-nav-links a,
+    .main-nav-links .dropdown {
+      text-decoration: none;
+      color: #334155;
+      font-weight: 500;
+      font-size: 0.9rem;
+      transition: 0.2s;
+    }
+    .main-nav-links a:hover,
+    .main-nav-links .dropbtn:hover {
+      color: #2563eb;
+    }
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+    .dropbtn {
+      background: none;
+      border: none;
+      font-weight: 500;
+      font-size: 0.9rem;
+      color: #334155;
+      cursor: pointer;
+      font-family: inherit;
+      padding: 0.4rem 0;
+    }
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background: white;
+      min-width: 220px;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+      border-radius: 16px;
+      z-index: 1000;
+      top: 30px;
+      left: 0;
+      border: 1px solid #eef2ff;
+      padding: 0.3rem 0;
+    }
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+    .dropdown-content a {
+      display: block;
+      padding: 0.7rem 1.2rem;
+      color: #1e293b;
+      font-size: 0.8rem;
+      text-decoration: none;
+    }
+    .dropdown-content a:hover {
+      background: #eff6ff;
+    }
+    .dropdown.open .dropdown-content {
+      display: block;
+    }
+    .dropdown-submenu {
+      position: relative;
+    }
+    .submenu-trigger {
+      background: none;
+      border: none;
+      width: 100%;
+      text-align: left;
+      padding: 0.7rem 1.2rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #1e293b;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: inherit;
+    }
+    .submenu-trigger:hover {
+      background: #eff6ff;
+    }
+    .arrow-right {
+      font-size: 0.7rem;
+      margin-left: 1rem;
+    }
+    .submenu-content {
+      display: none;
+      position: absolute;
+      left: 100%;
+      top: 0;
+      background: white;
+      min-width: 180px;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+      border-radius: 16px;
+      border: 1px solid #eef2ff;
+      z-index: 1001;
+      padding: 0.3rem 0;
+    }
+    .dropdown-submenu:hover .submenu-content {
+      display: block;
+    }
+    .submenu-content a {
+      padding: 0.7rem 1.2rem;
+    }
+    .dropdown-submenu.open .submenu-content {
+      display: block;
+    }
+    .page-header {
+      background: linear-gradient(135deg, #0f2b3a 0%, #1e4a6e 100%);
+      color: white;
+      padding: 2rem 0;
+      margin-bottom: 2rem;
+      border-radius: 0 0 2rem 2rem;
+      text-align: center;
+    }
+    .page-header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .page-header p {
+      opacity: 0.9;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin: 32px 0;
+    }
+    .stat-card {
+      background: white;
+      padding: 24px;
+      border-radius: 28px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+      border: 1px solid #e2e8f0;
+      transition: all 0.2s;
+    }
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 20px -12px rgba(0, 0, 0, 0.08);
+    }
+    .stat-number {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #1e3a8a;
+    }
+    .lgu-hyperlink {
+      background: linear-gradient(135deg, #1e3a8a, #2563eb);
+      border-radius: 28px;
+      padding: 20px;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    .lgu-hyperlink a {
+      color: white;
+      font-size: 1.2rem;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 28px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 50px;
+      transition: 0.3s;
+    }
+    .lgu-hyperlink a:hover {
+      background: rgba(255, 255, 255, 0.25);
+      transform: translateY(-2px);
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: white;
+      border-radius: 32px;
+      max-width: 650px;
+      width: 90%;
+      max-height: 85vh;
+      overflow-y: auto;
+      position: relative;
+      margin: 0 auto;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .modal-header {
+      background: linear-gradient(135deg, #1e3a8a, #2563eb);
+      color: white;
+      padding: 20px 24px;
+      border-radius: 32px 32px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-header h3 {
+      font-size: 1.3rem;
+      margin: 0;
+    }
+    .close-modal {
+      color: white;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .close-modal:hover {
+      color: #94a3b8;
+    }
+    .modal-body {
+      padding: 24px;
+      max-height: 550px;
+      overflow-y: auto;
+    }
+    .selector-group {
+      margin-bottom: 20px;
+    }
+    .selector-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #1e293b;
+      font-size: 0.85rem;
+    }
+    .selector-group select,
+    .selector-group input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      font-family: "Inter", sans-serif;
+      background: white;
+      font-size: 0.9rem;
+    }
+    .hidden {
+      display: none;
+    }
+    .selected-info {
+      background: #eef2ff;
+      padding: 12px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+      text-align: center;
+      font-weight: 500;
+      color: #1e40af;
+    }
+    .drive-folder {
+      background: #f8fafc;
+      border-radius: 20px;
+      padding: 16px;
+      margin-bottom: 20px;
+      border: 1px solid #eef2ff;
+    }
+    .drive-folder h4 {
+      color: #0f172a;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-weight: 700;
+    }
+    .drive-doc-list {
+      list-style: none;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .drive-doc-list li {
+      padding: 12px 0;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .drive-doc-list li:last-child {
+      border-bottom: none;
+    }
+    .drive-doc-list a {
+      text-decoration: none;
+      color: #2563eb;
+      font-weight: 500;
+      flex: 1;
+      cursor: pointer;
+    }
+    .drive-doc-list a:hover {
+      text-decoration: underline;
+      color: #1e40af;
+    }
+    .drive-doc-list .file-icon {
+      font-size: 1.2rem;
+    }
+    .drive-doc-list .file-size {
+      font-size: 0.7rem;
+      color: #94a3b8;
+    }
+    .google-drive-link {
+      background: #eef2ff;
+      border-radius: 20px;
+      padding: 16px;
+      margin-top: 16px;
+      text-align: center;
+    }
+    .btn-drive {
+      display: inline-block;
+      background: #1e3a8a;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 40px;
+      text-decoration: none;
+      margin-top: 10px;
+      font-size: 0.85rem;
+      transition: 0.2s;
+    }
+    .btn-drive:hover {
+      background: #2563eb;
+    }
+    .submit-doc-btn {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 40px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 16px;
+      transition: 0.2s;
+    }
+    .submit-doc-btn:hover {
+      background: #1e3a8a;
+      transform: translateY(-1px);
+    }
+    .note-text {
+      font-size: 0.8rem;
+      color: #64748b;
+      margin-top: 16px;
+      text-align: center;
+    }
+    .login-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+    }
+    .login-modal.active {
+      display: flex;
+    }
+    .login-modal-content {
+      background: white;
+      border-radius: 32px;
+      max-width: 450px;
+      width: 90%;
+      overflow: hidden;
+      animation: modalSlideIn 0.3s ease;
+    }
+    .login-modal-header {
+      background: linear-gradient(135deg, #1e3a8a, #2563eb);
+      padding: 1.5rem;
+      text-align: center;
+      color: white;
+    }
+    .login-modal-header .seal-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    .login-modal-header h3 {
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+    .login-modal-body {
+      padding: 1.5rem;
+    }
+    .input-group {
+      margin-bottom: 1.2rem;
+      position: relative;
+    }
+    .input-group label {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #54708f;
+      margin-bottom: 0.4rem;
+    }
+    .input-group input {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 1rem;
+      font-size: 0.9rem;
+      font-family: "Inter", sans-serif;
+      padding-right: 45px;
+    }
+    .toggle-password {
+      position: absolute;
+      right: 12px;
+      top: 38px;
+      cursor: pointer;
+      font-size: 1rem;
+      background: none;
+      border: none;
+      color: #94a3b8;
+    }
+    .login-submit-btn {
+      width: 100%;
+      padding: 0.9rem;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 1.2rem;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      margin-top: 0.5rem;
+    }
+    .login-submit-btn:hover {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+    }
+    .login-modal-footer {
+      border-top: 1px solid #eef2ff;
+      padding: 1rem;
+      text-align: center;
+      font-size: 0.65rem;
+      color: #94a3b8;
+      background: #fafcff;
+    }
+    @keyframes modalSlideIn {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+    .toast-msg {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #1e293b;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 40px;
+      z-index: 9999;
+      font-size: 0.8rem;
+    }
+    @media (max-width: 900px) {
+      .stats-grid {
+        gap: 16px;
+      }
+      .modal-content {
+        max-width: 95%;
+      }
+    }
+    .dropbtn::after {
+      content: " ▾";
+      font-size: 0.7rem;
+      opacity: 0.6;
+    }
+    .dropdown:hover .dropbtn::after {
+      content: " ▾";
+      opacity: 1;
+    }
+    .upload-btn {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .upload-btn:hover {
+      background: #1e3a8a;
+      transform: translateY(-1px);
+    }
+    .upload-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .upload-status {
+      font-size: 0.75rem;
+      color: #166534;
+      margin-left: 8px;
+    }
+    .upload-progress {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #e2e8f0;
+      border-top-color: #2563eb;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .file-input-hidden {
+      display: none;
+    }
+    .doc-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .doc-header h4 {
+      margin: 0;
+    }
+    .upload-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* File preview modal */
+    .file-preview-modal {
+      display: none;
+      position: fixed;
+      z-index: 10000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.8);
+      justify-content: center;
+      align-items: center;
+      backdrop-filter: blur(8px);
+    }
+    .file-preview-modal.active {
+      display: flex;
+    }
+    .file-preview-content {
+      background: white;
+      border-radius: 20px;
+      max-width: 90%;
+      max-height: 90%;
+      width: auto;
+      padding: 20px;
+      position: relative;
+      overflow: auto;
+    }
+    .file-preview-content img,
+    .file-preview-content iframe {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 12px;
+    }
+    .file-preview-content iframe {
+      width: 800px;
+      height: 600px;
+      border: none;
+    }
+    .file-preview-close {
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      font-size: 2rem;
+      cursor: pointer;
+      color: #1e293b;
+      background: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      transition: 0.2s;
+    }
+    .file-preview-close:hover {
+      background: #f1f5f9;
+      transform: scale(1.1);
+    }
+    .file-preview-name {
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #0f172a;
+      font-size: 1.1rem;
+    }
+    .file-preview-actions {
+      margin-top: 16px;
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+    .file-preview-actions a {
+      padding: 8px 20px;
+      background: #2563eb;
+      color: white;
+      border-radius: 40px;
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: 0.2s;
+    }
+    .file-preview-actions a:hover {
+      background: #1e3a8a;
+    }
+    .file-preview-loading {
+      text-align: center;
+      padding: 40px;
+      color: #94a3b8;
+    }
+	/* Add to your existing CSS */
+.delete-mode-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding: 8px 12px;
+    background: #f1f5f9;
+    border-radius: 12px;
+}
+
+.delete-mode-toggle label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.delete-mode-toggle input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #dc2626;
+}
+
+.delete-btn {
+    background: #dc2626;
+    color: white;
+    border: none;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+    display: none;
+    align-items: center;
+    gap: 4px;
+}
+
+.delete-btn:hover {
+    background: #b91c1c;
+    transform: scale(1.05);
+}
+
+.delete-btn.visible {
+    display: inline-flex;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid #e2e8f0;
+    transition: 0.2s;
+}
+
+.file-item:hover {
+    background: #f8fafc;
+    padding-left: 8px;
+    border-radius: 8px;
+}
+
+.file-item .file-info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.file-item .delete-checkbox {
+    display: none;
+    margin-right: 8px;
+}
+
+.file-item .delete-checkbox.visible {
+    display: block;
+}
+
+.file-item .delete-checkbox input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: #dc2626;
+}
+
+.file-item.deleting {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.bulk-delete-bar {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: #fef2f2;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    border: 1px solid #fecaca;
+}
+
+.bulk-delete-bar.visible {
+    display: flex;
+}
+
+.bulk-delete-bar .selected-count {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #991b1b;
+}
+
+.bulk-delete-btn {
+    background: #dc2626;
+    color: white;
+    border: none;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.bulk-delete-btn:hover {
+    background: #b91c1c;
+}
+
+.bulk-delete-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Make modal bigger */
+.modal-content {
+    max-width: 900px !important;
+    width: 95% !important;
+    max-height: 90vh !important;
+}
+
+.modal-body {
+    max-height: 70vh !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .modal-content {
+        max-width: 98% !important;
+        width: 98% !important;
+    }
+    
+    .bulk-delete-bar {
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+    }
+}
+	
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container" style="max-width: 1400px; margin: 0 auto; padding: 0 24px;">
+      <div class="top-bar">
+        <div class="logo-area-header">
+          <div class="header-logo-img">
+            <img src="DHSUD_LOGO.png" alt="DHSUD Logo">
+            <span>DHSUD VI - ELUPDD Integrated Database and Information System</span>
+          </div>
+        </div>
+        <div class="nav-right" id="userMenuContainer"></div>
+      </div>
+    </div>
+    <div class="nav-bottom">
+      <div class="container" style="max-width: 1400px; margin: 0 auto; padding: 0 24px;">
+        <div class="main-nav-links" id="mainNavContainer"></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="page-header">
+    <div class="container">
+      <h1>Inventory of CLUP and ZO</h1>
+      <p>Complete catalog of Comprehensive Land Use Plans and Zoning Ordinances</p>
+    </div>
+  </div>
+
+  <section style="padding: 20px 0 60px;">
+    <div class="container">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-number">342</div><div>Total CLUP Documents</div></div>
+        <div class="stat-card"><div class="stat-number">298</div><div>Total ZO Documents</div></div>
+        <div class="stat-card"><div class="stat-number">156</div><div>LGUs Covered</div></div>
+        <div class="stat-card"><div class="stat-number">89%</div><div>Digitization Rate</div></div>
+      </div>
+      <div class="lgu-hyperlink"><a href="#" id="lguHyperlinkBtn">📁 Click here to access CLUP/ZO Documents <span style="font-size:1.2rem;">📂</span></a></div>
+    </div>
+  </section>
+
+  <div id="documentModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>📂 CLUP/ZO Documents Viewer</h3>
+        <span class="close-modal">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div class="selector-group">
+          <label>🏛️ Select Province:</label>
+          <select id="provinceSelect">
+            <option value="">-- Select Province --</option>
+            <option value="Aklan">AKLAN</option>
+            <option value="Antique">ANTIQUE</option>
+            <option value="Capiz">CAPIZ</option>
+            <option value="Guimaras">GUIMARAS</option>
+            <option value="Iloilo">ILOILO</option>
+          </select>
+        </div>
+        <div class="selector-group" id="lguSelectorGroup" style="display:none;">
+          <label>🏘️ Select Municipality/City:</label>
+          <select id="lguSelect">
+            <option value="">-- Select LGU --</option>
+          </select>
+        </div>
+        <div id="selectedInfo" class="selected-info hidden">📍 Viewing documents for: <span id="selectedLocation">-</span></div>
+        <div id="documentsContainer" style="display:none;">
+    <!-- Delete Mode Toggle -->
+    <div class="delete-mode-toggle">
+        <label>
+            <input type="checkbox" id="deleteModeToggle" onchange="toggleDeleteMode()">
+            🗑️ Enable Delete Mode
+        </label>
+        <span style="font-size:0.7rem; color:#64748b;">(Check files to delete)</span>
+    </div>
+    
+    <!-- Bulk Delete Bar -->
+    <div class="bulk-delete-bar" id="bulkDeleteBar">
+        <span class="selected-count" id="selectedCount">0 files selected</span>
+        <button class="bulk-delete-btn" id="bulkDeleteBtn" onclick="confirmBulkDelete()" disabled>
+            🗑️ Delete Selected
+        </button>
+    </div>
+    
+    <div class="drive-folder">
+        <div class="doc-header">
+            <h4>📁 CLUP Documents</h4>
+            <div class="upload-actions">
+                <button class="upload-btn" id="uploadClupBtn" onclick="triggerUpload('clup')">📤 Upload</button>
+                <span id="clupUploadStatus" class="upload-status"></span>
+            </div>
+        </div>
+        <input type="file" id="clupFileInput" class="file-input-hidden" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" multiple onchange="handleFileUpload('clup', this)">
+        <ul class="drive-doc-list" id="clupDocList"><li>Select a province and LGU first</li></ul>
+    </div>
+    <div class="drive-folder">
+        <div class="doc-header">
+            <h4>⚖️ ZO Documents</h4>
+            <div class="upload-actions">
+                <button class="upload-btn" id="uploadZoBtn" onclick="triggerUpload('zo')">📤 Upload</button>
+                <span id="zoUploadStatus" class="upload-status"></span>
+            </div>
+        </div>
+        <input type="file" id="zoFileInput" class="file-input-hidden" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" multiple onchange="handleFileUpload('zo', this)">
+        <ul class="drive-doc-list" id="zoDocList"><li>Select a province and LGU first</li></ul>
+    </div>
+    <div class="drive-folder">
+        <div class="doc-header">
+            <h4>📊 Supporting Documents</h4>
+            <div class="upload-actions">
+                <button class="upload-btn" id="uploadSupportingBtn" onclick="triggerUpload('supporting')">📤 Upload</button>
+                <span id="supportingUploadStatus" class="upload-status"></span>
+            </div>
+        </div>
+        <input type="file" id="supportingFileInput" class="file-input-hidden" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.xls,.xlsx" multiple onchange="handleFileUpload('supporting', this)">
+        <ul class="drive-doc-list" id="supportingDocList"><li>Select a province and LGU first</li></ul>
+    </div>
+    <div class="google-drive-link" id="googleDriveLink" style="display:none;">
+        <p>📁 <strong>Access Full Google Drive Folder:</strong></p>
+        <a href="https://drive.google.com/drive/folders/1fwibwzbjUs8gD_pk-5HAbpSkYUuj_nGm?usp=sharing" target="_blank" class="btn-drive" id="driveFolderLink">🔗 Open CLUP/ZO Google Drive Folder</a>
+    </div>
+</div>
+        <div id="requestFormContainer" style="display:none;">
+          <form id="documentRequestForm" onsubmit="return submitDocumentRequest(event)">
+            <div class="selector-group"><label>📝 Request Additional Document:</label><input type="text" placeholder="Enter document name you need" id="requestDocName"></div>
+            <div class="selector-group"><input type="email" placeholder="Your email address" id="requestEmail"></div>
+            <button type="submit" class="submit-doc-btn">📧 Request Document</button>
+          </form>
+        </div>
+        <p class="note-text">💡 Tip: First select a Province, then choose an LGU to view documents</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- File Preview Modal -->
+  <div id="filePreviewModal" class="file-preview-modal">
+    <div class="file-preview-content">
+      <span class="file-preview-close" onclick="closeFilePreview()">&times;</span>
+      <div class="file-preview-name" id="previewFileName">Loading...</div>
+      <div id="previewContent">
+        <div class="file-preview-loading">⏳ Loading file preview...</div>
+      </div>
+      <div class="file-preview-actions">
+        <a href="#" target="_blank" id="previewDownloadLink">📥 Download</a>
+        <a href="#" target="_blank" id="previewOpenLink">🔗 Open in Drive</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="loginModal" class="login-modal">
+    <div class="login-modal-content">
+      <div class="login-modal-header">
+        <div class="seal-icon">🏛️</div>
+        <h3>DHSUD Region VI</h3>
+        <p style="font-size:0.8rem; opacity:0.9;">Sign in to access your account</p>
+      </div>
+      <div class="login-modal-body">
+        <form id="modalLoginForm" onsubmit="return handleModalLogin(event)">
+          <div class="input-group">
+            <label>📧 Email Address</label>
+            <input type="email" id="modalLoginEmail" placeholder="name@dhsud.gov.ph" required>
+          </div>
+          <div class="input-group">
+            <label>🔒 Password</label>
+            <input type="password" id="modalLoginPassword" placeholder="Enter your password" required>
+            <button type="button" class="toggle-password" onclick="toggleModalPassword()">👁️</button>
+          </div>
+          <button type="submit" class="login-submit-btn">→ Sign In</button>
+        </form>
+      </div>
+      <div class="login-modal-footer">🔐 Role-Based Access: Admin | Staff/Officer</div>
+    </div>
+  </div>
+
+  <script>
+    // ===== UPDATE THIS WITH YOUR WEB APP URL =====
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxrvRqH9Hy2Hx-XtiUKHmjSozha7G4dmB_s6DCRTR2fkhbqeDzcpEQlZ0FvEApG15DGSA/exec";
+    const DRIVE_FOLDER_ID = "1fwibwzbjUs8gD_pk-5HAbpSkYUuj_nGm";
+    let currentUser = null;
+
+    // ===== STORAGE FOR UPLOADED FILES =====
+    const uploadedFiles = {
+      clup: [],
+      zo: [],
+      supporting: []
+    };
+
+    function escapeHtml(s) { if(!s) return ""; return String(s).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
+    
+    function showToastMessage(msg, type) { 
+      let t = document.querySelector(".toast-msg"); 
+      if(t) t.remove(); 
+      let toast = document.createElement("div"); 
+      toast.className = "toast-msg"; 
+      toast.style.background = type === "error" ? "#b91c1c" : "#166534"; 
+      toast.innerText = msg; 
+      document.body.appendChild(toast); 
+      setTimeout(() => toast.remove(), 4000); 
+    }
+
+    function checkSession() { 
+      const raw = localStorage.getItem("dhsud_session"); 
+      if (raw) { 
+        try { 
+          const s = JSON.parse(raw); 
+          const diff = (new Date() - new Date(s.loggedInAt)) / (1000 * 60 * 60); 
+          if (diff < 12 && s.email) { 
+            currentUser = s; 
+            return true; 
+          } else localStorage.removeItem("dhsud_session"); 
+        } catch(e) { localStorage.removeItem("dhsud_session"); } 
+      } 
+      currentUser = null; 
+      return false; 
+    }
+
+    function getUserInitials(n) { if(!n) return "U"; let p = n.split(" "); if(p.length>=2) return (p[0][0]+p[1][0]).toUpperCase(); return n.substring(0,2).toUpperCase(); }
+    function getRoleLabel(r) { if(r==="admin") return "👑 Admin"; if(r==="encoder"||r==="staff") return "📋 Staff/Officer"; return "👁️ Viewer"; }
+    function getRoleClass(r) { if(r==="admin") return "admin"; if(r==="encoder"||r==="staff") return "staff"; return "viewer"; }
+
+    function renderMainNavigation() {
+  const container = document.getElementById("mainNavContainer");
+  if (!container) return;
+  
+  // Always show all navigation items regardless of login status
+  let navHtml = `<a href="index.html">Home</a>
+    <div class="dropdown" id="certDropdown">
+      <button class="dropbtn">Certification</button>
+      <div class="dropdown-content">
+        <a href="lc.html">Locational Clearance</a>
+        <a href="SZC.html">Site Zoning Clarification</a>
+      </div>
+    </div>
+    <div class="dropdown" id="landUseDropdown">
+      <button class="dropbtn">Land Use Plans</button>
+      <div class="dropdown-content">
+        <div class="dropdown-submenu" id="clupSubmenu">
+          <button class="submenu-trigger">CLUP & ZO <span class="arrow-right">▸</span></button>
+          <div class="submenu-content">
+            <a href="inventory.html">Inventory</a>
+            <a href="status.html">Status</a>
+          </div>
+        </div>
+        <a href="status.html">PDPFP</a>
+      </div>
+    </div>
+    <a href="lgu-info.html">LGU Information</a>
+    <a href="report.html">Reports</a>
+    <a href="calendar.html">Calendar of Activities</a>
+    <a href="issuance.html">Issuances</a>
+    <a href="#about">About</a>
+    <a href="#contact">Contact</a>`;
+  
+  container.innerHTML = navHtml;
+  
+  setTimeout(() => {
+    document.querySelectorAll(".dropdown-submenu .submenu-trigger").forEach((trigger) => {
+      trigger.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const submenu = trigger.closest(".dropdown-submenu");
+        if (submenu) submenu.classList.toggle("open");
+      });
+    });
+    document.addEventListener("click", function (e) {
+      if (!e.target.closest(".dropdown-submenu")) {
+        document.querySelectorAll(".dropdown-submenu.open").forEach((s) => s.classList.remove("open"));
+      }
+    });
+  }, 10);
+}
+
+    function renderUserMenu() {
+  const container = document.getElementById("userMenuContainer"); 
+  if(!container) return;
+  
+  if (currentUser) {
+    const initials = getUserInitials(currentUser.fullName);
+    const firstName = currentUser.fullName?.split(" ")[0] || "User";
+    const isAdmin = currentUser.role === "admin";
+    const roleLabel = getRoleLabel(currentUser.role);
+    const roleClass = getRoleClass(currentUser.role);
+    container.innerHTML = `<div class="user-menu" id="userMenuDropdown">
+      <div class="user-avatar">${initials}</div>
+      <span class="user-name">${escapeHtml(firstName)}</span>
+      <span class="role-badge-header ${roleClass}">${roleLabel}</span>
+      <span style="font-size:0.7rem;">▼</span>
+      <div class="user-dropdown-menu">
+        <div class="user-dropdown-item">👤 ${escapeHtml(currentUser.email)}</div>
+        <div class="user-dropdown-item">🏢 ${escapeHtml(currentUser.office||"ELUPDD")}</div>
+        ${isAdmin ? `<div class="user-dropdown-item" id="adminConsoleLink">⚙️ Manage Users (Admin Panel)</div>` : ""}
+        <div class="user-dropdown-item" id="logoutDropdownBtn" style="color:#dc2626;">🚪 Sign Out</div>
+      </div>
+    </div>`;
+    
+    const userDiv = document.getElementById("userMenuDropdown");
+    if (userDiv) { 
+      userDiv.addEventListener("click", (e) => { 
+        e.stopPropagation(); 
+        const menu = userDiv.querySelector(".user-dropdown-menu"); 
+        if(menu) menu.style.display = menu.style.display === "block" ? "none" : "block"; 
+      }); 
+      document.addEventListener("click", () => { 
+        const menu = userDiv.querySelector(".user-dropdown-menu"); 
+        if(menu) menu.style.display = "none"; 
+      }); 
+    }
+    
+    if (isAdmin) { 
+      const adminBtn = document.getElementById("adminConsoleLink"); 
+      if(adminBtn) adminBtn.addEventListener("click", () => window.location.href = "admin.html"); 
+    }
+    
+    const logoutBtn = document.getElementById("logoutDropdownBtn");
+    if(logoutBtn) logoutBtn.addEventListener("click", () => { 
+      localStorage.removeItem("dhsud_session"); 
+      showToastMessage("Logged out successfully.", "info"); 
+      setTimeout(() => window.location.href = "login.html", 700); 
+    });
+  } else {
+    // Show login prompt when not logged in
+    container.innerHTML = `<div class="login-prompt" onclick="openLoginModal()">🔐 Sign In</div>`;
+  }
+}
+
+    function openLoginModal() { document.getElementById("loginModal").classList.add("active"); }
+    function toggleModalPassword() { let pwd = document.getElementById("modalLoginPassword"); pwd.type = pwd.type === "password" ? "text" : "password"; }
+    
+    async function handleModalLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById("modalLoginEmail").value.trim().toLowerCase();
+      const password = document.getElementById("modalLoginPassword").value;
+      const btn = e.submitter; const originalText = btn.innerHTML;
+      btn.innerHTML = "⏳ Authenticating..."; btn.disabled = true;
+      try {
+        const resp = await fetch(`${GOOGLE_SCRIPT_URL}?action=get&data_type=users&_=${Date.now()}`);
+        const users = await resp.json();
+        const user = users.find(u => u.email?.toLowerCase() === email);
+        if (!user) { showToastMessage("Account not found.", "error"); btn.innerHTML = originalText; btn.disabled = false; return false; }
+        const encodedPassword = btoa(password);
+        if (user.password === encodedPassword) {
+          const session = { userId: user.id, email: user.email, fullName: user.fullName, office: user.office || "ELUPDD", role: user.role, loggedInAt: new Date().toISOString() };
+          localStorage.setItem("dhsud_session", JSON.stringify(session));
+          showToastMessage(`Welcome ${user.fullName?.split(" ")[0] || ""}!`, "success");
+          document.getElementById("loginModal").classList.remove("active");
+          setTimeout(() => window.location.reload(), 1000);
+        } else { showToastMessage("Invalid password.", "error"); }
+      } catch(error) { showToastMessage("Connection error. Please try again.", "error"); }
+      finally { btn.innerHTML = originalText; btn.disabled = false; }
+      return false;
+    }
+
+    // ===== FILE PREVIEW FUNCTIONS =====
+    function openFilePreview(fileName, fileUrl) {
+      const modal = document.getElementById('filePreviewModal');
+      const nameEl = document.getElementById('previewFileName');
+      const contentEl = document.getElementById('previewContent');
+      const downloadLink = document.getElementById('previewDownloadLink');
+      const openLink = document.getElementById('previewOpenLink');
+      
+      nameEl.textContent = fileName;
+      downloadLink.href = fileUrl;
+      openLink.href = fileUrl;
+      
+      // Show loading
+      contentEl.innerHTML = '<div class="file-preview-loading">⏳ Loading file preview...</div>';
+      modal.classList.add('active');
+      
+      // Determine file type and display preview
+      const ext = fileName.split('.').pop().toLowerCase();
+      const isImage = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'].includes(ext);
+      const isPDF = ext === 'pdf';
+      const isDoc = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'].includes(ext);
+      
+      if (isImage) {
+        contentEl.innerHTML = `<img src="${fileUrl}" alt="${fileName}" onerror="this.style.display='none'; document.getElementById('previewError').style.display='block'">`;
+      } else if (isPDF) {
+        contentEl.innerHTML = `<iframe src="${fileUrl}" allowfullscreen></iframe>`;
+      } else if (isDoc) {
+        // For docs, use Google Docs viewer
+        const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(fileUrl)}&embedded=true`;
+        contentEl.innerHTML = `<iframe src="${viewerUrl}" allowfullscreen></iframe>`;
+      } else {
+        // For other files, show download option
+        contentEl.innerHTML = `
+          <div style="text-align:center; padding: 40px;">
+            <div style="font-size: 4rem; margin-bottom: 20px;">📄</div>
+            <p style="color: #64748b;">This file type cannot be previewed directly.</p>
+            <p style="color: #64748b; margin-top: 8px;">Click "Open in Drive" to view or download.</p>
+          </div>
+        `;
+      }
+    }
+
+    function closeFilePreview() {
+      document.getElementById('filePreviewModal').classList.remove('active');
+    }
+
+    // Close preview on ESC key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeFilePreview();
+      }
+    });
+
+    // Close preview on click outside
+    document.getElementById('filePreviewModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeFilePreview();
+      }
+    });
+
+    // ===== INVENTORY CODE =====
+    const modal = document.getElementById("documentModal");
+    const hyperlinkBtn = document.getElementById("lguHyperlinkBtn");
+    const closeBtn = document.querySelector(".close-modal");
+    
+    hyperlinkBtn.addEventListener("click", function(e) {
+      e.preventDefault();
+      modal.style.display = "block";
+      document.body.style.overflow = "hidden";
+      resetModalState();
+    });
+    closeBtn.addEventListener("click", function() {
+      modal.style.display = "none";
+      document.body.style.overflow = "auto";
+    });
+    window.addEventListener("click", function(e) {
+      if (e.target === modal) {
+        modal.style.display = "none";
+        document.body.style.overflow = "auto";
+      }
+    });
+    
+    const provinceData = {
+      Aklan: { lgus: ["Altavas","Balete","Banga","Batan","Buruanga","Ibajay","Kalibo","Lezo","Libacao","Madalag","Makato","Malay","Malinao","Nabas","New Washington","Numancia","Tangalan"], driveFolder: "https://drive.google.com/drive/folders/1X3ko9XJe_aIF2v_0Qwf4kvpK4HSrePqo?usp=sharing" },
+      Antique: { lgus: ["Anini-y","Barbaza","Belison","Bugasong","Caluya","Culasi","Hamtic","Laua-an","Libertad","Pandan","Patnongon","San Jose","San Remigio","Sebaste","Sibalom","Tibiao","Tobias Fornier","Valderrama"], driveFolder: "https://drive.google.com/drive/folders/1AntiqueFolder?usp=sharing" },
+      Capiz: { lgus: ["Cuartero","Dao","Dumalag","Dumarao","Ivisan","Jamindan","Ma-ayon","Mambusao","Panay","Panitan","Pilar","Pontevedra","President Roxas","Roxas City","Sapian","Sigma","Tapaz"], driveFolder: "https://drive.google.com/drive/folders/1CapizFolder?usp=sharing" },
+      Guimaras: { lgus: ["Buenavista","Jordan","Nueva Valencia","San Lorenzo","Sibunag"], driveFolder: "https://drive.google.com/drive/folders/1GuimarasFolder?usp=sharing" },
+      Iloilo: { lgus: ["Ajuy","Alimodian","Anilao","Badiangan","Balasan","Banate","Barotac Nuevo","Barotac Viejo","Batad","Bingawan","Cabatuan","Calinog","Carles","Concepcion","Dingle","Dueñas","Dumangas","Estancia","Guimbal","Igbaras","Iloilo City","Janiuay","Lambunao","Leganes","Lemery","Leon","Maasin","Miagao","Mina","New Lucena","Oton","Pavia","Pototan","San Dionisio","San Enrique","San Joaquin","San Miguel","San Rafael","Santa Barbara","Sara","Tigbauan","Tubungan","Zarraga"], driveFolder: "https://drive.google.com/drive/folders/1IloiloFolder?usp=sharing" }
+    };
+    
+    const documentData = {
+      Altavas: { clup: [{ name: "Altavas CLUP 2003-2012.pdf", link: "https://drive.google.com/file/d/1Xo445Gj6onPeMTkOLIpHVpoz3UaVYAFC/view?usp=drive_link" },{ name: "Altavas CLUP Updated 2015.jpeg", link: "https://drive.google.com/file/d/1uz_FQH4idjW4Ws5WfbQCWqQFiCaN_96V/view?usp=drive_link" }], zo: [{ name: "Zoning Ordinance Altavas.pdf", link: "https://drive.google.com/file/d/example/view?usp=drive_link" }], supporting: [{ name: "SP Resolution for Altavas.pdf", link: "https://drive.google.com/file/d/example2/view?usp=drive_link" }] }
+    };
+    
+    function resetModalState() {
+      document.getElementById("provinceSelect").value = "";
+      document.getElementById("lguSelectorGroup").style.display = "none";
+      document.getElementById("documentsContainer").style.display = "none";
+      document.getElementById("requestFormContainer").style.display = "none";
+      document.getElementById("selectedInfo").classList.add("hidden");
+      document.getElementById("lguSelect").innerHTML = '<option value="">-- Select LGU --</option>';
+      document.querySelector(".modal-header h3").innerHTML = "📂 CLUP/ZO Documents Viewer";
+      // Reset uploaded files storage for the current view
+      uploadedFiles.clup = [];
+      uploadedFiles.zo = [];
+      uploadedFiles.supporting = [];
+    }
+    
+    const provinceSelect = document.getElementById("provinceSelect");
+    const lguSelect = document.getElementById("lguSelect");
+    const lguSelectorGroup = document.getElementById("lguSelectorGroup");
+    const documentsContainer = document.getElementById("documentsContainer");
+    const requestFormContainer = document.getElementById("requestFormContainer");
+    const selectedInfo = document.getElementById("selectedInfo");
+    const selectedLocationSpan = document.getElementById("selectedLocation");
+    
+    provinceSelect.addEventListener("change", function() {
+      const p = this.value;
+      if (p === "") {
+        lguSelectorGroup.style.display = "none";
+        documentsContainer.style.display = "none";
+        requestFormContainer.style.display = "none";
+        selectedInfo.classList.add("hidden");
+        return;
+      }
+      lguSelectorGroup.style.display = "block";
+      lguSelect.innerHTML = '<option value="">-- Select LGU --</option>';
+      const lgus = provinceData[p]?.lgus || [];
+      lgus.forEach(l => {
+        const opt = document.createElement("option");
+        opt.value = l;
+        opt.textContent = `🏘️ ${l}`;
+        lguSelect.appendChild(opt);
+      });
+      document.querySelector(".modal-header h3").innerHTML = `📂 CLUP/ZO Documents - ${p} Province`;
+    });
+    
+    lguSelect.addEventListener("change", function() {
+    const p = provinceSelect.value;
+    const l = this.value;
+    if (l === "") {
+        documentsContainer.style.display = "none";
+        requestFormContainer.style.display = "none";
+        selectedInfo.classList.add("hidden");
+        return;
+    }
+    documentsContainer.style.display = "block";
+    requestFormContainer.style.display = "block";
+    selectedInfo.classList.remove("hidden");
+    selectedLocationSpan.innerHTML = `${l}, ${p}`;
+    const driveFolderLink = document.getElementById("driveFolderLink");
+    const googleDriveLinkDiv = document.getElementById("googleDriveLink");
+    const folderUrl = provinceData[p]?.driveFolder || "#";
+    driveFolderLink.href = "https://drive.google.com/drive/folders/1fwibwzbjUs8gD_pk-5HAbpSkYUuj_nGm?usp=sharing";
+    googleDriveLinkDiv.style.display = "block";
+    
+    // Reset uploaded files storage for the current view
+    uploadedFiles.clup = [];
+    uploadedFiles.zo = [];
+    uploadedFiles.supporting = [];
+    
+    // Load documents (now async)
+    loadDocumentsForLGU(l);
+    
+    document.getElementById("uploadClupBtn").disabled = false;
+    document.getElementById("uploadZoBtn").disabled = false;
+    document.getElementById("uploadSupportingBtn").disabled = false;
+});
+    
+    async function loadDocumentsForLGU(lgu) {
+    const province = provinceSelect.value;
+    const folderName = `${province} - ${lgu}`;
+    
+    // Try to get the folder ID for this LGU
+    let folderId = null;
+    try {
+        const folderResponse = await fetch(`${GOOGLE_SCRIPT_URL}?action=createFolder&folderName=${encodeURIComponent(folderName)}&parentFolderId=${DRIVE_FOLDER_ID}`);
+        const folderResult = await folderResponse.json();
+        if (folderResult.success) {
+            folderId = folderResult.folderId;
+        }
+    } catch (error) {
+        console.log('Could not get folder:', error);
+    }
+    
+    // Fetch existing files from Drive
+    let driveFiles = [];
+    if (folderId) {
+        try {
+            const fileResponse = await fetch(`${GOOGLE_SCRIPT_URL}?action=getFolderFiles&folderId=${encodeURIComponent(folderId)}`);
+            const fileResult = await fileResponse.json();
+            if (fileResult.success) {
+                driveFiles = fileResult.files || [];
+            }
+        } catch (error) {
+            console.log('Could not fetch files:', error);
+        }
+    }
+    
+    // Separate files by type
+    const clupDriveFiles = driveFiles.filter(f => f.name.includes('CLUP_'));
+    const zoDriveFiles = driveFiles.filter(f => f.name.includes('ZO_'));
+    const supportingDriveFiles = driveFiles.filter(f => !f.name.includes('CLUP_') && !f.name.includes('ZO_'));
+    
+    // Load CLUP documents (only uploaded files)
+    const clupList = document.getElementById("clupDocList");
+    let clupItems = [];
+    
+    clupDriveFiles.forEach(f => {
+        clupItems.push({
+            name: f.name,
+            link: f.url,
+            isUploaded: true,
+            isStatic: false,
+            fileId: f.id
+        });
+    });
+    
+    renderFileList(clupList, clupItems);
+    
+    // Load ZO documents (only uploaded files)
+    const zoList = document.getElementById("zoDocList");
+    let zoItems = [];
+    
+    zoDriveFiles.forEach(f => {
+        zoItems.push({
+            name: f.name,
+            link: f.url,
+            isUploaded: true,
+            isStatic: false,
+            fileId: f.id
+        });
+    });
+    
+    renderFileList(zoList, zoItems);
+    
+    // Load Supporting documents (only uploaded files)
+    const supList = document.getElementById("supportingDocList");
+    let supItems = [];
+    
+    supportingDriveFiles.forEach(f => {
+        supItems.push({
+            name: f.name,
+            link: f.url,
+            isUploaded: true,
+            isStatic: false,
+            fileId: f.id
+        });
+    });
+    
+    renderFileList(supList, supItems);
+}
+    
+    function renderFileList(listElement, items) {
+    if (items.length === 0) {
+        listElement.innerHTML = '<li>No documents available</li>';
+        return;
+    }
+    
+    listElement.innerHTML = items.map(item => {
+        let badge = '';
+        let deleteCheckbox = '';
+        
+        if (item.isUploaded && item.fileId) {
+            badge = ' <span style="font-size:0.6rem; color:#166534; background:#dcfce7; padding:2px 8px; border-radius:12px; margin-left:6px;">⬆ Uploaded</span>';
+            
+            // Delete checkbox (only for uploaded files)
+            deleteCheckbox = `
+                <span class="delete-checkbox">
+                    <input type="checkbox" onchange="toggleFileSelection('${item.fileId}', this)">
+                </span>
+            `;
+        } else if (item.isStatic) {
+            badge = ' <span style="font-size:0.6rem; color:#1e40af; background:#dbeafe; padding:2px 8px; border-radius:12px; margin-left:6px;">📎 Default</span>';
+        }
+        
+        return `<li class="file-item">
+            ${deleteCheckbox}
+            <span class="file-info">
+                <span class="file-icon">📄</span>
+                <a href="javascript:void(0)" onclick="openFilePreview('${escapeHtml(item.name)}', '${item.link}')">${escapeHtml(item.name)}</a>
+                ${badge}
+                ${item.isUploaded && item.fileId ? `<button class="delete-btn visible" onclick="deleteSingleFile('${item.fileId}', '${escapeHtml(item.name)}', this)">🗑️</button>` : ''}
+            </span>
+        </li>`;
+    }).join('');
+    
+    // If delete mode was enabled, reapply visibility
+    if (deleteModeEnabled) {
+        document.querySelectorAll('.delete-checkbox').forEach(el => {
+            el.classList.add('visible');
+        });
+        document.getElementById('bulkDeleteBar').classList.add('visible');
+    }
+}
+    
+    function getDefaultDocuments(lgu) {
+      return {
+        clup: [{ name: `${lgu} CLUP Document.pdf`, link: "https://drive.google.com/drive/folders/1X3ko9XJe_aIF2v_0Qwf4kvpK4HSrePqo?usp=sharing" }],
+        zo: [{ name: `${lgu} Zoning Ordinance.pdf`, link: "https://drive.google.com/drive/folders/1X3ko9XJe_aIF2v_0Qwf4kvpK4HSrePqo?usp=sharing" }],
+        supporting: [{ name: `${lgu} Supporting Documents.pdf`, link: "https://drive.google.com/drive/folders/1X3ko9XJe_aIF2v_0Qwf4kvpK4HSrePqo?usp=sharing" }]
+      };
+    }
+    
+    // ==================== UPLOAD FUNCTIONS ====================
+    
+    function triggerUpload(type) {
+      const inputMap = {
+        'clup': 'clupFileInput',
+        'zo': 'zoFileInput',
+        'supporting': 'supportingFileInput'
+      };
+      document.getElementById(inputMap[type]).click();
+    }
+    
+    async function handleFileUpload(type, input) {
+      const files = input.files;
+      if (!files || files.length === 0) return;
+      
+      const province = provinceSelect.value;
+      const lgu = lguSelect.value;
+      
+      if (!province || !lgu) {
+        showToastMessage("Please select a Province and LGU first.", "error");
+        input.value = '';
+        return;
+      }
+      
+      const statusSpan = document.getElementById(`${type}UploadStatus`);
+      const uploadBtn = document.getElementById(`upload${type.charAt(0).toUpperCase() + type.slice(1)}Btn`);
+      
+      const folderName = `${province} - ${lgu}`;
+      let folderId;
+      
+      try {
+        statusSpan.innerHTML = `<span class="upload-progress"></span> Creating folder...`;
+        
+        // Create folder
+        const folderResponse = await fetch(`${GOOGLE_SCRIPT_URL}?action=createFolder&folderName=${encodeURIComponent(folderName)}&parentFolderId=${DRIVE_FOLDER_ID}`);
+        const folderResult = await folderResponse.json();
+        
+        if (!folderResult.success) {
+          showToastMessage("Failed to create folder: " + folderResult.error, "error");
+          statusSpan.innerHTML = '❌ Failed';
+          input.value = '';
+          return;
+        }
+        folderId = folderResult.folderId;
+        console.log("Folder ready:", folderId);
+        
+      } catch (error) {
+        console.error("Error:", error);
+        showToastMessage("Error: " + error.message, "error");
+        statusSpan.innerHTML = '❌ Error';
+        input.value = '';
+        return;
+      }
+      
+      let uploadedCount = 0;
+      let failedCount = 0;
+      
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        statusSpan.innerHTML = `<span class="upload-progress"></span> Uploading ${file.name} (${i+1}/${files.length})...`;
+        uploadBtn.disabled = true;
+        
+        try {
+          const result = await uploadFileDirect(file, folderId, province, lgu, type);
+          
+          if (result.success) {
+            uploadedCount++;
+            // Store uploaded file info
+            const fileInfo = { name: result.fileName || file.name, link: result.fileLink };
+            if (type === 'clup') {
+              uploadedFiles.clup.push(fileInfo);
+            } else if (type === 'zo') {
+              uploadedFiles.zo.push(fileInfo);
+            } else if (type === 'supporting') {
+              uploadedFiles.supporting.push(fileInfo);
+            }
+            showToastMessage(`✅ ${result.fileName || file.name} uploaded!`, "success");
+          } else {
+            failedCount++;
+            showToastMessage(`❌ ${file.name}: ${result.error || 'Upload failed'}`, "error");
+          }
+        } catch (error) {
+          failedCount++;
+          showToastMessage(`❌ ${file.name}: ${error.message}`, "error");
+        }
+      }
+      
+      // Reload the document list to show uploaded files
+      loadDocumentsForLGU(lgu);
+      
+      if (uploadedCount > 0 && failedCount === 0) {
+        statusSpan.innerHTML = `✅ ${uploadedCount} uploaded`;
+        showToastMessage(`✅ All ${uploadedCount} file(s) uploaded successfully!`, "success");
+      } else if (uploadedCount > 0 && failedCount > 0) {
+        statusSpan.innerHTML = `⚠️ ${uploadedCount} uploaded, ${failedCount} failed`;
+        showToastMessage(`⚠️ ${uploadedCount} uploaded, ${failedCount} failed`, "error");
+      } else {
+        statusSpan.innerHTML = '❌ Upload failed';
+        showToastMessage(`❌ All ${files.length} file(s) failed to upload`, "error");
+      }
+      
+      uploadBtn.disabled = false;
+      input.value = '';
+    }
+    
+async function uploadFileDirect(file, folderId, province, lgu, docType) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+            try {
+                const base64Data = e.target.result.split(',')[1];
+                const typeLabels = { 'clup': 'CLUP', 'zo': 'ZO', 'supporting': 'Supporting' };
+                const fileName = `${typeLabels[docType]}_${file.name}`;
+                
+                // Use FormData for file upload
+                const formData = new FormData();
+                formData.append('action', 'upload');
+                formData.append('folderId', folderId);
+                formData.append('fileName', fileName);
+                formData.append('fileData', base64Data);
+                formData.append('mimeType', file.type || 'application/octet-stream');
+                formData.append('docType', docType);
+                formData.append('lgu', lgu);
+                formData.append('province', province);
+                
+                // IMPORTANT: Make sure the URL is correct
+                // For FormData POST, the URL must point to your web app
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                // Check if response is OK
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                // Try to parse JSON response
+                let result;
+                try {
+                    result = await response.json();
+                } catch (parseError) {
+                    // If response is not JSON, get text
+                    const text = await response.text();
+                    console.log('Response text:', text);
+                    throw new Error('Invalid JSON response: ' + text.substring(0, 200));
+                }
+                
+                console.log('Upload response:', result);
+                
+                if (result.success) {
+                    resolve(result);
+                } else {
+                    reject(new Error(result.error || 'Upload failed'));
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                reject(error);
+            }
+        };
+        reader.onerror = function(error) {
+            console.error('FileReader error:', error);
+            reject(error);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+// ==================== FETCH EXISTING FILES FROM DRIVE ====================
+async function fetchFilesFromDrive(folderId) {
+    try {
+        // First, check if the folder exists
+        const checkResponse = await fetch(`${GOOGLE_SCRIPT_URL}?action=getFolderFiles&folderId=${encodeURIComponent(folderId)}`);
+        const result = await checkResponse.json();
+        
+        if (result.success && result.files) {
+            return result.files;
+        }
+        return [];
+    } catch (error) {
+        console.error('Error fetching files:', error);
+        return [];
+    }
+}
+
+// ==================== DELETE FUNCTIONS ====================
+
+let deleteModeEnabled = false;
+let selectedFiles = new Set();
+
+function toggleDeleteMode() {
+    const checkbox = document.getElementById('deleteModeToggle');
+    deleteModeEnabled = checkbox.checked;
+    
+    // Show/hide delete checkboxes
+    document.querySelectorAll('.delete-checkbox').forEach(el => {
+        el.classList.toggle('visible', deleteModeEnabled);
+    });
+    
+    // Show/hide bulk delete bar
+    document.getElementById('bulkDeleteBar').classList.toggle('visible', deleteModeEnabled);
+    
+    if (!deleteModeEnabled) {
+        // Clear selection when disabling
+        selectedFiles.clear();
+        updateSelectedCount();
+    }
+}
+
+function toggleFileSelection(fileId, checkbox) {
+    if (checkbox.checked) {
+        selectedFiles.add(fileId);
+    } else {
+        selectedFiles.delete(fileId);
+    }
+    updateSelectedCount();
+}
+
+function updateSelectedCount() {
+    const count = selectedFiles.size;
+    document.getElementById('selectedCount').textContent = `${count} file${count !== 1 ? 's' : ''} selected`;
+    document.getElementById('bulkDeleteBtn').disabled = count === 0;
+}
+
+async function confirmBulkDelete() {
+    if (selectedFiles.size === 0) {
+        showToastMessage('No files selected for deletion.', 'error');
+        return;
+    }
+    
+    const confirmDelete = confirm(`Are you sure you want to delete ${selectedFiles.size} file(s)? This action cannot be undone!`);
+    if (!confirmDelete) return;
+    
+    const bulkBtn = document.getElementById('bulkDeleteBtn');
+    bulkBtn.disabled = true;
+    bulkBtn.textContent = '⏳ Deleting...';
+    
+    let deleted = 0;
+    let failed = 0;
+    
+    for (const fileId of selectedFiles) {
+        try {
+            const result = await deleteFileFromDrive(fileId);
+            if (result.success) {
+                deleted++;
+            } else {
+                failed++;
+                console.error('Delete failed:', result.error);
+            }
+        } catch (error) {
+            failed++;
+            console.error('Delete error:', error);
+        }
+    }
+    
+    // Clear selection
+    selectedFiles.clear();
+    updateSelectedCount();
+    
+    // Reload documents
+    const lgu = lguSelect.value;
+    if (lgu) {
+        await loadDocumentsForLGU(lgu);
+    }
+    
+    bulkBtn.textContent = '🗑️ Delete Selected';
+    bulkBtn.disabled = false;
+    
+    if (deleted > 0 && failed === 0) {
+        showToastMessage(`✅ ${deleted} file(s) deleted successfully!`, 'success');
+    } else if (deleted > 0 && failed > 0) {
+        showToastMessage(`⚠️ ${deleted} deleted, ${failed} failed`, 'error');
+    } else {
+        showToastMessage(`❌ Failed to delete ${failed} file(s)`, 'error');
+    }
+}
+
+async function deleteFileFromDrive(fileId) {
+    try {
+        const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=deleteFile&fileId=${encodeURIComponent(fileId)}`);
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('Delete error:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+async function deleteSingleFile(fileId, fileName, element) {
+    const confirmDelete = confirm(`Are you sure you want to delete "${fileName}"?`);
+    if (!confirmDelete) return;
+    
+    // Show loading state
+    const parentLi = element.closest('li');
+    parentLi.classList.add('deleting');
+    
+    try {
+        const result = await deleteFileFromDrive(fileId);
+        if (result.success) {
+            showToastMessage(`✅ "${fileName}" deleted successfully!`, 'success');
+            // Reload documents
+            const lgu = lguSelect.value;
+            if (lgu) {
+                await loadDocumentsForLGU(lgu);
+            }
+        } else {
+            showToastMessage(`❌ Failed to delete: ${result.error}`, 'error');
+            parentLi.classList.remove('deleting');
+        }
+    } catch (error) {
+        showToastMessage(`❌ Error: ${error.message}`, 'error');
+        parentLi.classList.remove('deleting');
+    }
+}
+
+// ==================== INITIALIZE PAGE ====================
+checkSession();
+renderMainNavigation();
+renderUserMenu();
+console.log('Page initialized!');
+</script>
+</body>
+</html>
+
+  </script>
+</body>
+</html>

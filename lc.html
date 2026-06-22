@@ -1,0 +1,4564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>DHSUD Region VI - Locational Clearance (Blue) with PRS92 Map Tool</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+  <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+        /* ===== ORIGINAL LC.HTML STYLES (PRESERVED) ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+       @media print {
+      .no-print, header, footer, .card-header, .zoning-subnav, .search-bar, .action-btns, .btn, .nav-bottom, .sync-status, .user-menu, .login-prompt {
+        display: none !important;
+      }
+
+      .print-decision-document {
+        width: 100%;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 1.5cm;
+        font-size: 11pt;
+        line-height: 1.4;
+      }
+	  
+	  .print-header {
+    text-align: center;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #000;
+    padding-bottom: 10px;
+  }
+  
+  .print-header h1 {
+    font-size: 14pt;
+    margin: 5px 0;
+  }
+  
+  .print-header h2 {
+    font-size: 12pt;
+    margin: 3px 0;
+  }
+  
+  .print-header h3 {
+    font-size: 11pt;
+    margin: 3px 0;
+    font-weight: normal;
+  }
+  
+  .print-title {
+    text-align: center;
+    font-size: 16pt;
+    font-weight: bold;
+    text-decoration: underline;
+    margin: 15px 0;
+  }
+  
+  .print-decision {
+    font-size: 14pt;
+    font-weight: bold;
+    text-align: center;
+    margin: 20px 0;
+    background: #f0f0f0;
+    padding: 8px;
+  }
+  
+  .print-info-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 15px 0;
+  }
+  
+  .print-info-table td, .print-info-table th {
+    border: 1px solid #000;
+    padding: 8px;
+    vertical-align: top;
+  }
+  
+  .print-info-table th {
+    background: #f5f5f5;
+    text-align: left;
+    width: 30%;
+  }
+  
+  .print-conditions {
+    margin-top: 80px;
+    border-top: 1px solid #000;
+    padding-top: 10px;
+  }
+  
+  .print-conditions h4 {
+    font-weight: bold;
+    margin: 10px 0 5px 0;
+  }
+  
+  .print-conditions ul {
+    margin: 5px 0;
+    padding-left: 20px;
+  }
+  
+  .print-footer {
+    margin-top: 30px;
+    text-align: right;
+    border-top: 1px solid #000;
+    padding-top: 15px;
+  }
+  
+  .print-signature {
+    margin-top: 15px;  /* Reduced from 80px */
+    text-align: right;
+}
+  
+  .page-break {
+    page-break-before: always;
+  }
+}
+
+/* Print button styling */
+.btn-print-enhanced {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: white;
+  padding: 0.5rem 1.2rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s;
+}
+
+.btn-print-enhanced:hover {
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
+  transform: translateY(-1px);
+}
+
+        body {
+        font-family: 'Inter', sans-serif; 
+      background: #f4f7fc; 
+      color: #0f2b3a; 
+      line-height: 1.45; 
+        
+        .container {
+        max-width: 1400px; 
+      margin: 0 auto; 
+      padding: 0 24px; 
+        }
+
+        /* Header styles */
+        header {
+          background: white;
+          border-bottom: 1px solid #eef2ff;
+          position: sticky;
+          top: 0;
+          z-index: 100;
+          backdrop-filter: blur(8px);
+          background: rgba(255,255,255,0.96);
+        }
+
+        .top-bar {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 0.8rem 0;
+          flex-wrap: wrap;
+          gap: 1rem;
+        }
+
+        .logo-area-header {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+        }
+
+        .header-logo-img {
+          height: 42px;
+          background: #f1f5f9;
+          padding: 4px 16px;
+          border-radius: 40px;
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          font-weight: 600;
+          font-size: 0.95rem;
+          color: #1e3a8a;
+          white-space: nowrap;
+        }
+
+        .header-logo-img img {
+          height: 32px;
+          width: auto;
+        }
+
+        .nav-right {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+        }
+
+        .user-menu {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          background: #f1f5f9;
+          padding: 0.3rem 0.8rem 0.3rem 1rem;
+          border-radius: 60px;
+          cursor: pointer;
+          position: relative;
+        }
+
+        .user-avatar {
+          width: 32px;
+          height: 32px;
+          background: #2563eb;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-weight: 700;
+        }
+
+        .login-prompt {
+          background: #f1f5f9;
+          padding: 0.3rem 1rem;
+          border-radius: 40px;
+          cursor: pointer;
+          font-size: 0.85rem;
+          font-weight: 500;
+        }
+
+        .role-badge-header {
+          background: #e2e8f0;
+          padding: 0.2rem 0.6rem;
+          border-radius: 20px;
+          font-size: 0.65rem;
+          font-weight: 600;
+          margin-left: 0.5rem;
+        }
+
+        .role-badge-header.admin {
+          background: #dcfce7;
+          color: #166534;
+        }
+
+        .role-badge-header.staff {
+          background: #dbeafe;
+          color: #1e40af;
+        }
+
+        .user-dropdown-menu {
+          position: absolute;
+          top: 48px; right: 0;
+          background: white;
+          border-radius: 20px;
+          min-width: 180px;
+          box-shadow: 0 20px 35px -12px rgba(0,0,0,0.15);
+          border: 1px solid #eef2ff;
+          overflow: hidden;
+          display: none;
+          z-index: 200;
+        }
+
+        .user-dropdown-item {
+          padding: 0.8rem 1.2rem;
+          border-bottom: 1px solid #f1f5f9;
+          cursor: pointer;
+          font-size: 0.8rem;
+        }
+
+        .user-dropdown-item:hover {
+          background: #f8fafc;
+        }
+
+        .user-name {
+          font-size: 0.8rem;
+          font-weight: 500;
+        }
+
+        .nav-bottom {
+          background: #ffffff;
+          border-top: 1px solid #eef2ff;
+          padding: 0.5rem 0;
+        }
+
+        .main-nav-links {
+          display: flex;
+          align-items: center;
+          gap: 1.5rem;
+          flex-wrap: wrap;
+        }
+
+        .main-nav-links a, .main-nav-links .dropdown {
+          text-decoration: none;
+          color: #334155;
+          font-weight: 500;
+          font-size: 0.9rem;
+          transition: 0.2s;
+        }
+
+        .main-nav-links a:hover, .main-nav-links .dropbtn:hover {
+          color: #2563eb;
+        }
+
+        .dropdown {
+          position: relative;
+          display: inline-block;
+        }
+
+        .dropbtn {
+          background: none;
+          border: none;
+          font-weight: 500;
+          font-size: 0.9rem;
+          color: #334155;
+          cursor: pointer;
+          font-family: inherit;
+          padding: 0.4rem 0;
+        }
+
+        .dropdown-content {
+    display: none;
+    position: absolute;
+    background: white;
+    min-width: 220px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+    z-index: 1000;
+    top: 30px;
+    left: 0;
+    border: 1px solid #eef2ff;
+    padding: 0.3rem 0;
+}
+/* ADD THIS - Show dropdown on hover */
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+        .dropdown-content a {
+          display: block;
+          padding: 0.7rem 1.2rem;
+          color: #1e293b;
+          font-size: 0.8rem;
+          text-decoration: none;
+        }
+
+        .dropdown-content a:hover {
+          background: #eff6ff;
+        }
+
+        .dropdown.open .dropdown-content {
+          display: block;
+        }
+
+        .dropdown-submenu {
+          position: relative;
+        }
+
+        .submenu-trigger {
+          background: none;
+          border: none;
+          width: 100%;
+          text-align: left;
+          padding: 0.7rem 1.2rem;
+          font-size: 0.8rem;
+          font-weight: 500;
+          color: #1e293b;
+          cursor: pointer;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          font-family: inherit;
+        }
+
+        .submenu-trigger:hover {
+          background: #eff6ff;
+        }
+
+        .arrow-right {
+          font-size: 0.7rem;
+          margin-left: 1rem;
+        }
+
+        .submenu-content {
+          display: none;
+          position: absolute;
+          left: 100%;
+          top: 0;
+          background: white;
+          min-width: 180px;
+          box-shadow: 0 12px 28px rgba(0,0,0,0.1);
+          border-radius: 16px;
+          border: 1px solid #eef2ff;
+          z-index: 1001;
+          padding: 0.3rem 0;
+        }
+		
+		/* ADD THIS - Show submenu on hover */
+.dropdown-submenu:hover .submenu-content {
+    display: block;
+}
+
+        .submenu-content a {
+          padding: 0.7rem 1.2rem;
+        }
+
+        .dropdown-submenu.open .submenu-content {
+          display: block;
+        }
+
+        .login-modal {
+          display: none;
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0,0,0,0.5);
+          backdrop-filter: blur(4px);
+          justify-content: center;
+          align-items: center;
+          z-index: 10000;
+        }
+
+        .login-modal.active {
+          display: flex;
+        }
+
+        .login-modal-content {
+          background: white;
+          border-radius: 32px;
+          max-width: 450px;
+          width: 90%;
+          overflow: hidden;
+          animation: modalSlideIn 0.3s ease;
+        }
+
+        .login-modal-header {
+          background: linear-gradient(135deg, #1e3a8a, #2563eb);
+          padding: 1.5rem;
+          text-align: center;
+          color: white; }
+
+        .login-modal-header .seal-icon {
+          font-size: 2rem;
+          margin-bottom: 0.5rem;
+        }
+
+        .login-modal-header h3 {
+          font-size: 1.3rem;
+          font-weight: 700;
+        }
+
+        .login-modal-body {
+          padding: 1.5rem;
+        }
+
+        .input-group {
+          margin-bottom: 1.2rem;
+          position: relative;
+        }
+
+        .input-group label {
+          display: block;
+          font-size: 0.7rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          color: #54708f;
+          margin-bottom: 0.4rem;
+        }
+
+        .input-group input {
+          width: 100%;
+          padding: 0.85rem 1rem;
+          border: 1.5px solid #e2e8f0;
+          border-radius: 1rem;
+          font-size: 0.9rem;
+          font-family: 'Inter', sans-serif;
+          padding-right: 45px;
+        }
+
+        .toggle-password {
+          position: absolute;
+          right: 12px;
+          top: 38px;
+          cursor: pointer;
+          font-size: 1rem;
+          background: none;
+          border: none;
+          color: #94a3b8;
+        }
+
+        .login-submit-btn {
+          width: 100%;
+          padding: 0.9rem;
+          background: #2563eb;
+          color: white;
+          border: none;
+          border-radius: 1.2rem;
+          font-weight: 700;
+          font-size: 0.9rem;
+          cursor: pointer;
+          margin-top: 0.5rem;
+        }
+
+        .login-submit-btn:hover {
+          background: #1d4ed8;
+          transform: translateY(-1px);
+        }
+
+        .login-modal-footer {
+          border-top: 1px solid #eef2ff;
+          padding: 1rem;
+          text-align: center;
+          font-size: 0.65rem;
+          color: #94a3b8;
+          background: #fafcff;
+        }
+
+        @keyframes modalSlideIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+        .toast-msg {
+          position: fixed;
+          bottom: 20px;
+          right: 20px;
+          background: #1e293b;
+          color: white;
+          padding: 10px 20px;
+          border-radius: 40px;
+          z-index: 9999;
+          font-size: 0.8rem;
+        }
+
+        .card {
+         background: white; 
+      border-radius: 24px; 
+      box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); 
+      border: 1px solid #e2e8f0; 
+      overflow: hidden; 
+      margin-bottom: 2rem; 
+      }
+
+        .card-header {
+          padding: 1.25rem 1.5rem;
+          border-bottom: 1px solid #e2e8f0;
+          background: #ffffff;
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+        }
+
+        .card-header h2 {
+          font-size: 1.4rem;
+          font-weight: 600;
+          margin: 0;
+        }
+
+        .card-body {
+          padding: 1.5rem; 
+        }
+
+        .zoning-subnav {
+          display: flex;
+          gap: 0.5rem;
+          border-bottom: 1px solid #e2e8f0;
+          margin-bottom: 1.8rem;
+          background: white;
+          border-radius: 16px 16px 0 0;
+          padding: 0 0.25rem;
+          flex-wrap: wrap;
+        }
+
+        .subnav-link {
+          background: none;
+          border: none;
+          padding: 0.8rem 1.8rem;
+          font-size: 0.95rem;
+          font-weight: 600;
+          color: #475569;
+          cursor: pointer;
+          border-radius: 40px;
+          transition: all 0.2s;
+        }
+
+        .subnav-link.active {
+          background: #dbeafe;
+          color: #1e3a8a;
+          border-bottom: 2px solid #2563eb;
+        }
+
+        .zoning-view {
+          display: none;
+        }
+
+        .zoning-view.active {
+          display: block;
+        }
+
+        .form-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 1.2rem;
+        }
+
+        .form-group {
+          margin-bottom: 0.25rem;
+        }
+
+        .form-group.full-width {
+          grid-column: span 2;
+        }
+
+        .form-group label {
+          display: block;
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: #1e293b;
+          margin-bottom: 0.3rem;
+        }
+
+        .form-control {
+          width: 100%;
+          padding: 0.7rem 0.9rem;
+          border: 1px solid #e2e8f0;
+          border-radius: 12px;
+          font-size: 0.9rem;
+          transition: 0.2s;
+          background: white;
+        }
+
+        .btn {
+    padding: 0.6rem 1.4rem;
+    border-radius: 40px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+.btn-primary {
+    background: #2563eb;
+    color: white;
+}
+.btn-primary:hover {
+    background: #1e3a8a;
+    transform: translateY(-1px);
+}
+.btn-success {
+    background: #3a7b5c;
+    color: white;
+}
+.btn-success:hover {
+    background: #2e5f45;
+}
+.btn-secondary {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+.btn-warning {
+    background: #f59e0b;
+    color: white;
+}
+.btn-danger {
+    background: #dc3545;
+    color: white;
+}
+
+
+        /* Smaller map button style */
+        .btn-map-small {
+          background: #2c3e66;
+          color: white;
+          padding: 0.35rem 0.9rem;
+          font-size: 0.75rem;
+          border-radius: 30px;
+          margin-top: 0.4rem;
+        }
+        .btn-map-small:hover {
+          background: #1e2a4a;
+          transform: translateY(-1px);
+        }
+
+        .search-bar {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+    background: #f8fafc;
+    padding: 1rem;
+    border-radius: 20px;
+    align-items: center;
+}
+.cert-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+.cert-table th {
+    text-align: left;
+    padding: 0.9rem 0.8rem;
+    background: #f1f5f9;
+    color: #1e293b;
+    font-weight: 600;
+    border-bottom: 2px solid #e2e8f0;
+}
+.cert-table td {
+    padding: 0.9rem 0.8rem;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: middle;
+}
+.action-btns {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+.action-btn {
+    padding: 0.25rem 0.65rem;
+    border-radius: 30px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+}
+.action-btn.view {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+.action-btn.edit {
+    background: #fef3c7;
+    color: #b45309;
+}
+.action-btn.print {
+    background: #d1fae5;
+    color: #065f46;
+}
+.action-btn.delete {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+.status-dropdown {
+    padding: 0.3rem 0.8rem;
+    border-radius: 40px;
+    border: 1px solid #cbd5e1;
+    font-size: 0.8rem;
+    background: white;
+    cursor: pointer;
+}
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+.status-badge.released {
+    background: #d4edda;
+    color: #155724;
+}
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+}
+.modal.active {
+    display: flex;
+}
+.modal-content {
+    background: white;
+    border-radius: 32px;
+    max-width: 700px;
+    width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 1.6rem;
+}
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 0.75rem;
+}
+.modal-header h2 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin: 0;
+}
+.close-btn {
+    font-size: 1.8rem;
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: #475569;
+}
+.sync-status {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+footer {
+    background: #0f2b3a;
+    color: #cbd5e1;
+    padding: 2rem 0 1.5rem;
+    margin-top: 3rem;
+}
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+.copyright {
+    margin-top: 2rem;
+    text-align: center;
+    border-top: 1px solid #2d3a4a;
+    padding-top: 1.5rem;
+    font-size: 0.8rem;
+}
+@media (max-width: 720px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    .form-group.full-width {
+        grid-column: span 1;
+    }
+}
+
+        /* ===== MAP TOOL STYLES (ADDED FROM SZC.HTML) ===== */
+        .map-popup-modal {
+          display: none;
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.5);
+          z-index: 2000;
+          justify-content: center;
+          align-items: center;
+        }
+        .map-popup-modal.active {
+          display: flex;
+        }
+        .map-popup-content {
+          background: white;
+          border-radius: 28px;
+          width: 95%;
+          max-width: 1400px;
+          height: 92%;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
+        .map-popup-header {
+          background: #1e3a8a;
+          color: white;
+          padding: 12px 20px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .map-popup-header button {
+          background: none;
+          border: none;
+          color: white;
+          font-size: 28px;
+          cursor: pointer;
+        }
+        .map-popup-body {
+          padding: 15px;
+          flex: 1;
+          overflow-y: auto;
+          display: flex;
+          gap: 20px;
+          flex-wrap: wrap;
+        }
+        .map-container {
+          flex: 3;
+          min-width: 500px;
+        }
+        #popupMap {
+          height: 100%;
+          min-height: 550px;
+          border-radius: 16px;
+          background: #eef2f0;
+        }
+        .survey-sidebar {
+          flex: 1;
+          min-width: 380px;
+          max-height: 70vh;
+          overflow-y: auto;
+          background: #f9fbfd;
+          border-radius: 20px;
+          padding: 15px;
+          border: 1px solid #e2e8f0;
+        }
+        .map-toolbar {
+          background: white;
+          border-radius: 16px;
+          margin-bottom: 12px;
+          overflow: hidden;
+        }
+        .toolbar-section {
+          padding: 12px 16px;
+          border-bottom: 1px solid #eef2ff;
+        }
+        .toolbar-section:last-child {
+          border-bottom: none;
+        }
+        .section-title {
+          font-size: 0.7rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          color: #64748b;
+          letter-spacing: 0.8px;
+          margin-bottom: 12px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .search-row {
+          display: flex;
+          gap: 10px;
+          align-items: center;
+          flex-wrap: wrap;
+          position: relative;
+        }
+        .map-search-input {
+          flex: 1;
+          min-width: 180px;
+          padding: 10px 16px;
+          border: 1.5px solid #e2e8f0;
+          border-radius: 40px;
+          font-size: 0.85rem;
+          outline: none;
+        }
+        .map-search-input:focus {
+          border-color: #2563eb;
+          box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        .search-btn {
+          background: #2563eb;
+          color: white;
+          border: none;
+          border-radius: 40px;
+          padding: 8px 20px;
+          font-weight: 600;
+          font-size: 0.8rem;
+          cursor: pointer;
+          white-space: nowrap;
+        }
+        .saved-points-btn {
+          background: #10b981;
+          color: white;
+          border: none;
+          border-radius: 40px;
+          padding: 8px 18px;
+          font-size: 0.75rem;
+          font-weight: 500;
+          cursor: pointer;
+          white-space: nowrap;
+        }
+        .button-group {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+          margin-bottom: 0;
+        }
+        .tool-btn {
+          padding: 8px 18px;
+          border-radius: 40px;
+          font-size: 0.75rem;
+          font-weight: 500;
+          border: 1px solid #e2e8f0;
+          background: #f8fafc;
+          color: #334155;
+          cursor: pointer;
+          transition: all 0.2s;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .tool-btn:hover {
+          background: #f1f5f9;
+          transform: translateY(-1px);
+        }
+        .tool-btn.primary {
+          background: #2563eb;
+          border-color: #2563eb;
+          color: white;
+        }
+        .tool-btn.success {
+          background: #10b981;
+          border-color: #10b981;
+          color: white;
+        }
+        .tool-btn.danger {
+          background: #ef4444;
+          border-color: #ef4444;
+          color: white;
+        }
+        .tool-btn.outline {
+          background: white;
+          border-color: #cbd5e1;
+          color: #475569;
+        }
+        .tool-btn.measuring-active {
+          background: #f59e0b;
+          border-color: #f59e0b;
+          color: white;
+        }
+        .tool-btn.save-point-active {
+          background: #10b981;
+          border-color: #10b981;
+          color: white;
+        }
+        .map-type-group {
+          display: flex;
+          gap: 4px;
+          background: #f1f5f9;
+          padding: 4px;
+          border-radius: 48px;
+          width: fit-content;
+        }
+        .map-type-btn {
+          padding: 6px 20px;
+          border-radius: 40px;
+          font-size: 0.75rem;
+          font-weight: 500;
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          transition: all 0.2s;
+          color: #64748b;
+        }
+        .map-type-btn.active {
+          background: white;
+          color: #2563eb;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .measure-result {
+          background: #1e293b;
+          color: white;
+          padding: 8px 16px;
+          border-radius: 40px;
+          font-size: 0.7rem;
+          font-weight: 500;
+          margin-top: 10px;
+        }
+        .coord-info {
+          margin: 12px 0;
+          display: flex;
+          gap: 10px;
+          flex-wrap: wrap;
+        }
+        .coord-info input {
+          font-size: 0.75rem;
+          padding: 6px 10px;
+          flex: 1;
+        }
+        .layer-panel {
+          background: #f8faff;
+          border-radius: 12px;
+          padding: 12px;
+          margin-top: 12px;
+        }
+        .legend-panel {
+          margin-top: 8px;
+          font-size: 0.65rem;
+        }
+        .survey-panel {
+          background: #f8fafc;
+          border-radius: 24px;
+          padding: 1.2rem;
+          margin-top: 1rem;
+          border: 1px solid #e2e8f0;
+        }
+        .survey-panel h4 {
+          font-size: 0.9rem;
+          font-weight: 700;
+          color: #1e3a8a;
+          margin-bottom: 1rem;
+          border-left: 3px solid #f59e0b;
+          padding-left: 0.8rem;
+        }
+        .dms-row {
+          display: flex;
+          gap: 10px;
+          flex-wrap: wrap;
+          align-items: center;
+          margin-bottom: 12px;
+        }
+        .dms-row input, .dms-row select {
+          padding: 4px 6px;
+          border-radius: 8px;
+          border: 1px solid #cbd5e1;
+        }
+        .bearing-table {
+          width: 100%;
+          font-size: 0.7rem;
+          border-collapse: collapse;
+        }
+        .bearing-table th, .bearing-table td {
+          border: 1px solid #cbd5e6;
+          padding: 6px 4px;
+          text-align: center;
+        }
+        .stat-box {
+          background: #eef2ff;
+          padding: 10px;
+          border-radius: 16px;
+          font-family: monospace;
+          font-size: 0.7rem;
+          margin-top: 10px;
+        }
+        .corner-points-list {
+          max-height: 180px;
+          overflow-y: auto;
+          font-size: 0.7rem;
+        }
+        .btn-sm {
+          background: #2c5a6e;
+          color: white;
+          border: none;
+          border-radius: 20px;
+          padding: 4px 12px;
+          font-size: 0.7rem;
+          cursor: pointer;
+        }
+        .search-results-dropdown {
+          position: absolute;
+          top: 100%;
+          left: 0;
+          right: 0;
+          background: white;
+          border-radius: 16px;
+          box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+          max-height: 300px;
+          overflow-y: auto;
+          z-index: 1000;
+          margin-top: 4px;
+          display: none;
+        }
+        .search-results-dropdown.active {
+          display: block;
+        }
+        .search-result-item {
+          padding: 10px 16px;
+          border-bottom: 1px solid #eef2ff;
+          cursor: pointer;
+          transition: background 0.15s;
+        }
+        .search-result-item:hover {
+          background: #eff6ff;
+        }
+        .search-result-title {
+          font-weight: 600;
+          color: #1e3a8a;
+          font-size: 0.85rem;
+        }
+        .search-result-subtitle {
+          font-size: 0.7rem;
+          color: #64748b;
+          margin-top: 2px;
+        }
+        .search-type-badge {
+          display: inline-block;
+          font-size: 0.6rem;
+          padding: 2px 6px;
+          border-radius: 12px;
+          margin-left: 8px;
+          background: #e2e8f0;
+          color: #475569;
+        }
+        .search-type-badge.saved-point {
+          background: #dcfce7;
+          color: #166534;
+        }
+        .search-type-badge.address {
+          background: #dbeafe;
+          color: #1e40af;
+        }
+        .custom-marker {
+          background: transparent !important;
+          border: none !important;
+        }
+        .custom-marker div {
+          background: #dc2626;
+          width: 14px;
+          height: 14px;
+          border-radius: 50%;
+          border: 2px solid white;
+          box-shadow: 0 0 5px rgba(0,0,0,0.5);
+          cursor: pointer;
+        }
+        .map-popup-footer {
+          padding: 15px;
+          text-align: right;
+          border-top: 1px solid #e2e8f0;
+        }
+
+    	/* Enhanced Map Button - Professional Design */
+    .btn-map-enhanced {
+        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+        color: white;
+        padding: 0.85rem 1.8rem;
+        font-size: 0.9rem;
+        font-weight: 700;
+        border: none;
+        border-radius: 16px;
+        cursor: pointer;
+        width: 100%;
+        margin-top: 0.5rem;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        letter-spacing: 0.5px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-map-enhanced::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .btn-map-enhanced:hover::before {
+        left: 100%;
+    }
+
+    .btn-map-enhanced:hover {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 15px rgba(37, 99, 235, 0.3);
+    }
+
+    .btn-map-enhanced:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-map-enhanced i,
+    .btn-map-enhanced span {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* For the icon size */
+    .btn-map-enhanced .map-icon {
+        font-size: 1.1rem;
+    }
+	
+	/* Number editing panel styles */
+.number-editor-panel {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: flex-end;
+}
+
+.number-editor-group {
+    flex: 1;
+    min-width: 200px;
+}
+
+.number-editor-group label {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #54708f;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.number-editor-input {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.number-editor-input input {
+    padding: 8px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-family: monospace;
+}
+
+.number-editor-input input:focus {
+    border-color: #2563eb;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.number-editor-input .prefix {
+    font-weight: 700;
+    color: #1e3a8a;
+    background: #e2e8f0;
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+}
+
+.number-preview {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-top: 6px;
+    font-family: monospace;
+}
+
+.btn-generate {
+    background: #10b981;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 8px 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-generate:hover {
+    background: #059669;
+    transform: translateY(-1px);
+}
+	
+	/* Latest Numbers Display Panel */
+.latest-numbers-panel {
+    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+    border-radius: 16px;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    color: white;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.latest-number-card {
+    background: rgba(255,255,255,0.15);
+    border-radius: 12px;
+    padding: 10px 15px;
+    flex: 1;
+    min-width: 200px;
+    backdrop-filter: blur(10px);
+}
+
+.latest-number-card label {
+    display: block;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.8;
+    margin-bottom: 5px;
+}
+
+.latest-number-card .number-value {
+    font-size: 1.3rem;
+    font-weight: 700;
+    font-family: monospace;
+    letter-spacing: 1px;
+}
+
+.latest-number-card .number-hint {
+    font-size: 0.65rem;
+    opacity: 0.7;
+    margin-top: 5px;
+}
+
+.current-month-badge {
+    background: #f59e0b;
+    color: #1e293b;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.btn-refresh-numbers {
+    background: white;
+    color: #1e3a8a;
+    border: none;
+    border-radius: 40px;
+    padding: 8px 20px;
+    font-weight: 600;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 10px;
+}
+
+.btn-refresh-numbers:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+	
+	#locConditions {
+    display: none;
+}
+	
+/* ADD THIS - Dropdown arrow indicator */
+.dropbtn::after {
+    content: " ▾";
+    font-size: 0.7rem;
+    opacity: 0.6;
+}
+.dropdown:hover .dropbtn::after {
+    content: " ▾";
+    opacity: 1;
+}	
+	
+</style>
+
+</head>
+<body>
+  <header>
+    <div class="container" style="max-width: 1400px; margin: 0 auto; padding: 0 24px;">
+      <div class="top-bar">
+        <div class="logo-area-header">
+          <div class="header-logo-img">
+            <img src="DHSUD_LOGO.png" alt="DHSUD Logo">
+            <span>DHSUD VI - ELUPDD Integrated Database and Information System</span>
+          </div>
+        </div>
+        <div class="nav-right" id="userMenuContainer"></div>
+      </div>
+    </div>
+    <div class="nav-bottom">
+      <div class="container" style="max-width: 1400px; margin: 0 auto; padding: 0 24px;">
+        <div class="main-nav-links" id="mainNavContainer"></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="margin-top:2rem;">
+    <div class="card">
+      <div class="card-header no-print">
+        <h2>📋 Locational Clearance</h2>
+      </div>
+      <div class="card-body">
+        <div class="zoning-subnav no-print">
+          <button class="subnav-link active" onclick="switchView('dataEntry')">📝 Data Entry</button>
+          <button class="subnav-link" onclick="switchView('status')">📋 Status Tracking</button>
+          <button class="subnav-link" onclick="switchView('accomplishment')">✅ Accomplishment</button>
+        </div>
+        
+        <div id="dataEntryView" class="zoning-view active">
+          <form id="locationalForm"  onsubmit="return saveLocationalRecord(event)">
+		  
+		  <!-- Latest Numbers Display Panel -->
+<div class="latest-numbers-panel">
+    <div class="latest-number-card">
+        <label>📄 LATEST APPLICATION NO.</label>
+        <div class="number-value" id="latestAppNoDisplay">ELUPDD-06-26-001</div>
+        <div class="number-hint">Auto-generated based on current month</div>
+    </div>
+    <div class="latest-number-card">
+        <label>📋 LATEST DECISION NO.</label>
+        <div class="number-value" id="latestDecNoDisplay">LC-06-26-001</div>
+        <div class="number-hint">Auto-generated based on current month</div>
+    </div>
+    <div>
+        <div class="current-month-badge" id="currentMonthBadge">📅 Current: June 2026</div>
+        <button type="button" class="btn-refresh-numbers" onclick="refreshLatestNumbersDisplay()">🔄 Refresh Numbers</button>
+    </div>
+</div>
+            <div class="form-grid">
+              <div class="form-group full-width">
+    <div class="number-editor-panel">
+        <div class="number-editor-group">
+            <label>Application No. (ELUPDD)</label>
+            <div class="number-editor-input">
+                <span class="prefix">ELUPDD-</span>
+                <input type="text" id="appMonth" placeholder="MM" maxlength="2" size="3" style="width: 55px;">
+                <span>-</span>
+                <input type="text" id="appYear" placeholder="YY" maxlength="2" size="3" style="width: 55px;">
+                <span>-</span>
+                <input type="text" id="appSeq" placeholder="NNN" maxlength="3" size="4" style="width: 70px;">
+            </div>
+            <div class="number-preview" id="appPreview">Full: ELUPDD-MM-YY-NNN</div>
+        </div>
+        <div class="number-editor-group">
+            <label>Decision No. (LC)</label>
+            <div class="number-editor-input">
+                <span class="prefix">LC-</span>
+                <input type="text" id="decMonth" placeholder="MM" maxlength="2" size="3" style="width: 55px;">
+                <span>-</span>
+                <input type="text" id="decYear" placeholder="YY" maxlength="2" size="3" style="width: 55px;">
+                <span>-</span>
+                <input type="text" id="decSeq" placeholder="NNN" maxlength="3" size="4" style="width: 70px;">
+            </div>
+            <div class="number-preview" id="decPreview">Full: LC-MM-YY-NNN</div>
+        </div>
+    </div>
+    <input type="hidden" id="locAppNo">
+    <input type="hidden" id="locDecisionNo">
+</div>
+              <div class="form-group"><label>Date of Receipt *</label><input type="date" id="locDateReceipt" class="form-control" required></div>
+              <div class="form-group"><label>Date of Issue *</label><input type="date" id="locDateIssue" class="form-control" required></div>
+              <div class="form-group"><label>Applicant Name *</label><input type="text" id="locApplicant" class="form-control" required></div>
+              <div class="form-group"><label>Name of Corporation</label><input type="text" id="locCorporation" class="form-control"></div>
+              <div class="form-group"><label>Applicant Address *</label><input type="text" id="locApplicantAddress" class="form-control" required></div>
+              <div class="form-group"><label>Corporation Address</label><input type="text" id="locCorpAddress" class="form-control"></div>
+              <div class="form-group"><label>Type of Project *</label><input type="text" id="locProjectType" class="form-control" required></div>
+              
+              <!-- Area and Location field with smaller map button just below it -->
+              <div class="form-group full-width">
+    <label>Area and Location *</label>
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+            <div style="flex: 1;">
+                <label style="font-size: 0.75rem; color: #54708f;">Lot Area (sq.m.)</label>
+                <input type="number" id="locLotArea" class="form-control" placeholder="e.g., 5000" step="any">
+            </div>
+            <div style="flex: 1;">
+                <label style="font-size: 0.75rem; color: #54708f;">Floor Area (sq.m.)</label>
+                <input type="number" id="locFloorArea" class="form-control" placeholder="e.g., 200" step="any">
+            </div>
+        </div>
+        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+            <div style="flex: 1;">
+                <label style="font-size: 0.75rem; color: #54708f;">Province</label>
+                <select id="locProvince" class="form-control">
+                    <option value="">-- Select Province --</option>
+                    <option value="Aklan">Aklan</option>
+                    <option value="Antique">Antique</option>
+                    <option value="Capiz">Capiz</option>
+                    <option value="Guimaras">Guimaras</option>
+                    <option value="Iloilo">Iloilo</option>
+                    <option value="Negros Occidental">Negros Occidental</option>
+                </select>
+            </div>
+            <div style="flex: 1;">
+                <label style="font-size: 0.75rem; color: #54708f;">City / Municipality</label>
+                <select id="locCity" class="form-control">
+                    <option value="">-- Select City/Municipality --</option>
+                </select>
+            </div>
+        </div>
+        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+            <div style="flex: 1;">
+                <label style="font-size: 0.75rem; color: #54708f;">Barangay</label>
+                <!-- Changed from select to input for free typing -->
+                <input type="text" id="locBarangay" class="form-control" placeholder="Type barangay name">
+            </div>
+        </div>
+    </div>
+    <button type="button" class="btn-map-enhanced" onclick="openSurveyMapPopup()" style="margin-top: 10px;">
+        🗺️ Open PRS92 Map Tool
+    </button>
+</div>
+
+<input type="hidden" id="locAreaLocation">
+              
+              <div class="form-group"><label>Decision *</label><select id="locDecision" class="form-control" required><option value="">-- Select --</option><option value="Approved">Locational Clearance Granted</option><option value="Approved with Conditions">Approved with Conditions</option><option value="Disapproved">Disapproved</option></select></div>
+              <div class="form-group"><label>Right over Land *</label><input type="text" id="locRightOverLand" class="form-control" placeholder="e.g., Owner, Lessee" required></div>
+              <div class="form-group full-width"> <textarea id="locConditions" class="form-control" rows="4" placeholder="List all conditions..."></textarea></div>
+</div>
+
+<h4>Payment Details: </h4><br>
+<div class="form-grid">
+              <div class="form-group"><label>O.R. No.</label><input type="text" id="locOrNo" class="form-control"></div>
+              <div class="form-group"><label>Amount Paid (₱) *</label><input type="text" id="locAmountPaid" class="form-control" required></div>
+              <div class="form-group"><label>O.R. Date</label><input type="date" id="locOrDate" class="form-control"></div>
+            </div>
+            
+            <div style="display:flex; gap:1rem; margin-top:1.5rem; justify-content: center;">
+              <button type="submit" class="btn btn-success">💾 Save Locational Clearance</button>
+              <button type="button" class="btn btn-secondary" onclick="clearForm()">🔄 Clear Form</button>
+            </div>
+          </form>
+        </div>
+        
+        <div id="statusView" class="zoning-view">
+          <div class="search-bar">
+            <input type="text" id="statusSearch" placeholder="Search" onkeyup="refreshStatusTable()">
+            <select id="statusFilter" onchange="refreshStatusTable()">
+              <option value="">All Status (except Released)</option>
+              <option value="For Review">For Review</option>
+              <option value="For RD Signature">For RD Signature</option>
+              <option value="For Release">For Release</option>
+            </select>
+            <button class="btn btn-secondary" onclick="clearStatusSearch()">🗑️ Clear</button>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="cert-table">
+              <thead><tr><th>Application No.</th><th>Decision No.</th><th>Applicant</th><th>Project Type</th><th>Date of Issue</th><th>Decision</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="statusTableBody"></tbody>
+             </table>
+          </div>
+        </div>
+        
+        <div id="accomplishmentView" class="zoning-view">
+          <div class="search-bar">
+            <input type="text" id="accSearch" placeholder="Search" onkeyup="refreshAccTable()">
+            <button class="btn btn-secondary" onclick="clearAccSearch()">Clear</button>
+            <button class="btn btn-primary" onclick="exportToExcel()">📥 Export Excel</button>
+            <button class="btn btn-primary" onclick="manualRefresh()">🔄 Refresh from Sheets</button>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="cert-table">
+              <thead><tr><th>Application No.</th><th>Decision No.</th><th>Applicant</th><th>Project Type</th><th>Date of Issue</th><th>Decision</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="accTableBody"></tbody>
+			</table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- MAP TOOL MODAL (ADDED FROM SZC.HTML) -->
+  <div id="mapPopupModal" class="map-popup-modal">
+    <div class="map-popup-content">
+      <div class="map-popup-header">
+        <h3>🗺️ MAP TOOL - PRS92 Survey & Zoning Map</h3>
+        <button onclick="closeMapPopup()">&times;</button>
+      </div>
+      <div class="map-popup-body">
+        <div class="map-container">
+          <div id="popupMap" style="height: 100%; min-height: 550px;"></div>
+        </div>
+        <div class="survey-sidebar">
+          <!-- TOOLBAR -->
+          <div class="map-toolbar">
+            <div class="toolbar-section">
+              <div class="section-title"><span>🔍</span> SEARCH & NAVIGATION</div>
+              <div class="search-row" style="position: relative;">
+                <input type="text" id="mapSearchInput" class="map-search-input" placeholder="Search address, place, or saved point..." autocomplete="off">
+                <button class="search-btn" onclick="searchMapLocation()">🔍 Search</button>
+                <button class="saved-points-btn" onclick="showSavedPointsList()">📌 My Saved Points</button>
+                <div id="searchResultsDropdown" class="search-results-dropdown"></div>
+              </div>
+            </div>
+            <div class="toolbar-section">
+              <div class="section-title"><span>📐</span> MEASUREMENT TOOLS</div>
+              <div class="button-group">
+                <button class="tool-btn" id="startMeasureLineBtn">📏 Measure Distance</button>
+                <button class="tool-btn" id="startMeasureAreaBtn">📐 Measure Area</button>
+                <button class="tool-btn outline" id="clearMeasureBtn">🗑️ Clear</button>
+              </div>
+              <div class="measure-result" id="measureResult">⚡ Click a button to start measuring</div>
+            </div>
+            <div class="toolbar-section">
+              <div class="section-title"><span>🗺️</span> MAP VIEW</div>
+              <div class="map-type-group">
+                <button class="map-type-btn active" onclick="changeMapView('street')" id="mapTypeStreet">🗺️ Street</button>
+                <button class="map-type-btn" onclick="changeMapView('satellite')" id="mapTypeSatellite">🛰️ Satellite</button>
+                <button class="map-type-btn" onclick="changeMapView('outdoor')" id="mapTypeOutdoor">⛰️ Terrain</button>
+              </div>
+            </div>
+            <div class="toolbar-section">
+              <div class="section-title"><span>📍</span> SAVED POINTS</div>
+              <div class="button-group">
+                <button class="tool-btn" id="toggleSavePointBtn">💾 Save Point Mode: OFF</button>
+                <button class="tool-btn success" onclick="loadSavedPoints()">📌 Load All Points</button>
+              </div>
+              <div style="margin-top: 8px;">
+                <small style="color: #64748b; font-size: 0.65rem;" id="savePointHint">💡 Toggle ON to save points by clicking on the map</small>
+              </div>
+            </div>
+          </div>
+          <!-- COORDINATES -->
+          <div class="coord-info">
+            <input type="text" id="popupLatitude" placeholder="Latitude" class="form-control" readonly style="flex: 1;">
+            <input type="text" id="popupLongitude" placeholder="Longitude" class="form-control" readonly style="flex: 1;">
+            <button class="btn btn-danger" onclick="clearSelectedCoords()" style="padding: 6px 12px;">Clear</button>
+          </div>
+          <!-- LAYER PANEL -->
+          <div class="layer-panel">
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <input type="file" id="geojsonFileInput" accept=".geojson,.json" style="display: none;">
+              <button class="btn btn-primary" onclick="document.getElementById('geojsonFileInput').click()" style="padding: 4px 12px;">📂 Upload GeoJSON Zone</button>
+              <button class="btn btn-danger" onclick="clearAllLayers()" style="padding: 4px 12px;">Clear Layers</button>
+            </div>
+            <div id="attributeSelector" style="display: none; margin-top: 8px;">
+              <select id="attributeColumnSelect" onchange="updateCategoryFilterFromAttribute()" style="padding: 4px;"></select>
+              <button class="btn btn-secondary" onclick="resetLayerColors()" style="padding: 4px 12px;">Reset Colors</button>
+            </div>
+            <div id="legendPanel" class="legend-panel"><strong>Legend:</strong> Upload GeoJSON to categorize</div>
+            <div id="layerListContainer" style="margin-top: 8px; font-size: 0.7rem;"></div>
+          </div>
+          <!-- SURVEY PANEL -->
+          <div class="survey-panel">
+            <h4>📍 Corner 1 (Tie Point) - DMS (PRS92 Zone 4)</h4>
+            <div class="dms-row">
+              <div><label>Lat:</label><br/><input type="number" id="popupLatDeg" value="10" style="width:55px"/>° <input type="number" id="popupLatMin" value="48" style="width:55px"/>' <input type="number" id="popupLatSec" value="7.4" step="0.001" style="width:65px"/>" <select id="popupLatHem"><option value="N">N</option><option value="S">S</option></select></div>
+              <div><label>Lon:</label><br/><input type="number" id="popupLonDeg" value="123" style="width:55px"/>° <input type="number" id="popupLonMin" value="25" style="width:55px"/>' <input type="number" id="popupLonSec" value="34.1" step="0.001" style="width:65px"/>" <select id="popupLonHem"><option value="E">E</option><option value="W">W</option></select></div>
+            </div>
+            <button class="btn-sm" id="updateSurveyFromDMSBtn" style="background: #e67e22; width: 100%; margin-bottom: 10px;">⟳ Update Corner 1 & Recompute</button>
+            <div id="popupPrs92Display" class="stat-box">📍 PRS92 Corner 1: Loading...</div>
+          </div>
+          <div class="survey-panel">
+            <h4>📐 Bearing / Distance Table (Traverse)</h4>
+            <div style="overflow-x: auto">
+              <table id="popupBearingTable" class="bearing-table">
+                <thead><tr><th>Leg</th><th>From→To</th><th>Bearing (Quadrant)</th><th>Dist(m)</th><th>ΔE</th><th>ΔN</th><th></th></tr></thead>
+                <tbody id="popupTableBody"></tbody>
+                …
+            </div>
+            <div style="display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap">
+              <button class="btn-sm" id="popupAddRowBtn">+ Add Leg</button>
+              <button class="btn-sm" id="popupApplyEditsBtn" style="background: #e67e22">Apply Edits</button>
+              <button class="btn-sm" id="popupResetTableBtn" style="background:#dc3545; color:white;">🗑️ Remove All Legs</button>
+            </div>
+          </div>
+          <div class="survey-panel">
+            <h4>📊 Closure Analysis</h4>
+            <div id="popupClosureStats" class="stat-box">Calculating...</div>
+          </div>
+          <div class="survey-panel">
+            <h4>📍 All Corner Points (PRS92)</h4>
+            <div id="popupCornerPointsList" class="corner-points-list"></div>
+            <div style="margin-top: 10px">
+              <button class="btn-sm" id="popupExportGeoJSONBtn">📄 Export GeoJSON</button>
+              <button class="btn-sm" id="popupExportShapefileBtn">🗺️ Export Shapefile (ZIP)</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="map-popup-footer">
+        <button class="btn btn-primary" onclick="saveCoordinatesFromPopup()">✓ Use Selected Coordinates for Clearance</button>
+        <button class="btn btn-secondary" onclick="closeMapPopup()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="dataModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitle">Record Details</h2>
+        <button class="close-btn" onclick="closeModal()">&times;</button>
+      </div>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+  
+  <div id="syncStatus" class="sync-status">
+    <span>🟢 Online</span>
+    <button onclick="manualRefresh()" style="margin-left:8px; padding:2px 8px; border-radius:20px; border:none; cursor:pointer;">Sync</button>
+  </div>
+  
+  <div id="loginModal" class="login-modal">
+    <div class="login-modal-content">
+      <div class="login-modal-header">
+        <div class="seal-icon">🏛️</div>
+        <h3>DHSUD Region VI</h3>
+        <p style="font-size:0.8rem; opacity:0.9;">Sign in to access your account</p>
+      </div>
+      <div class="login-modal-body">
+        <form id="modalLoginForm" onsubmit="return handleModalLogin(event)">
+          <div class="input-group">
+            <label>📧 Email Address</label>
+            <input type="email" id="modalLoginEmail" placeholder="name@dhsud.gov.ph" required>
+          </div>
+          <div class="input-group">
+            <label>🔒 Password</label>
+            <input type="password" id="modalLoginPassword" placeholder="Enter your password" required>
+            <button type="button" class="toggle-password" onclick="toggleModalPassword()">👁️</button>
+          </div>
+          <button type="submit" class="login-submit-btn">→ Sign In</button>
+        </form>
+      </div>
+      <div class="login-modal-footer">🔐 Role-Based Access: Admin | Staff/Officer</div>
+    </div>
+  </div>
+  <script>
+    // ========== ORIGINAL LC.HTML JAVASCRIPT (PRESERVED) ==========
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwG6boao9L8txxXj3xysXp315urpws3AMEXkXaa6BHcmaUC4JRN9YQsIHRYUK9o30hPGg/exec";
+    let locationalRecords = [];
+    let currentEditingId = null;
+    let currentUser = null;
+
+    function encodePassword(p) {
+        return btoa(p);
+    }
+    function escapeHtml(s) {
+        if (s == null) return "";
+        return String(s).replace(/[&<>]/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[m]);
+    }
+    function showToastMessage(msg, type = "info") {
+        let t = document.querySelector(".toast-msg");
+        if (t) t.remove();
+        let toast = document.createElement("div");
+        toast.className = "toast-msg";
+        toast.style.background = type === "error" ? "#b91c1c" : "#166534";
+        toast.innerText = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+    function formatDate(d) {
+        if (!d) return "";
+        const dt = new Date(d);
+        if (!isNaN(dt)) return dt.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+        return d;
+    }
+
+    function checkSession() {
+        const raw = localStorage.getItem("dhsud_session");
+        if (raw) {
+            try {
+                const s = JSON.parse(raw);
+                const diff = (new Date() - new Date(s.loggedInAt)) / (1000 * 60 * 60);
+                if (diff < 12 && s.email) {
+                    currentUser = s;
+                    return true;
+                } else localStorage.removeItem("dhsud_session");
+            } catch (e) {
+                localStorage.removeItem("dhsud_session");
+            }
+        }
+        currentUser = null;
+        return false;
+    }
+
+    function getUserInitials(n) {
+        if (!n) return "U";
+        let p = n.split(" ");
+        if (p.length >= 2) return (p[0][0] + p[1][0]).toUpperCase();
+        return n.substring(0, 2).toUpperCase();
+    }
+    function getRoleLabel(r) {
+        if (r === "admin") return "👑 Admin";
+        if (r === "encoder" || r === "staff") return "📋 Staff/Officer";
+        return "👁️ Viewer";
+    }
+    function getRoleClass(r) {
+        if (r === "admin") return "admin";
+        if (r === "encoder" || r === "staff") return "staff";
+        return "viewer";
+    }
+
+    function renderMainNavigation() {
+    const container = document.getElementById("mainNavContainer");
+    if (!container) return;
+    let navHtml = `<a href="index.html">Home</a>`;
+    if (currentUser) {
+        navHtml += `<div class="dropdown" id="certDropdown"><button class="dropbtn">Certification</button><div class="dropdown-content"><a href="lc.html">Locational Clearance</a><a href="SZC.html">Site Zoning Clarification</a></div></div>
+          <div class="dropdown" id="landUseDropdown"><button class="dropbtn">Land Use Plans</button><div class="dropdown-content"><div class="dropdown-submenu" id="clupSubmenu"><button class="submenu-trigger">CLUP & ZO <span class="arrow-right">▸</span></button><div class="submenu-content"><a href="inventory.html">Inventory</a><a href="status.html">Status</a></div></div><a href="status.html">PDPFP</a></div></div>
+          <a href="lgu-info.html">LGU Information</a><a href="report.html">Reports</a><a href="calendar.html">Calendar of Activities</a><a href="issuance.html">Issuances</a><a href="#about">About</a><a href="#contact">Contact</a>`;
+    } else { navHtml += `<a href="#about">About</a><a href="#contact">Contact</a>`; }
+    container.innerHTML = navHtml;
+    // Keep click functionality for submenu items if needed
+    setTimeout(() => {
+        document.querySelectorAll(".dropdown-submenu .submenu-trigger").forEach((trigger) => {
+            trigger.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const submenu = trigger.closest(".dropdown-submenu");
+                if (submenu) submenu.classList.toggle("open");
+            });
+        });
+        document.addEventListener("click", function (e) {
+            if (!e.target.closest(".dropdown-submenu")) {
+                document.querySelectorAll(".dropdown-submenu.open").forEach((s) => s.classList.remove("open"));
+            }
+        });
+    }, 10);
+}
+
+    function renderUserMenu() {
+        const container = document.getElementById("userMenuContainer");
+        if (!container) return;
+        if (currentUser) {
+            const initials = getUserInitials(currentUser.fullName);
+            const firstName = currentUser.fullName?.split(" ")[0] || "User";
+            const isAdmin = currentUser.role === "admin";
+            const roleLabel = getRoleLabel(currentUser.role);
+            const roleClass = getRoleClass(currentUser.role);
+            container.innerHTML = `<div class="user-menu" id="userMenuDropdown"><div class="user-avatar">${initials}</div><span class="user-name">${escapeHtml(firstName)}</span><span class="role-badge-header ${roleClass}" style="font-size:0.65rem;">${roleLabel}</span><span style="font-size:0.7rem;">▼</span><div class="user-dropdown-menu"><div class="user-dropdown-item">👤 ${escapeHtml(currentUser.email)}</div><div class="user-dropdown-item">🏢 ${escapeHtml(currentUser.office || "ELUPDD")}</div>${isAdmin ? `<div class="user-dropdown-item" id="adminConsoleLink">⚙️ Manage Users (Admin Panel)</div>` : ""}<div class="user-dropdown-item" id="logoutDropdownBtn" style="color:#dc2626;">🚪 Sign Out</div></div></div>`;
+            const userDiv = document.getElementById("userMenuDropdown");
+            if (userDiv) {
+                userDiv.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    const menu = userDiv.querySelector(".user-dropdown-menu");
+                    if (menu) menu.style.display = menu.style.display === "block" ? "none" : "block";
+                });
+                document.addEventListener("click", () => {
+                    const menu = userDiv.querySelector(".user-dropdown-menu");
+                    if (menu) menu.style.display = "none";
+                });
+            }
+            if (isAdmin) {
+                const adminBtn = document.getElementById("adminConsoleLink");
+                if (adminBtn) adminBtn.addEventListener("click", () => (window.location.href = "admin.html"));
+            }
+            const logoutBtn = document.getElementById("logoutDropdownBtn");
+            if (logoutBtn)
+                logoutBtn.addEventListener("click", () => {
+                    localStorage.removeItem("dhsud_session");
+                    showToastMessage("Logged out successfully.", "info");
+                    setTimeout(() => (window.location.href = "login.html"), 700);
+                });
+        } else {
+            container.innerHTML = `<div class="login-prompt" onclick="openLoginModal()">🔐 Sign In</div>`;
+        }
+    }
+
+    function openLoginModal() {
+        document.getElementById("loginModal").classList.add("active");
+    }
+    function toggleModalPassword() {
+        let pwd = document.getElementById("modalLoginPassword");
+        pwd.type = pwd.type === "password" ? "text" : "password";
+    }
+
+    async function handleModalLogin(e) {
+        e.preventDefault();
+        const email = document.getElementById("modalLoginEmail").value.trim().toLowerCase();
+        const password = document.getElementById("modalLoginPassword").value;
+        const btn = e.submitter;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = "⏳ Authenticating...";
+        btn.disabled = true;
+        try {
+            const resp = await fetch(`${GOOGLE_SCRIPT_URL}?action=get&data_type=users&_=${Date.now()}`);
+            const users = await resp.json();
+            const user = users.find((u) => u.email?.toLowerCase() === email);
+            if (!user) {
+                showToastMessage("Account not found.", "error");
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                return false;
+            }
+            const encodedPassword = encodePassword(password);
+            if (user.password === encodedPassword) {
+                const session = {
+                    userId: user.id,
+                    email: user.email,
+                    fullName: user.fullName,
+                    office: user.office || "ELUPDD",
+                    role: user.role,
+                    loggedInAt: new Date().toISOString(),
+                };
+                localStorage.setItem("dhsud_session", JSON.stringify(session));
+                showToastMessage(`Welcome ${user.fullName?.split(" ")[0] || ""}!`, "success");
+                document.getElementById("loginModal").classList.remove("active");
+                setTimeout(() => window.location.reload(), 1000);
+            } else {
+                showToastMessage("Invalid password.", "error");
+            }
+        } catch (error) {
+            showToastMessage("Connection error. Please try again.", "error");
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+        return false;
+    }
+
+    // IMPROVED: Auto-generate Application No. and Decision No. with year-month and sequential numbering
+async function generateApplicationNo() {
+    const now = new Date();
+    const year = now.getFullYear().toString().slice(-2); // Get last 2 digits of year (26 for 2026)
+    const month = (now.getMonth() + 1).toString().padStart(2, '0'); // Month with leading zero
+    
+    // Find existing application numbers for current month/year to determine next sequence
+    let maxSeq = 0;
+    const currentPrefix = `ELUPDD-${month}-${year}-`;
+    
+    for (const record of locationalRecords) {
+        if (record.applicationNo && record.applicationNo.startsWith(`ELUPDD-${month}-${year}`)) {
+            const parts = record.applicationNo.split('-');
+            if (parts.length === 4) {
+                const seq = parseInt(parts[3], 10);
+                if (!isNaN(seq) && seq > maxSeq) {
+                    maxSeq = seq;
+                }
+            }
+        }
+    }
+    
+    const nextSeq = (maxSeq + 1).toString().padStart(3, '0');
+    return `ELUPDD-${month}-${year}-${nextSeq}`;
+}
+
+async function generateDecisionNo() {
+    const now = new Date();
+    const year = now.getFullYear().toString().slice(-2);
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    
+    let maxSeq = 0;
+    const currentPrefix = `LC-${month}-${year}-`;
+    
+    for (const record of locationalRecords) {
+        if (record.decisionNo && record.decisionNo.startsWith(`LC-${month}-${year}`)) {
+            const parts = record.decisionNo.split('-');
+            if (parts.length === 4) {
+                const seq = parseInt(parts[3], 10);
+                if (!isNaN(seq) && seq > maxSeq) {
+                    maxSeq = seq;
+                }
+            }
+        }
+    }
+    
+    const nextSeq = (maxSeq + 1).toString().padStart(3, '000');
+    return `LC-${month}-${year}-${nextSeq}`;
+}
+
+// NEW: Function to make Application No. and Decision No. editable
+function makeNumberEditable() {
+    const appNoField = document.getElementById("locAppNo");
+    const decisionNoField = document.getElementById("locDecisionNo");
+    
+    if (appNoField && !appNoField.hasAttribute('data-editable-enabled')) {
+        appNoField.readOnly = false;
+        appNoField.style.backgroundColor = "#fff3cd";
+        appNoField.style.borderColor = "#ffc107";
+        appNoField.setAttribute('data-editable-enabled', 'true');
+        
+        // Add hint tooltip
+        appNoField.title = "You can edit this number. Format: ELUPDD-MM-YY-NNN";
+    }
+    
+    if (decisionNoField && !decisionNoField.hasAttribute('data-editable-enabled')) {
+        decisionNoField.readOnly = false;
+        decisionNoField.style.backgroundColor = "#fff3cd";
+        decisionNoField.style.borderColor = "#ffc107";
+        decisionNoField.setAttribute('data-editable-enabled', 'true');
+        
+        decisionNoField.title = "You can edit this number. Format: LC-MM-YY-NNN";
+    }
+}
+
+// Validate the format of Application No.
+function validateApplicationNo(appNo) {
+    const pattern = /^ELUPDD-\d{2}-\d{2}-\d{3}$/;
+    if (!pattern.test(appNo)) {
+        showToastMessage("Application No. format should be: ELUPDD-MM-YY-NNN", "error");
+        return false;
+    }
+    return true;
+}
+
+// Validate the format of Decision No.
+function validateDecisionNo(decNo) {
+    const pattern = /^LC-\d{2}-\d{2}-\d{3}$/;
+    if (!pattern.test(decNo)) {
+        showToastMessage("Decision No. format should be: LC-MM-YY-NNN", "error");
+        return false;
+    }
+    return true;
+}
+
+    async function saveToBackend(action, record) {
+    try {
+        // Use GET method with parameters
+        const params = new URLSearchParams();
+        params.append("action", action);
+        params.append("data_type", "locational");
+        params.append("data", JSON.stringify(record));
+        
+        const url = `${GOOGLE_SCRIPT_URL}?${params.toString()}`;
+        console.log("Saving to URL:", url);
+        
+        const response = await fetch(url, {
+            method: "GET",
+            mode: "cors"
+        });
+        
+        const result = await response.json();
+        console.log("Save result:", result);
+        return result.success === true;
+    } catch (e) {
+        console.error("Save error:", e);
+        return false;
+    }
+}
+
+    async function fetchRecords() {
+    try {
+        const url = `${GOOGLE_SCRIPT_URL}?action=get&data_type=locational&_=${Date.now()}`;
+        console.log("Fetching from URL:", url);
+        
+        const response = await fetch(url, {
+            method: "GET",
+            mode: "cors"
+        });
+        
+        const data = await response.json();
+        console.log("Fetched data:", data);
+        
+        locationalRecords = Array.isArray(data) ? data : [];
+        localStorage.setItem("locationalRecords", JSON.stringify(locationalRecords));
+        refreshStatusTable();
+        refreshAccTable();
+    } catch (e) {
+        console.error("Fetch error:", e);
+        const local = localStorage.getItem("locationalRecords");
+        locationalRecords = local ? JSON.parse(local) : [];
+        refreshStatusTable();
+        refreshAccTable();
+    }
+}
+
+    async function saveLocationalRecord(e) {
+    e.preventDefault();
+    const saveBtn = e.submitter;
+    const originalText = saveBtn.innerHTML;
+    saveBtn.innerHTML = "⏳ Saving...";
+    saveBtn.disabled = true;
+    
+    try {
+        const id = currentEditingId || Date.now();
+        
+        // Get numbers from the editable fields
+        let applicationNo = getFullApplicationNo();
+        let decisionNo = getFullDecisionNo();
+        
+        // Validate formats
+        if (!validateNumberFormats()) {
+            saveBtn.innerHTML = originalText;
+            saveBtn.disabled = false;
+            return false;
+        }
+        
+        // For new records, check if numbers already exist
+        if (!currentEditingId) {
+            // Check if application number already exists
+            const appExists = locationalRecords.some(r => r.applicationNo === applicationNo);
+            if (appExists) {
+                showToastMessage(`Application No. ${applicationNo} already exists! Please use a different sequence number.`, "error");
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
+                return false;
+            }
+            
+            // Check if decision number already exists
+            const decExists = locationalRecords.some(r => r.decisionNo === decisionNo);
+            if (decExists) {
+                showToastMessage(`Decision No. ${decisionNo} already exists! Please use a different sequence number.`, "error");
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
+                return false;
+            }
+        }
+        
+        const record = {
+            id: id,
+            applicationNo: applicationNo,
+            decisionNo: decisionNo,
+            dateReceipt: document.getElementById("locDateReceipt").value,
+            dateIssue: document.getElementById("locDateIssue").value,
+            applicant: document.getElementById("locApplicant").value.trim(),
+            corporation: document.getElementById("locCorporation").value.trim(),
+            applicantAddress: document.getElementById("locApplicantAddress").value.trim(),
+            corpAddress: document.getElementById("locCorpAddress").value.trim(),
+            projectType: document.getElementById("locProjectType").value.trim(),
+            areaLocation: document.getElementById("locAreaLocation").value.trim(),
+            decision: document.getElementById("locDecision").value,
+            rightOverLand: document.getElementById("locRightOverLand").value.trim(),
+            conditions: document.getElementById("locConditions").value.trim(),
+            orNo: document.getElementById("locOrNo").value.trim(),
+            amountPaid: document.getElementById("locAmountPaid").value.trim(),
+            orDate: document.getElementById("locOrDate").value,
+            status: currentEditingId ? (locationalRecords.find(r => r.id === id)?.status || "For Review") : "For Review",
+            timestamp: new Date().toISOString()
+        };
+        
+        // Validate required fields
+        const requiredFields = ['applicant', 'applicantAddress', 'projectType', 'areaLocation', 'decision', 'rightOverLand', 'dateIssue', 'amountPaid'];
+        for (const field of requiredFields) {
+            if (!record[field]) {
+                alert(`Please fill in: ${field.replace(/([A-Z])/g, ' $1').trim()}`);
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
+                return false;
+            }
+        }
+        
+        const action = currentEditingId ? "update" : "add";
+        const backendSuccess = await saveToBackend(action, record);
+        
+        if (backendSuccess) {
+            if (currentEditingId) {
+                const idx = locationalRecords.findIndex(r => r.id === id);
+                if (idx !== -1) locationalRecords[idx] = record;
+            } else {
+                locationalRecords.push(record);
+            }
+            localStorage.setItem("locationalRecords", JSON.stringify(locationalRecords));
+            clearForm();
+            refreshStatusTable();
+            refreshAccTable();
+            showToastMessage(`✅ Saved: ${record.applicationNo}`);
+        } else {
+            if (currentEditingId) {
+                const idx = locationalRecords.findIndex(r => r.id === id);
+                if (idx !== -1) locationalRecords[idx] = record;
+            } else {
+                locationalRecords.push(record);
+            }
+            localStorage.setItem("locationalRecords", JSON.stringify(locationalRecords));
+            clearForm();
+            refreshStatusTable();
+            refreshAccTable();
+            showToastMessage(`⚠️ Saved locally only: ${record.applicationNo}`);
+        }
+    } catch (error) {
+        showToastMessage("Error saving record: " + error.message, "error");
+        console.error("Save error:", error);
+    } finally {
+        saveBtn.innerHTML = originalText;
+        saveBtn.disabled = false;
+    }
+    return false;
+}
+
+    function updateStatus(id, newStatus) {
+        const rec = locationalRecords.find((r) => r.id === id);
+        if (rec) {
+            rec.status = newStatus;
+            saveToBackend("update", rec);
+            localStorage.setItem("locationalRecords", JSON.stringify(locationalRecords));
+            refreshStatusTable();
+            refreshAccTable();
+            showToastMessage(`Status updated to "${newStatus}"`);
+        }
+    }
+
+    function refreshStatusTable() {
+        const tbody = document.getElementById("statusTableBody");
+        if (!tbody) return;
+        const search = document.getElementById("statusSearch")?.value.toLowerCase() || "";
+        const filter = document.getElementById("statusFilter")?.value || "";
+        let filtered = locationalRecords.filter((r) => r.status !== "Released");
+        if (filter) filtered = filtered.filter((r) => r.status === filter);
+        if (search)
+            filtered = filtered.filter(
+                (r) => r.applicationNo?.toLowerCase().includes(search) || r.applicant?.toLowerCase().includes(search)
+            );
+        filtered.sort((a, b) => new Date(b.dateIssue) - new Date(a.dateIssue));
+        if (filtered.length === 0) {
+            tbody.innerHTML = '<tr class="empty-row"><td colspan="8">📋 No pending records.  <tr>';
+            return;
+        }
+        tbody.innerHTML = filtered
+            .map(
+                (r) =>
+                    `<tr><td>${escapeHtml(r.applicationNo)}</div><td>${escapeHtml(r.decisionNo)}</div><td>${escapeHtml(r.applicant)}</div><td>${escapeHtml(r.projectType)}</div><td>${formatDate(r.dateIssue)}</div><td>${escapeHtml(r.decision)}</div><td><select class="status-dropdown" onchange="updateStatus(${r.id}, this.value)"><option ${r.status === "For Review" ? "selected" : ""}>For Review</option><option ${r.status === "For RD Signature" ? "selected" : ""}>For RD Signature</option><option ${r.status === "For Release" ? "selected" : ""}>For Release</option><option ${r.status === "Released" ? "selected" : ""}>Released</option></select></td><td class="action-btns"><button class="action-btn view" onclick="viewRecord(${r.id})">👁️</button><button class="action-btn edit" onclick="editRecord(${r.id})">✏️</button><button class="action-btn print" onclick="printRecord(${r.id})">🖨️</button><button class="action-btn delete" onclick="deleteRecord(${r.id})">🗑️</button></div>`
+            )
+            .join("");
+    }
+
+    function refreshAccTable() {
+        const tbody = document.getElementById("accTableBody");
+        if (!tbody) return;
+        const search = document.getElementById("accSearch")?.value.toLowerCase() || "";
+        let filtered = locationalRecords.filter((r) => r.status === "Released");
+        if (search)
+            filtered = filtered.filter(
+                (r) => r.applicationNo?.toLowerCase().includes(search) || r.applicant?.toLowerCase().includes(search)
+            );
+        filtered.sort((a, b) => new Date(b.dateIssue) - new Date(a.dateIssue));
+        if (filtered.length === 0) {
+            tbody.innerHTML = '<tr class="empty-row"><td colspan="8">✅ No released records yet. </tr>';
+            return;
+        }
+        tbody.innerHTML = filtered
+            .map(
+                (r) =>
+                    `<tr><td>${escapeHtml(r.applicationNo)}</div><td>${escapeHtml(r.decisionNo)}</div><td>${escapeHtml(r.applicant)}</div><td>${escapeHtml(r.projectType)}</div><td>${formatDate(r.dateIssue)}</div><td>${escapeHtml(r.decision)}</div><td><span class="status-badge released">✅ Released</span></div><td class="action-btns"><button class="action-btn view" onclick="viewRecord(${r.id})">👁️</button><button class="action-btn print" onclick="printRecord(${r.id})">🖨️</button></div>`
+            )
+            .join("");
+    }
+
+    function viewRecord(id) {
+        const r = locationalRecords.find((r) => r.id === id);
+        if (!r) return;
+        let html = '<div class="form-grid">';
+        for (let [k, v] of Object.entries(r))
+            if (k !== "id") html += `<div><strong>${k}:</strong> ${escapeHtml(String(v || ""))}</div>`;
+        html += `</div><button class="btn btn-primary" onclick="closeModal()">Close</button>`;
+        document.getElementById("modalTitle").innerText = "View Locational Clearance";
+        document.getElementById("modalBody").innerHTML = html;
+        document.getElementById("dataModal").classList.add("active");
+    }
+
+    function editRecord(id) {
+    const r = locationalRecords.find(r => r.id === id);
+    if (!r) return;
+    currentEditingId = id;
+    switchView("dataEntry");
+    document.getElementById("locAppNo").value = r.applicationNo || "";
+    document.getElementById("locDecisionNo").value = r.decisionNo || "";
+    document.getElementById("locDateReceipt").value = r.dateReceipt || "";
+    document.getElementById("locDateIssue").value = r.dateIssue || "";
+    document.getElementById("locApplicant").value = r.applicant || "";
+    document.getElementById("locCorporation").value = r.corporation || "";
+    document.getElementById("locApplicantAddress").value = r.applicantAddress || "";
+    document.getElementById("locCorpAddress").value = r.corpAddress || "";
+    document.getElementById("locProjectType").value = r.projectType || "";
+    document.getElementById("locAreaLocation").value = r.areaLocation || "";
+    document.getElementById("locDecision").value = r.decision || "";
+    document.getElementById("locRightOverLand").value = r.rightOverLand || "";
+    document.getElementById("locConditions").value = r.conditions || "";
+    document.getElementById("locOrNo").value = r.orNo || "";
+    document.getElementById("locAmountPaid").value = r.amountPaid || "";
+    document.getElementById("locOrDate").value = r.orDate || "";
+    
+    // Make the numbers editable when editing
+    makeNumberEditable();
+    
+    showToastMessage(`Editing: ${r.applicationNo}`);
+}
+    function clearForm() {
+    document.getElementById("locationalForm").reset();
+    currentEditingId = null;
+    
+    // Load latest numbers for new record
+    refreshLatestNumbersDisplay();
+    
+    // Clear other fields
+    document.getElementById("locDateReceipt").value = "";
+    document.getElementById("locDateIssue").value = "";
+    document.getElementById("locApplicant").value = "";
+    document.getElementById("locCorporation").value = "";
+    document.getElementById("locApplicantAddress").value = "";
+    document.getElementById("locCorpAddress").value = "";
+    document.getElementById("locProjectType").value = "";
+    document.getElementById("locAreaLocation").value = "";
+    document.getElementById("locDecision").value = "";
+    document.getElementById("locRightOverLand").value = "";
+    document.getElementById("locConditions").value = "";
+    document.getElementById("locOrNo").value = "";
+    document.getElementById("locAmountPaid").value = "";
+    document.getElementById("locOrDate").value = "";
+}
+    function clearStatusSearch() {
+        document.getElementById("statusSearch").value = "";
+        document.getElementById("statusFilter").value = "";
+        refreshStatusTable();
+    }
+    function clearAccSearch() {
+        document.getElementById("accSearch").value = "";
+        refreshAccTable();
+    }
+    function manualRefresh() {
+        fetchRecords();
+        showToastMessage("Refreshed from Google Sheets");
+    }
+    function exportToExcel() {
+        const released = locationalRecords.filter((r) => r.status === "Released");
+        if (!released.length) {
+            alert("No released records to export.");
+            return;
+        }
+        const ws = XLSX.utils.json_to_sheet(
+            released.map((r) => ({
+                "Application No.": r.applicationNo,
+                "Decision No.": r.decisionNo,
+                Applicant: r.applicant,
+                "Project Type": r.projectType,
+                "Date Issued": r.dateIssue,
+                Decision: r.decision,
+                "Amount Paid": r.amountPaid,
+            }))
+        );
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Locational_Released");
+        XLSX.writeFile(wb, `Locational_Released_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    }
+ 
+ 
+function printRecord(id) {
+    const r = locationalRecords.find(record => record.id === id);
+    if (!r) {
+        showToastMessage("Record not found", "error");
+        return;
+    }
+    
+    // Format dates
+    const formatDateLong = (dateStr) => {
+        if (!dateStr) return "";
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return dateStr;
+        return d.toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
+    };
+    
+    const dateReceived = formatDateLong(r.dateReceipt);
+    const dateIssued = formatDateLong(r.dateIssue);
+    const orDate = r.orDate ? formatDateLong(r.orDate) : "";
+    
+    // Get conditions
+    let conditionsHtml = '';
+    if (r.conditions && r.conditions.trim()) {
+        const conditionsList = r.conditions.split('\n').filter(c => c.trim());
+        if (conditionsList.length > 0) {
+            conditionsHtml = '<ul style="margin: 5px 0 5px 20px;">';
+            conditionsList.forEach(cond => {
+                conditionsHtml += `<li>${escapeHtml(cond)}</li>`;
+            });
+            conditionsHtml += '</ul>';
+        } else {
+            conditionsHtml = `<p>${escapeHtml(r.conditions)}</p>`;
+        }
+    }
+    
+    // Get decision text - handle "Approved" vs "Locational Clearance Granted"
+    let decisionText = r.decision || '';
+    if (decisionText === 'Approved') {
+        decisionText = 'Locational Clearance Granted';
+    }
+    
+    // Build the print HTML matching error28.JPG exactly
+    const printHtml = `
+    <div class="print-document">
+        
+		<!-- Republic Header -->
+<div class="print-header-with-logo">
+    <div class="print-logo-left">
+        <img src="DHSUD_LOGO.png" alt="DHSUD Logo" style="height: 60px; width: auto;">
+    </div>
+    <div class="print-republic-header">
+        <div>REPUBLIC OF THE PHILIPPINES</div> 
+        <div><strong>Department of Human Settlements and Urban Development</strong></div>
+        <div>Kagawaran ng Pananahanang Pantao at Pagpapaunlad ng Kalunsuran</div>
+    </div>
+    <div class="print-logo-right">
+        <img src="ciab.jpg" alt="ciab Logo" style="height: 60px; width: auto;">
+    </div>
+</div>
+		
+		<!-- Title -->
+        <div class="print-title">
+            DECISION ON ZONING
+        </div>
+		
+		<!-- Header with Application and Decision Numbers -->
+<div class="print-number-header">
+    <div class="print-number-left">
+        <div><strong>Application No.</strong> <span style="text-decoration: underline;">${escapeHtml(r.applicationNo || '')}</span></div>
+<div><strong>Date of Receipt</strong><span style="text-decoration: underline;"> ${dateReceived}</div>
+    </div>
+    <div class="print-number-right">
+       <div><strong>Decision No.</strong> <span style="text-decoration: underline;">${escapeHtml(r.decisionNo || '')}</span></div>
+<div><strong>Date of Issue</strong><span style="text-decoration: underline;"> ${dateIssued}</div>
+    </div>
+</div>
+        
+        <!-- Main Table - 4 columns exactly like the image -->
+        <table class="print-main-table">
+            <!-- Row 1: APPLICANT and NAME OF CORPORATION -->
+<tr>
+    <td class="print-label">APPLICANT:</td>
+    <td class="print-value"><strong>${escapeHtml(r.applicant || '')}</td>
+    <td class="print-label">NAME OF CORPORATION:</td>
+    <td class="print-value"><strong>${escapeHtml(r.corporation || '')}</strong></td>
+</tr>
+<!-- Row 2: ADDRESS (Applicant) and ADDRESS (Corporation) -->
+<tr>
+    <td class="print-label">ADDRESS:</td>
+    <td class="print-value"><strong>${escapeHtml(r.applicantAddress || '')}</strong></td>
+    <td class="print-label">ADDRESS:</td>
+    <td class="print-value"><strong>${escapeHtml(r.corpAddress || '')}</strong></td>
+</tr>
+<!-- Row 3: TYPE OF PROJECT and AREA AND LOCATION -->
+<tr>
+    <td class="print-label">TYPE OF PROJECT:</td>
+    <td class="print-value"><strong>${escapeHtml(r.projectType || '')}</strong></td>
+    <td class="print-label">AREA AND LOCATION:</td>
+    <td class="print-value"><strong>${escapeHtml(r.areaLocation || '')}</strong></td>
+</tr>
+<!-- Row 4: DECISION and RIGHT OVER LAND -->
+<tr>
+    <td class="print-label">DECISION:</td>
+    <td class="print-value"><strong>${getColoredDecisionText(decisionText)}</strong></td>
+    <td class="print-label">RIGHT OVER LAND:</td>
+    <td class="print-value"><strong>${escapeHtml(r.rightOverLand || '')}</strong></td>
+</tr>
+        </table>
+        
+        <!-- Conditions Section -->
+        <div class="print-conditions">
+        <strong>CONDITIONS:</strong>
+        </div>
+        
+        <!-- Standard Conditions -->
+        <div class="conditions-box">
+          <div class="print-standard-conditions">
+            <ul>
+                <li>All conditions stipulated herein and in all the representations of the applicant form part of this decision and are subject to monitoring.</li>
+                <li>Non-compliance therewith shall be a cause for cancellation or legal action.</li>
+                <li>The applicable requirements of other government agencies and applicable provisions of existing laws shall be complied with.</li>
+                <li>No activity other than that applied for shall be conducted within the project site.</li>
+                <li>No major expansion, alteration and/or improvement shall be introduced without prior clearance from this office.</li>
+                <li>This decision shall not be construed a certification from this office as to the ownership by the applicant of the parcel of land that is the subject of this decision.</li>
+                <li>Any misrepresentation, false statement or allegations material to the issuance of this decision shall be sufficient cause for its revocation.</li>
+                <li>The applicable provisions of the National Building Code shall be strictly observed.</li>
+                <li>Projects that are within the scope of the Environmental Impact Assessment System shall obtain an Environmental Compliance Certificate from the Department of Environment and Natural Resources.</li>
+                <li>Failure to commence or undertake the use, activity or development covered by this clearance on the property within a period of one year from the date of issuance shall result in its automatic expiration and cancellation.</li>
+            </ul>
+        </div>
+		</div>
+        
+        <!-- Signature -->
+<div class="print-signature">
+    <div class="signature-name">EnP EVA MARIA P. MARFIL, CSEE</div>
+    <div style="font-size: 12pt;">
+    Regional Director
+</div>
+</div>
+        
+        <!-- Footer with OR Details - Table Box -->
+<table class="footer-box-table" style="width: auto; margin: 5px 0 5px 0; border-collapse: collapse;">
+    <tr>
+        <td style="border: 0.5px solid #000; padding: 2px 8px; text-align: left; font-size: 7pt;">
+            <div><strong>${escapeHtml(r.decisionNo || '')}</strong></div>
+            <div>O.R. No. : ${escapeHtml(r.orNo || 'N/A')}</div>
+            <div>Amount Paid : ₱ ${escapeHtml(r.amountPaid || '0')}</div>
+            <div>Date : ${dateIssued}</div>
+        </td>
+    </tr>
+</table>
+        
+        <!-- Office Address with Logo Above -->
+<div class="print-office">
+    <div class="office-logo">
+        <img src="pppp.jpg" alt="pppp Logo" style="height: 35px; width: auto;">
+		<img src="bp.jpg" alt="bp Logo" style="height: 35px; width: auto;">
+    </div>
+    <div class="office-text">
+        DHSUD Regional Office 6<br>
+        2F Gaisano Capital ICC Mall, Sen. Benigno Aquino Ave., Mandurriao, Iloilo City<br>
+        Tel. No.: (033) 321 6177/ (033) 321 0163 | Mobile Number: 099 991 50630
+        E-mail: region6@dhsud.gov.ph | Facebook: @dhsudregion6
+    </div>
+</div>
+    `;
+    
+    // Open print window
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Locational Clearance - ${escapeHtml(r.applicationNo || '')}</title>
+            <meta charset="UTF-8">
+            <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    body {
+        font-family: "Times New Roman", Times, serif;
+        background: white;
+        margin: 0;
+        padding: 0;
+    }
+    .print-document {
+        max-width: 100%;
+        margin: 0;
+        padding: 0.5cm 0.8cm;
+        font-size: 10pt;
+        line-height: 1.2;
+    }
+    /* Header with Application and Decision Numbers */
+    /* Add spacing around the header section */
+    .print-number-header {
+        margin-top: 20px; /* Space on top */
+        margin-bottom: 0px; /* Space on bottom */
+        display: flex;
+        justify-content: space-evenly;
+        font-size: 11pt;
+    }
+
+    .print-number-left,
+    .print-number-right {
+        width: 48%;
+    }
+
+    .print-number-left div,
+    .print-number-right div {
+        display: flex;
+        justify-content: space-evenly; /* Space between label and value */
+        margin-bottom: 8px;
+    }
+
+    .print-number-left div strong,
+    .print-number-right div strong {
+        min-width: 120px; /* Fixed width for labels */
+    }
+
+    .print-number-left div span,
+    .print-number-right div span {
+        text-align: left; /* Align values to the right */
+        flex: 1;
+    }
+
+    /* Title */
+    .print-title {
+        text-align: center;
+        font-size: 14pt;
+        font-weight: bold;
+        margin: 15px 0;
+        letter-spacing: 3px; /* Adds space between letters */
+    }
+    .print-main-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        table-layout: fixed; /* Helps control widths */
+    }
+
+    .print-main-table td {
+        border: 1px solid #000;
+        padding: 6px 8px; /* Change padding: smaller = tighter */
+        vertical-align: top;
+    }
+    /* Label columns (1st and 3rd) - NO BOLD */
+    .print-main-table td:first-child,
+    .print-main-table td:nth-child(3) {
+        width: 20%;
+        white-space: normal;
+        word-wrap: break-word;
+        word-break: break-word;
+        vertical-align: top;
+        padding: 10px 8px;
+        background: #f5f5f5;
+        font-weight: normal !important;
+    }
+
+    /* Value columns (2nd and 4th) */
+    .print-main-table td:nth-child(2),
+    .print-main-table td:nth-child(4) {
+        width: 30%; /* 30% for each value column */
+        padding: 10px 12px;
+        vertical-align: top;
+    }
+
+    /* For labels that need wrapping */
+    .print-label {
+        white-space: normal;
+        line-height: 1.3;
+        font-weight: normal !important;
+    }
+
+    /* Specific fix for NAME OF CORPORATION */
+    .print-main-table td:nth-child(3) {
+        white-space: normal;
+        word-break: break-word;
+    }
+
+    .print-main-table .print-value {
+        width: 10%;
+        font-size: 11pt;
+    }
+    /* Conditions */
+    .print-conditions {
+        margin-top: 30px;
+        margin-bottom: 2px;
+    }
+    .print-conditions strong {
+        font-size: 10pt;
+        display: block;
+        margin-bottom: 2px;
+    }
+    .print-standard-conditions {
+        margin: 15px 0;
+    }
+    .print-standard-conditions ul {
+        margin: 5px 0 5px 25px;
+        padding-left: 0;
+    }
+    .print-standard-conditions li {
+        margin: 5px 0;
+    }
+    /* Signature */
+    .print-signature {
+        margin-top: 30px; /* Generous space from conditions */
+        margin-bottom: 5px; /* Space before footer */
+        text-align: right;
+    }
+
+    .signature-name {
+        border-top: 1px solid #000;
+        padding-top: 1px; /* Space between line and name */
+        display: inline-block;
+        font-weight: bold;
+        min-width: 80px;
+        letter-spacing: 0.5px;
+    }
+
+    .print-signature div:last-child {
+        margin-top: 5px;
+        font-size: 9pt;
+        font-style: normal;
+    }
+    /* Footer */
+    .print-footer {
+        margin-top: 20px;
+        border-top: 1px solid #000;
+        padding-top: 10px;
+    }
+    /* Office Address - Sticky Footer */
+    .print-office {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        text-align: center;
+        padding: 12px 0 8px 0;
+        border-top: 1px solid #ccc;
+        background: white;
+        font-size: 7pt;
+        margin-top: 80px;
+    }
+
+    .office-logo {
+        margin-bottom: 3px;
+    }
+
+    .office-logo img {
+        display: inline-block;
+        height: 25px;
+        width: auto;
+    }
+
+    .office-text {
+        font-size: 6pt;
+        color: #1e3a8a;
+        line-height: 1.2;
+    }
+    @page {
+        size: A4;
+        margin: 1cm;
+        margin-top: 0.5cm;
+        margin-bottom: 0.5cm;
+    }
+    /* Conditions Box */
+
+    .conditions-box {
+        padding: 2px 2px;
+        width: 100%;
+        max-width: 100%;
+        font-size: 10pt;
+        margin-top: 0px; /* Space on top */
+        margin-bottom: 5px; /* Space on bottom */
+    }
+
+    .conditions-box ul {
+        margin: 0;
+        padding-left: 20px;
+    }
+
+    .conditions-box li {
+        margin-top: 0px;
+        margin-bottom: 5px; /* Space between each condition line */
+        line-height: 1;
+        text-align: justify; /* Makes text look cleaner */
+    }
+
+    .conditions-box li:last-child {
+        margin-bottom: 0; /* Remove margin from last item */
+    }
+
+    /* Republic Header - Blue text */
+    .print-republic-header {
+        text-align: center;
+        margin-bottom: 5px; /* Reduced from 10px */
+        color: #1e3a8a;
+        font-family: "Arial", "Helvetica", sans-serif;
+    }
+    .print-republic-header div:first-child {
+        font-size: 6pt; /* Reduced from 14pt */
+    }
+    .print-republic-header div:nth-child(2) {
+        font-size: 9pt; /* Reduced from 11pt */
+        font-weight: bold;
+    }
+    .print-republic-header div:nth-child(3) {
+        font-size: 6pt; /* Reduced from 7pt */
+        font-style: italic;
+    }
+
+    .print-header-with-logo {
+        display: flex;
+        align-items: center;
+        justify-content: space-evenly;
+        width: 100%;
+        margin-bottom: 15px;
+    }
+
+    .print-logo-left,
+    .print-logo-right {
+        flex: 0 0 auto; /* Logos keep their size */
+        width: 100px; /* Fixed width for logo areas */
+    }
+
+    .print-republic-header {
+        flex: 1; /* Takes remaining space */
+        text-align: center;
+        margin: 0 15px;
+    }
+
+    .print-logo-left img,
+    .print-logo-right img {
+        height: 60px;
+        width: auto;
+        display: block;
+    }
+
+    /* For equal logo areas */
+    .print-logo-left {
+        text-align: right;
+    }
+
+    .print-logo-right {
+        text-align: left;
+    }
+
+    .print-label {
+        background: #f5f5f5;
+        white-space: normal;
+        font-size: 9pt;
+        font-weight: normal !important;
+    }
+
+    /* Footer Images - Centered */
+
+    .print-footer-images {
+        text-align: center;
+        margin: 5px 0 8px 0;
+    }
+    .print-footer-images img {
+        display: inline-block;
+        height: 25px; /* Reduced from 40px */
+        width: auto;
+        margin: 0 10px;
+    }
+</style>
+
+
+        </head>
+        <body>
+            ${printHtml}
+            <script>
+                window.onload = function() {
+                    window.print();
+                    setTimeout(function() { window.close(); }, 1000);
+                };
+            <\/script>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+}
+
+    function switchView(view) {
+        const views = { dataEntry: "dataEntryView", status: "statusView", accomplishment: "accomplishmentView" };
+        Object.values(views).forEach((v) => {
+            const el = document.getElementById(v);
+            if (el) el.classList.remove("active");
+        });
+        if (views[view]) document.getElementById(views[view]).classList.add("active");
+        document.querySelectorAll(".subnav-link").forEach((btn, i) => {
+            btn.classList.remove("active");
+            if (
+                (view === "dataEntry" && i === 0) ||
+                (view === "status" && i === 1) ||
+                (view === "accomplishment" && i === 2)
+            )
+                btn.classList.add("active");
+        });
+        if (view === "status") refreshStatusTable();
+        if (view === "accomplishment") refreshAccTable();
+    }
+    function closeModal() {
+        document.getElementById("dataModal").classList.remove("active");
+    }
+
+    // ========== MAP TOOL JAVASCRIPT (ADDED FROM SZC.HTML) ==========
+    let popupMap = null;
+    let mapInitialized = false;
+    let mapMarker = null;
+    let drawnItems = null;
+    let currentBaseLayer = null;
+    let geoJsonLayers = [];
+    let currentActiveLayer = null;
+    let classColorMap = new Map();
+    let savedPoints = [];
+    let savePointModeActive = false;
+    let measuringToolActive = false;
+    let currentMeasurementMode = null;
+    const CLASS_COLORS = [
+        "#e41a1c",
+        "#377eb8",
+        "#4daf4a",
+        "#984ea3",
+        "#ff7f00",
+        "#ffff33",
+        "#a65628",
+        "#f781bf",
+        "#999999",
+    ];
+    let currentRows = [];
+    let corner1PRS92 = { northing: 1193546.82, easting: 610645.297 };
+    let corner1DMS = {
+        latDeg: 10,
+        latMin: 48,
+        latSec: 7.4,
+        latHem: "N",
+        lonDeg: 123,
+        lonMin: 25,
+        lonSec: 34.1,
+        lonHem: "E",
+    };
+    let traverseOverlay = null;
+
+    // Helper Functions
+    function dmsToDecimal(deg, min, sec, hem) {
+        let dec = deg + min / 60 + sec / 3600;
+        return hem === "S" || hem === "W" ? -dec : dec;
+    }
+
+    function computeDeltas(row) {
+        const dist = parseFloat(row.distance);
+        if (isNaN(dist)) return { deltaE: 0, deltaN: 0 };
+        let rad = ((parseFloat(row.degrees) + parseFloat(row.minutes) / 60) * Math.PI) / 180;
+        let sinVal = Math.sin(rad),
+            cosVal = Math.cos(rad);
+        if (row.direction === "N" && row.quadrant === "E") return { deltaN: dist * cosVal, deltaE: dist * sinVal };
+        if (row.direction === "N" && row.quadrant === "W") return { deltaN: dist * cosVal, deltaE: -dist * sinVal };
+        if (row.direction === "S" && row.quadrant === "E") return { deltaN: -dist * cosVal, deltaE: dist * sinVal };
+        return { deltaN: -dist * cosVal, deltaE: -dist * sinVal };
+    }
+
+    function computeTraversePoints(rows, e0, n0) {
+        let pts = [{ pointNum: 1, name: "Corner 1", easting: e0, northing: n0 }];
+        let currE = 0,
+            currN = 0;
+        for (let i = 0; i < rows.length; i++) {
+            const { deltaE, deltaN } = computeDeltas(rows[i]);
+            currE += deltaE;
+            currN += deltaN;
+            pts.push({
+                pointNum: i + 2,
+                name: rows[i].to || `Corner ${i + 2}`,
+                easting: e0 + currE,
+                northing: n0 + currN,
+            });
+        }
+        return pts;
+    }
+
+    function computeClosureStats(rows) {
+        let sumE = 0,
+            sumN = 0,
+            totalDist = 0;
+        for (let r of rows) {
+            const { deltaE, deltaN } = computeDeltas(r);
+            sumE += deltaE;
+            sumN += deltaN;
+            totalDist += parseFloat(r.distance) || 0;
+        }
+        const misclosure = Math.hypot(sumE, sumN);
+        const precision = totalDist > 0 ? totalDist / (misclosure + 1e-8) : 0;
+        return {
+            deltaE: sumE,
+            deltaN: sumN,
+            misclosure,
+            precisionRatio: misclosure > 0 ? `1:${Math.round(precision)}` : "Perfect",
+            totalDist,
+        };
+    }
+
+    function prs92ToLatLng(e, n) {
+        const refLat = dmsToDecimal(corner1DMS.latDeg, corner1DMS.latMin, corner1DMS.latSec, corner1DMS.latHem);
+        const refLng = dmsToDecimal(corner1DMS.lonDeg, corner1DMS.lonMin, corner1DMS.lonSec, corner1DMS.lonHem);
+        const metersPerDegLat = 111320;
+        const metersPerDegLng = 111320 * Math.cos((refLat * Math.PI) / 180);
+        return {
+            lat: refLat + (n - corner1PRS92.northing) / metersPerDegLat,
+            lng: refLng + (e - corner1PRS92.easting) / metersPerDegLng,
+        };
+    }
+
+    function refreshSurveyUI() {
+        if (!currentRows || currentRows.length === 0) {
+            document.getElementById("popupClosureStats").innerHTML =
+                'No legs defined. Click "+ Add Leg" to start building your traverse.';
+            document.getElementById("popupCornerPointsList").innerHTML =
+                "<div>No corner points. Add legs to generate points.</div>";
+            document.getElementById("popupPrs92Display").innerHTML =
+                `📍 PRS92 Corner 1:<br>Easting: ${corner1PRS92.easting.toFixed(3)} m<br>Northing: ${corner1PRS92.northing.toFixed(3)} m`;
+            renderPopupEditableTable();
+            updateMapTraverseOverlay();
+            return;
+        }
+        const points = computeTraversePoints(currentRows, corner1PRS92.easting, corner1PRS92.northing);
+        const stats = computeClosureStats(currentRows);
+        document.getElementById("popupClosureStats").innerHTML =
+            `ΣΔE: ${stats.deltaE.toFixed(4)} m<br>ΣΔN: ${stats.deltaN.toFixed(4)} m<br>Linear Misclosure: ${stats.misclosure.toFixed(4)} m<br>Precision: ${stats.precisionRatio}<br>Perimeter: ${stats.totalDist.toFixed(2)} m`;
+        document.getElementById("popupCornerPointsList").innerHTML = points
+            .map((p) => `<div><strong>${p.name}:</strong> E:${p.easting.toFixed(2)} N:${p.northing.toFixed(2)}</div>`)
+            .join("");
+        document.getElementById("popupPrs92Display").innerHTML =
+            `📍 PRS92 Corner 1:<br>Easting: ${corner1PRS92.easting.toFixed(3)} m<br>Northing: ${corner1PRS92.northing.toFixed(3)} m`;
+        renderPopupEditableTable();
+        updateMapTraverseOverlay();
+    }
+
+    function renderPopupEditableTable() {
+        const tbody = document.getElementById("popupTableBody");
+        if (!tbody) return;
+        tbody.innerHTML = "";
+        if (!currentRows || currentRows.length === 0) {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `<td colspan="7" style="text-align: center; padding: 20px; color: #666;">📋 No legs defined. Click <strong>"+ Add Leg"</strong> to start building your traverse.`;
+            tbody.appendChild(tr);
+            return;
+        }
+        currentRows.forEach((row, idx) => {
+            const { deltaE, deltaN } = computeDeltas(row);
+            const tr = document.createElement("tr");
+            tr.innerHTML = `<td>${idx + 1}</td><td>${row.from}→${row.to}</td><td><select class="edit-dir" style="width:55px;">${["N", "S"].map((d) => `<option ${row.direction === d ? "selected" : ""}>${d}</option>`).join("")}</select> <input type="number" class="edit-deg" value="${row.degrees}" style="width:55px;">° <input type="number" class="edit-min" value="${row.minutes}" style="width:55px;">' <select class="edit-quad" style="width:55px;">${["E", "W"].map((q) => `<option ${row.quadrant === q ? "selected" : ""}>${q}</option>`).join("")}</select></div><td><input type="number" class="edit-dist" value="${row.distance}" step="any" style="width:90px;"></td><td>${deltaE.toFixed(2)}</td><td>${deltaN.toFixed(2)}</td><td><button class="delete-row-btn" data-idx="${idx}" style="background:#b91c1c; border:none; color:white; border-radius:16px; padding:2px 8px;">✖</button></td>`;
+            tbody.appendChild(tr);
+        });
+        document.querySelectorAll(".delete-row-btn").forEach((btn) =>
+            btn.addEventListener("click", (e) => {
+                let idx = parseInt(btn.getAttribute("data-idx"));
+                if (!isNaN(idx) && currentRows.length > 0) {
+                    currentRows.splice(idx, 1);
+                    for (let i = idx; i < currentRows.length; i++) {
+                        currentRows[i].from = `Corner ${i + 1}`;
+                        currentRows[i].to = `Corner ${i + 2}`;
+                    }
+                    refreshSurveyUI();
+                }
+            })
+        );
+    }
+
+    function syncRowsFromPopupTable() {
+        let newRows = [];
+        document.querySelectorAll("#popupTableBody tr").forEach((rowEl, i) => {
+            const dir = rowEl.querySelector(".edit-dir")?.value,
+                deg = rowEl.querySelector(".edit-deg")?.value,
+                min = rowEl.querySelector(".edit-min")?.value,
+                quad = rowEl.querySelector(".edit-quad")?.value,
+                dist = rowEl.querySelector(".edit-dist")?.value;
+            if (dir && deg && min && quad && dist)
+                newRows.push({
+                    from: `Corner ${i + 1}`,
+                    to: `Corner ${i + 2}`,
+                    direction: dir,
+                    degrees: deg,
+                    minutes: min,
+                    seconds: "00",
+                    quadrant: quad,
+                    distance: dist,
+                });
+        });
+        if (newRows.length) currentRows = newRows;
+        refreshSurveyUI();
+    }
+
+    function updateTieFromDMS() {
+        corner1DMS = {
+            latDeg: parseFloat(document.getElementById("popupLatDeg").value),
+            latMin: parseFloat(document.getElementById("popupLatMin").value),
+            latSec: parseFloat(document.getElementById("popupLatSec").value),
+            latHem: document.getElementById("popupLatHem").value,
+            lonDeg: parseFloat(document.getElementById("popupLonDeg").value),
+            lonMin: parseFloat(document.getElementById("popupLonMin").value),
+            lonSec: parseFloat(document.getElementById("popupLonSec").value),
+            lonHem: document.getElementById("popupLonHem").value,
+        };
+        const newLat = dmsToDecimal(corner1DMS.latDeg, corner1DMS.latMin, corner1DMS.latSec, corner1DMS.latHem);
+        const newLng = dmsToDecimal(corner1DMS.lonDeg, corner1DMS.lonMin, corner1DMS.lonSec, corner1DMS.lonHem);
+        if (popupMap) popupMap.setView([newLat, newLng], 14);
+        refreshSurveyUI();
+        showToastMessage("Tie point updated");
+    }
+
+    function updateMapTraverseOverlay() {
+        if (!popupMap) return;
+        if (traverseOverlay) popupMap.removeLayer(traverseOverlay);
+        if (!currentRows || currentRows.length === 0) {
+            traverseOverlay = null;
+            return;
+        }
+        const points = computeTraversePoints(currentRows, corner1PRS92.easting, corner1PRS92.northing);
+        if (points.length < 2) return;
+        const latLngPoints = points.map((p) => prs92ToLatLng(p.easting, p.northing));
+        const closedPoints = [...latLngPoints, latLngPoints[0]];
+        const polyline = L.polyline(latLngPoints, { color: "#e34d4d", weight: 3, opacity: 0.9 });
+        const polygon = L.polygon(closedPoints, {
+            color: "#e34d4d",
+            weight: 2,
+            fillColor: "#ffb347",
+            fillOpacity: 0.25,
+        });
+        const markers = L.layerGroup();
+        latLngPoints.forEach((coord, idx) => {
+            let m = L.circleMarker(coord, { radius: 5, color: "#2c5f8a", fillOpacity: 1 }).bindTooltip(
+                points[idx].name
+            );
+            markers.addLayer(m);
+        });
+        traverseOverlay = L.layerGroup([polyline, polygon, markers]).addTo(popupMap);
+        try {
+            if (latLngPoints.length > 0) popupMap.fitBounds(L.latLngBounds(latLngPoints).pad(0.1));
+        } catch (e) {}
+    }
+
+    function exportSurveyGeoJSON() {
+        const points = computeTraversePoints(currentRows, corner1PRS92.easting, corner1PRS92.northing);
+        const latLngPoints = points.map((p) => prs92ToLatLng(p.easting, p.northing));
+        const coordinates = latLngPoints.map((p) => [p.lng, p.lat]);
+        coordinates.push(coordinates[0]);
+        const geojson = {
+            type: "FeatureCollection",
+            features: [
+                {
+                    type: "Feature",
+                    properties: { name: "PRS92 Traverse", perimeter_m: computeClosureStats(currentRows).totalDist },
+                    geometry: { type: "Polygon", coordinates: [coordinates] },
+                },
+            ],
+        };
+        const dataStr = JSON.stringify(geojson);
+        const blob = new Blob([dataStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `traverse_${Date.now()}.geojson`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function exportSurveyShapefile() {
+        showToastMessage("Shapefile export - GeoJSON saved instead (ZIP simulation)");
+        const zip = new JSZip();
+        zip.file("polygon.prj", `GEOGCS["WGS_84"]`);
+        zip.generateAsync({ type: "blob" }).then((content) => {
+            const url = URL.createObjectURL(content);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `survey_${Date.now()}.zip`;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+    }
+
+    function openSurveyMapPopup() {
+        let modal = document.getElementById("mapPopupModal");
+        modal.classList.add("active");
+        setTimeout(() => {
+            if (!mapInitialized) {
+                popupMap = L.map("popupMap", {
+                    center: [10.802, 123.426],
+                    zoom: 13,
+                    zoomControl: true,
+                    scrollWheelZoom: true,
+                    doubleClickZoom: true,
+                });
+                currentBaseLayer = L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+                    attribution:
+                        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                    maxZoom: 18,
+                }).addTo(popupMap);
+                popupMap.invalidateSize();
+                mapInitialized = true;
+                initGeocoder();
+                setupSearchEnterKey();
+                initMeasurementTools();
+                loadSavedPoints();
+                const savePointToggleBtn = document.getElementById("toggleSavePointBtn");
+                if (savePointToggleBtn)
+                    savePointToggleBtn.onclick = () => {
+                        if (measuringToolActive) {
+                            if (currentMeasurementMode === "distance")
+                                document.getElementById("startMeasureLineBtn").click();
+                            else if (currentMeasurementMode === "area")
+                                document.getElementById("startMeasureAreaBtn").click();
+                        }
+                        toggleSavePointMode(!savePointModeActive);
+                    };
+                toggleSavePointMode(false);
+                if (!popupMap.zoomControl) L.control.zoom({ position: "topright" }).addTo(popupMap);
+            } else {
+                popupMap.invalidateSize();
+            }
+            refreshSurveyUI();
+        }, 200);
+    }
+
+    function initGeocoder() {
+        console.log("Search ready");
+    }
+
+    async function searchMapLocation() {
+        const searchTerm = document.getElementById("mapSearchInput").value.trim();
+        if (!searchTerm) {
+            showToastMessage("Please enter a search term", "error");
+            return;
+        }
+        showToastMessage("Searching...", "info");
+        const savedPointResults = searchSavedPoints(searchTerm);
+        let addressResults = [];
+        try {
+            const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchTerm)}&format=json&limit=5&countrycodes=ph`;
+            const response = await fetch(url, {
+                headers: { Accept: "application/json", "User-Agent": "DHSUD-Zoning-App/1.0" },
+            });
+            if (response.ok) {
+                const data = await response.json();
+                addressResults = data.map((item) => ({
+                    name: item.display_name,
+                    lat: parseFloat(item.lat),
+                    lon: parseFloat(item.lon),
+                    latlng: { lat: parseFloat(item.lat), lng: parseFloat(item.lon) },
+                }));
+            } else console.log("API response not OK:", response.status);
+        } catch (e) {
+            console.log("Search error:", e);
+            showToastMessage("Search service error. Try a different term.", "error");
+        }
+        displaySearchResults(savedPointResults, addressResults, searchTerm);
+    }
+
+    function searchSavedPoints(searchTerm) {
+        const term = searchTerm.toLowerCase();
+        return savedPoints.filter(
+            (point) =>
+                point.certificationNo.toLowerCase().includes(term) || point.requestedBy.toLowerCase().includes(term)
+        );
+    }
+
+    function displaySearchResults(savedPointsResults, addressResults, searchTerm) {
+        const dropdown = document.getElementById("searchResultsDropdown");
+        if (savedPointsResults.length === 0 && addressResults.length === 0) {
+            dropdown.innerHTML =
+                '<div class="search-result-item" style="color: #666;">No results found. Try a different search term.</div>';
+            dropdown.classList.add("active");
+            setTimeout(() => dropdown.classList.remove("active"), 3000);
+            return;
+        }
+        let html = "";
+        if (savedPointsResults.length > 0) {
+            html += `<div style="padding: 8px 12px; background: #f1f5f9; font-size: 0.7rem; font-weight: 600; color: #1e3a8a;">📌 SAVED POINTS (${savedPointsResults.length})</div>`;
+            savedPointsResults.forEach((point) => {
+                html += `<div class="search-result-item" onclick="zoomToSavedPoint(${point.lat}, ${point.lng}, '${escapeHtml(point.certificationNo)}')"><div class="search-result-title">📄 ${escapeHtml(point.certificationNo)}<span class="search-type-badge saved-point">Saved Point</span></div><div class="search-result-subtitle">👤 ${escapeHtml(point.requestedBy)} | 📍 ${point.lat.toFixed(5)}, ${point.lng.toFixed(5)}</div></div>`;
+            });
+        }
+        if (addressResults.length > 0) {
+            if (savedPointsResults.length > 0)
+                html += `<div style="padding: 8px 12px; background: #f1f5f9; font-size: 0.7rem; font-weight: 600; color: #1e3a8a; border-top: 1px solid #e2e8f0;">🏠 LOCATIONS (${addressResults.length})</div>`;
+            else
+                html += `<div style="padding: 8px 12px; background: #f1f5f9; font-size: 0.7rem; font-weight: 600; color: #1e3a8a;">🏠 SEARCH RESULTS</div>`;
+            addressResults.forEach((result, idx) => {
+                const lat = result.lat || result.latlng?.lat;
+                const lng = result.lon || result.latlng?.lng;
+                if (lat && lng) {
+                    const displayName = result.name
+                        ? result.name.substring(0, 70)
+                        : `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+                    html += `<div class="search-result-item" onclick="zoomToAddress(${lat}, ${lng}, '${escapeHtml(displayName).replace(/'/g, "\\'")}')"><div class="search-result-title">📍 ${escapeHtml(displayName)}<span class="search-type-badge address">Location</span></div><div class="search-result-subtitle">${lat.toFixed(5)}, ${lng.toFixed(5)}</div></div>`;
+                }
+            });
+        }
+        dropdown.innerHTML = html;
+        dropdown.classList.add("active");
+        setTimeout(() => {
+            dropdown.classList.remove("active");
+        }, 10000);
+        setTimeout(() => {
+            const closeDropdown = (e) => {
+                if (
+                    !dropdown.contains(e.target) &&
+                    e.target.id !== "mapSearchInput" &&
+                    e.target.className !== "search-btn"
+                ) {
+                    dropdown.classList.remove("active");
+                    document.removeEventListener("click", closeDropdown);
+                }
+            };
+            document.addEventListener("click", closeDropdown);
+        }, 100);
+    }
+
+    function zoomToSavedPoint(lat, lng, certNo) {
+        if (popupMap) {
+            popupMap.setView([lat, lng], 18);
+            showToastMessage(`📍 Zoomed to: ${certNo}`);
+            document.getElementById("searchResultsDropdown").classList.remove("active");
+            document.getElementById("mapSearchInput").value = "";
+            document.getElementById("popupLatitude").value = lat.toFixed(6);
+            document.getElementById("popupLongitude").value = lng.toFixed(6);
+            if (window.highlightMarker) popupMap.removeLayer(window.highlightMarker);
+            window.highlightMarker = L.circleMarker([lat, lng], {
+                radius: 12,
+                color: "#f59e0b",
+                weight: 4,
+                fillColor: "#fbbf24",
+                fillOpacity: 0.7,
+            }).addTo(popupMap);
+            setTimeout(() => {
+                if (window.highlightMarker) {
+                    popupMap.removeLayer(window.highlightMarker);
+                    window.highlightMarker = null;
+                }
+            }, 3000);
+        }
+    }
+
+    function zoomToAddress(lat, lng, addressName) {
+        if (popupMap) {
+            popupMap.setView([lat, lng], 16);
+            showToastMessage(`📍 ${addressName.substring(0, 40)}...`);
+            document.getElementById("searchResultsDropdown").classList.remove("active");
+            document.getElementById("mapSearchInput").value = "";
+            document.getElementById("popupLatitude").value = lat.toFixed(6);
+            document.getElementById("popupLongitude").value = lng.toFixed(6);
+            if (window.searchMarker) popupMap.removeLayer(window.searchMarker);
+            window.searchMarker = L.marker([lat, lng], {
+                icon: L.divIcon({
+                    className: "search-marker",
+                    html: `<div style="background: #2563eb; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(0,0,0,0.3);"></div>`,
+                    iconSize: [16, 16],
+                    popupAnchor: [0, -8],
+                }),
+            })
+                .addTo(popupMap)
+                .bindPopup(`<strong>📍 ${escapeHtml(addressName.substring(0, 100))}</strong>`)
+                .openPopup();
+            setTimeout(() => {
+                if (window.searchMarker) {
+                    popupMap.removeLayer(window.searchMarker);
+                    window.searchMarker = null;
+                }
+            }, 5000);
+        }
+    }
+
+    function showSavedPointsList() {
+        if (savedPoints.length === 0) {
+            showToastMessage("No saved points found", "error");
+            return;
+        }
+        let listHtml = `<div id="savedPointsListModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10002; display: flex; justify-content: center; align-items: center;"><div style="background: white; border-radius: 24px; width: 90%; max-width: 500px; max-height: 80vh; overflow: hidden; display: flex; flex-direction: column;"><div style="padding: 1.2rem; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;"><h3 style="color: #1e3a8a; margin: 0;">📌 Saved Points (${savedPoints.length})</h3><button onclick="closeSavedPointsList()" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button></div><div style="overflow-y: auto; padding: 0.5rem;">`;
+        savedPoints.forEach((point) => {
+            listHtml += `<div style="padding: 0.8rem; border-bottom: 1px solid #eef2ff; cursor: pointer;" onclick="zoomToSavedPoint(${point.lat}, ${point.lng}, '${escapeHtml(point.certificationNo)}'); closeSavedPointsList();"><div style="font-weight: 600; color: #1e3a8a;">📄 ${escapeHtml(point.certificationNo)}</div><div style="font-size: 0.75rem; color: #64748b;">👤 ${escapeHtml(point.requestedBy)}</div><div style="font-size: 0.7rem; color: #94a3b8; font-family: monospace;">${point.lat.toFixed(5)}, ${point.lng.toFixed(5)}</div><div style="font-size: 0.65rem; color: #cbd5e1;">${new Date(point.dateSaved).toLocaleDateString()}</div></div>`;
+        });
+        listHtml += `</div><div style="padding: 1rem; border-top: 1px solid #e2e8f0; display: flex; gap: 0.5rem;"><button class="btn btn-danger" onclick="clearAllSavedPoints(); closeSavedPointsList();" style="flex: 1;">🗑️ Delete All</button><button class="btn btn-secondary" onclick="closeSavedPointsList()">Close</button></div></div></div>`;
+        const existingModal = document.getElementById("savedPointsListModal");
+        if (existingModal) existingModal.remove();
+        document.body.insertAdjacentHTML("beforeend", listHtml);
+    }
+
+    function closeSavedPointsList() {
+        const modal = document.getElementById("savedPointsListModal");
+        if (modal) modal.remove();
+    }
+
+    function setupSearchEnterKey() {
+        const searchInput = document.getElementById("mapSearchInput");
+        if (searchInput)
+            searchInput.addEventListener("keypress", (e) => {
+                if (e.key === "Enter") searchMapLocation();
+            });
+    }
+
+    function changeMapView(type) {
+        if (!popupMap) return;
+        if (currentBaseLayer) popupMap.removeLayer(currentBaseLayer);
+        let url, attribution;
+        if (type === "satellite") {
+            url = "https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}";
+            attribution = "Imagery &copy; Google Maps";
+        } else if (type === "street") {
+            url = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
+            attribution =
+                '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>';
+        } else {
+            url = "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png";
+            attribution = '&copy; <a href="https://opentopomap.org">OpenTopoMap</a> contributors';
+        }
+        currentBaseLayer = L.tileLayer(url, { attribution: attribution, maxZoom: 20 }).addTo(popupMap);
+        const streetBtn = document.getElementById("mapTypeStreet"),
+            satelliteBtn = document.getElementById("mapTypeSatellite"),
+            outdoorBtn = document.getElementById("mapTypeOutdoor");
+        if (streetBtn) streetBtn.classList.remove("active");
+        if (satelliteBtn) satelliteBtn.classList.remove("active");
+        if (outdoorBtn) outdoorBtn.classList.remove("active");
+        if (type === "street" && streetBtn) streetBtn.classList.add("active");
+        if (type === "satellite" && satelliteBtn) satelliteBtn.classList.add("active");
+        if (type === "outdoor" && outdoorBtn) outdoorBtn.classList.add("active");
+        showToastMessage(
+            `🗺️ Switched to ${type === "satellite" ? "Satellite View" : type === "outdoor" ? "Terrain View" : "Street View"}`
+        );
+    }
+
+    function initMeasurementTools() {
+        if (!popupMap) return;
+        drawnItems = L.featureGroup().addTo(popupMap);
+        const measureLineBtn = document.getElementById("startMeasureLineBtn");
+        const measureAreaBtn = document.getElementById("startMeasureAreaBtn");
+        const clearMeasureBtn = document.getElementById("clearMeasureBtn");
+        let activeMeasurementControl = null;
+        function removeDrawControl() {
+            if (activeMeasurementControl) {
+                activeMeasurementControl.disable();
+                activeMeasurementControl = null;
+            }
+        }
+        function deactivateMeasurementMode() {
+            measuringToolActive = false;
+            currentMeasurementMode = null;
+            removeDrawControl();
+            if (measureLineBtn) measureLineBtn.classList.remove("measuring-active", "toggle-active");
+            if (measureAreaBtn) measureAreaBtn.classList.remove("measuring-active", "toggle-active");
+            if (popupMap) {
+                popupMap.dragging.enable();
+                popupMap.doubleClickZoom.enable();
+                popupMap.scrollWheelZoom.enable();
+            }
+            document.getElementById("measureResult").innerHTML = "⚡ Click a button to start measuring";
+        }
+        if (measureLineBtn) {
+            measureLineBtn.onclick = () => {
+                if (currentMeasurementMode === "distance") {
+                    deactivateMeasurementMode();
+                    return;
+                }
+                deactivateMeasurementMode();
+                measuringToolActive = true;
+                currentMeasurementMode = "distance";
+                measureLineBtn.classList.add("measuring-active", "toggle-active");
+                document.getElementById("measureResult").innerHTML =
+                    "📏 Distance mode ACTIVE - Click on the map to measure. Click button again to turn OFF.";
+                if (savePointModeActive) toggleSavePointMode(false);
+                popupMap.dragging.disable();
+                popupMap.doubleClickZoom.disable();
+                activeMeasurementControl = new L.Draw.Polyline(popupMap);
+                activeMeasurementControl.enable();
+                popupMap.once("draw:created", (e) => {
+                    let layer = e.layer;
+                    drawnItems.addLayer(layer);
+                    let latlngs = layer.getLatLngs();
+                    let total = 0;
+                    for (let i = 0; i < latlngs.length - 1; i++) total += latlngs[i].distanceTo(latlngs[i + 1]);
+                    const resultText =
+                        total >= 1000
+                            ? `📏 Distance: ${(total / 1000).toFixed(2)} km`
+                            : `📏 Distance: ${total.toFixed(1)} m`;
+                    document.getElementById("measureResult").innerHTML = resultText;
+                    removeDrawControl();
+                    measureLineBtn.classList.remove("measuring-active", "toggle-active");
+                    measuringToolActive = false;
+                    currentMeasurementMode = null;
+                    popupMap.dragging.enable();
+                    popupMap.doubleClickZoom.enable();
+                });
+            };
+        }
+        if (measureAreaBtn) {
+            measureAreaBtn.onclick = () => {
+                if (currentMeasurementMode === "area") {
+                    deactivateMeasurementMode();
+                    return;
+                }
+                deactivateMeasurementMode();
+                measuringToolActive = true;
+                currentMeasurementMode = "area";
+                measureAreaBtn.classList.add("measuring-active", "toggle-active");
+                document.getElementById("measureResult").innerHTML =
+                    "📐 Area mode ACTIVE - Click on the map to measure area. Click button again to turn OFF.";
+                if (savePointModeActive) toggleSavePointMode(false);
+                popupMap.dragging.disable();
+                popupMap.doubleClickZoom.disable();
+                activeMeasurementControl = new L.Draw.Polygon(popupMap);
+                activeMeasurementControl.enable();
+                popupMap.once("draw:created", (e) => {
+                    let layer = e.layer;
+                    drawnItems.addLayer(layer);
+                    let latlngs = layer.getLatLngs()[0];
+                    let area = 0;
+                    for (let i = 0; i < latlngs.length; i++) {
+                        let j = (i + 1) % latlngs.length;
+                        area += latlngs[i].lat * latlngs[j].lng;
+                        area -= latlngs[j].lat * latlngs[i].lng;
+                    }
+                    area = Math.abs(area) / 2;
+                    const areaSqM = area * 111319.9 * 111319.9;
+                    const resultText =
+                        areaSqM >= 10000
+                            ? `📐 Area: ${(areaSqM / 10000).toFixed(2)} ha`
+                            : `📐 Area: ${areaSqM.toFixed(1)} sq m`;
+                    document.getElementById("measureResult").innerHTML = resultText;
+                    removeDrawControl();
+                    measureAreaBtn.classList.remove("measuring-active", "toggle-active");
+                    measuringToolActive = false;
+                    currentMeasurementMode = null;
+                    popupMap.dragging.enable();
+                    popupMap.doubleClickZoom.enable();
+                });
+            };
+        }
+        if (clearMeasureBtn)
+            clearMeasureBtn.onclick = () => {
+                drawnItems.clearLayers();
+                deactivateMeasurementMode();
+                document.getElementById("measureResult").innerHTML = "🗑️ Cleared! Click a button to start measuring.";
+            };
+    }
+
+    function addGeoJsonLayerToMap(geojson, name) {
+        if (!popupMap) return;
+        if (currentActiveLayer?.layer) popupMap.removeLayer(currentActiveLayer.layer);
+        let layer = L.geoJSON(geojson, {
+            style: { color: "#3388ff", weight: 2, fillOpacity: 0.4 },
+            onEachFeature: (f, l) => {
+                let pop = "<b>Info</b>";
+                for (let [k, v] of Object.entries(f.properties)) pop += `<br>${k}: ${v}`;
+                l.bindPopup(pop);
+            },
+        }).addTo(popupMap);
+        currentActiveLayer = {
+            id: Date.now(),
+            name: name,
+            layer: layer,
+            geojsonData: geojson,
+            hidden: false,
+            originalStyle: { color: "#3388ff", weight: 2, fillOpacity: 0.4 },
+        };
+        geoJsonLayers = [currentActiveLayer];
+        let attrs = new Set();
+        geojson.features.forEach((f) => {
+            if (f.properties) Object.keys(f.properties).forEach((k) => attrs.add(k));
+        });
+        let select = document.getElementById("attributeColumnSelect");
+        select.innerHTML = '<option value="">-- Categorize by --</option>';
+        attrs.forEach((a) => (select.innerHTML += `<option value="${a}">${a}</option>`));
+        document.getElementById("attributeSelector").style.display = "block";
+        renderLayerListUI();
+        try {
+            popupMap.fitBounds(layer.getBounds());
+        } catch (e) {}
+    }
+
+    function updateCategoryFilterFromAttribute() {
+        let attr = document.getElementById("attributeColumnSelect").value;
+        if (!attr || !currentActiveLayer) return;
+        let geojson = currentActiveLayer.geojsonData;
+        let vals = [...new Set(geojson.features.map((f) => String(f.properties?.[attr] || "Unknown")))];
+        let filterSelect = document.getElementById("categoryFilterSelect");
+        if (!filterSelect) {
+            const newSelect = document.createElement("select");
+            newSelect.id = "categoryFilterSelect";
+            newSelect.style.display = "inline-block";
+            newSelect.onchange = applyCategoryFilter;
+            document.getElementById("attributeSelector").appendChild(newSelect);
+            filterSelect = newSelect;
+        }
+        filterSelect.innerHTML = '<option value="">-- Filter --</option>';
+        vals.forEach((v) => (filterSelect.innerHTML += `<option value="${v}">${v}</option>`));
+        filterSelect.style.display = "inline-block";
+        classColorMap.clear();
+        vals.forEach((v, i) => classColorMap.set(v, CLASS_COLORS[i % CLASS_COLORS.length]));
+        if (currentActiveLayer.layer) popupMap.removeLayer(currentActiveLayer.layer);
+        let newLayer = L.geoJSON(geojson, {
+            style: (feat) => {
+                let val = String(feat.properties?.[attr] || "Unknown");
+                return {
+                    color: classColorMap.get(val),
+                    weight: 3,
+                    fillColor: classColorMap.get(val),
+                    fillOpacity: 0.6,
+                };
+            },
+            onEachFeature: (f, l) => {
+                let pop = "<b>Categorized</b>";
+                for (let [k, v] of Object.entries(f.properties)) pop += `<br>${k}: ${v}`;
+                l.bindPopup(pop);
+            },
+        }).addTo(popupMap);
+        currentActiveLayer.layer = newLayer;
+        let legendDiv = document.getElementById("legendPanel");
+        let html = "<strong>Legend:</strong><br>";
+        for (let [val, color] of classColorMap.entries())
+            html += `<span><span style="background:${color};display:inline-block;width:16px;height:10px;border-radius:4px;"></span> ${val.substring(0, 20)}</span> `;
+        legendDiv.innerHTML = html;
+    }
+
+    function resetLayerColors() {
+        if (currentActiveLayer?.geojsonData) {
+            if (currentActiveLayer.layer) popupMap.removeLayer(currentActiveLayer.layer);
+            let layer = L.geoJSON(currentActiveLayer.geojsonData, {
+                style: { color: "#3388ff", weight: 2, fillOpacity: 0.4 },
+            }).addTo(popupMap);
+            currentActiveLayer.layer = layer;
+            classColorMap.clear();
+            document.getElementById("attributeColumnSelect").value = "";
+            const filterSelect = document.getElementById("categoryFilterSelect");
+            if (filterSelect) filterSelect.style.display = "none";
+            document.getElementById("legendPanel").innerHTML = "<strong>Legend:</strong> Upload GeoJSON to categorize";
+        }
+    }
+
+    function applyCategoryFilter() {
+        let filterVal = document.getElementById("categoryFilterSelect")?.value;
+        if (!filterVal || !currentActiveLayer) return;
+        let filtered = currentActiveLayer.geojsonData.features.filter(
+            (f) => String(f.properties?.[currentAttribute] || "Unknown") === filterVal
+        );
+        let filteredGeo = { type: "FeatureCollection", features: filtered };
+        if (currentActiveLayer.layer) popupMap.removeLayer(currentActiveLayer.layer);
+        let newLayer = L.geoJSON(filteredGeo, { style: { color: "#059669", weight: 3, fillOpacity: 0.6 } }).addTo(
+            popupMap
+        );
+        currentActiveLayer.layer = newLayer;
+        showToastMessage(`Filter: ${filtered.length} features`);
+    }
+
+    function clearAllLayers() {
+        if (geoJsonLayers.length) {
+            geoJsonLayers.forEach((l) => {
+                if (l.layer) popupMap.removeLayer(l.layer);
+            });
+            geoJsonLayers = [];
+            currentActiveLayer = null;
+            classColorMap.clear();
+            renderLayerListUI();
+            document.getElementById("attributeSelector").style.display = "none";
+            document.getElementById("legendPanel").innerHTML = "<strong>Legend:</strong> No layers";
+        }
+    }
+
+    function renderLayerListUI() {
+        let container = document.getElementById("layerListContainer");
+        if (!container) return;
+        if (geoJsonLayers.length === 0) {
+            container.innerHTML = "<div>No layers loaded.</div>";
+            return;
+        }
+        container.innerHTML = geoJsonLayers
+            .map(
+                (l, idx) =>
+                    `<div class="layer-item"><strong>${l.name}</strong> <button class="btn-sm" onclick="toggleLayerVisibility(${idx})">Hide</button> <button class="btn-sm" onclick="removeLayer(${idx})" style="background:#dc3545;">Remove</button></div>`
+            )
+            .join("");
+    }
+
+    function toggleLayerVisibility(index) {
+        const layer = geoJsonLayers[index];
+        if (!layer) return;
+        if (layer.layer) popupMap.removeLayer(layer.layer);
+        layer.hidden = true;
+        renderLayerListUI();
+    }
+    function removeLayer(idx) {
+        if (geoJsonLayers[idx]?.layer) popupMap.removeLayer(geoJsonLayers[idx].layer);
+        geoJsonLayers.splice(idx, 1);
+        if (geoJsonLayers.length === 0) currentActiveLayer = null;
+        renderLayerListUI();
+    }
+
+    document.getElementById("geojsonFileInput").addEventListener("change", function (e) {
+        let file = e.target.files[0];
+        if (!file) return;
+        let reader = new FileReader();
+        reader.onload = function (ev) {
+            try {
+                let geojson = JSON.parse(ev.target.result);
+                if (geojson.type === "FeatureCollection") addGeoJsonLayerToMap(geojson, file.name);
+                else alert("Invalid: need FeatureCollection");
+            } catch (err) {
+                alert("Invalid GeoJSON");
+            }
+        };
+        reader.readAsText(file);
+    });
+
+    function closeMapPopup() {
+        document.getElementById("mapPopupModal").classList.remove("active");
+    }
+
+    function saveCoordinatesFromPopup() {
+        let lat = document.getElementById("popupLatitude")?.value,
+            lng = document.getElementById("popupLongitude")?.value;
+        if (lat && lng) {
+            document.getElementById("locAreaLocation").value =
+                `${document.getElementById("locAreaLocation").value} (${lat}, ${lng})`;
+        }
+        closeMapPopup();
+        showToastMessage("Coordinates saved to form");
+    }
+
+    function clearSelectedCoords() {
+        document.getElementById("popupLatitude").value = "";
+        document.getElementById("popupLongitude").value = "";
+        if (mapMarker && popupMap) popupMap.removeLayer(mapMarker);
+        mapMarker = null;
+    }
+
+    function savePointToStorage(lat, lng, certNo, requestedBy) {
+        const newPoint = {
+            id: Date.now(),
+            lat: lat,
+            lng: lng,
+            certificationNo: certNo,
+            requestedBy: requestedBy,
+            dateSaved: new Date().toISOString(),
+        };
+        savedPoints.push(newPoint);
+        localStorage.setItem("savedMapPoints", JSON.stringify(savedPoints));
+        showToastMessage(`✓ Point saved: ${certNo}`);
+    }
+
+    function loadSavedPoints() {
+        const stored = localStorage.getItem("savedMapPoints");
+        if (stored) {
+            savedPoints = JSON.parse(stored);
+            savedPoints.forEach((point) => {
+                addSavedPointMarker(point.lat, point.lng, point.certificationNo, point.requestedBy);
+            });
+            showToastMessage(`Loaded ${savedPoints.length} saved points`);
+        } else showToastMessage("No saved points found");
+    }
+
+    function addSavedPointMarker(lat, lng, certNo, requestedBy) {
+        if (!popupMap) return;
+        const customIcon = L.divIcon({
+            className: "custom-marker",
+            html: `<div style="background: #dc2626; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5); cursor: pointer;"></div>`,
+            iconSize: [14, 14],
+            popupAnchor: [0, -7],
+        });
+        const marker = L.marker([lat, lng], { icon: customIcon }).addTo(popupMap);
+        const popupContent = `<div style="min-width: 220px;"><strong style="color: #1e3a8a;">📍 ${escapeHtml(certNo)}</strong><br><span style="font-size: 0.8rem;">👤 ${escapeHtml(requestedBy)}</span><br><span style="font-size: 0.7rem; color: #666; font-family: monospace;">${lat.toFixed(6)}, ${lng.toFixed(6)}</span><hr style="margin: 8px 0;"><div style="display: flex; gap: 8px;"><button class="action-btn view" onclick="viewSavedPoint('${escapeHtml(certNo)}')" style="font-size: 0.65rem;">📋 View Details</button><button class="action-btn delete" onclick="deleteSavedPointMarker('${escapeHtml(certNo)}')" style="font-size: 0.65rem;">🗑️ Delete</button></div></div>`;
+        marker.bindPopup(popupContent);
+        marker.savedPointData = { id: certNo, certNo: certNo, requestedBy: requestedBy, lat: lat, lng: lng };
+    }
+
+    function viewSavedPoint(certNo) {
+        const point = savedPoints.find((p) => p.certificationNo === certNo);
+        if (!point) return;
+        alert(
+            `Certification No: ${point.certificationNo}\nRequested By: ${point.requestedBy}\nCoordinates: ${point.lat.toFixed(6)}, ${point.lng.toFixed(6)}\nDate Saved: ${new Date(point.dateSaved).toLocaleString()}`
+        );
+    }
+
+    function deleteSavedPointMarker(certNo) {
+        if (!confirm(`Delete point for "${certNo}"?`)) return;
+        savedPoints = savedPoints.filter((p) => p.certificationNo !== certNo);
+        localStorage.setItem("savedMapPoints", JSON.stringify(savedPoints));
+        if (popupMap) {
+            popupMap.eachLayer((layer) => {
+                if (layer instanceof L.Marker && layer.savedPointData && layer.savedPointData.certNo === certNo)
+                    popupMap.removeLayer(layer);
+            });
+        }
+        showToastMessage(`✓ Deleted: ${certNo}`);
+    }
+
+    function clearAllSavedPoints() {
+        if (confirm("⚠️ Delete ALL saved map points? This cannot be undone.")) {
+            savedPoints = [];
+            localStorage.removeItem("savedMapPoints");
+            if (popupMap) {
+                popupMap.eachLayer((layer) => {
+                    if (layer instanceof L.Marker && layer.savedPointData) popupMap.removeLayer(layer);
+                });
+            }
+            showToastMessage("All saved points cleared");
+        }
+    }
+
+    function showSavePointDialog(lat, lng) {
+        pendingCoordinates = { lat: lat, lng: lng };
+        const modalHtml = `<div id="savePointModal" style="display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10001; justify-content: center; align-items: center;"><div style="background: white; border-radius: 24px; padding: 1.8rem; max-width: 450px; width: 90%;"><h3 style="color: #1e3a8a; margin-bottom: 1rem; font-size: 1.3rem;">📍 Save Map Point</h3><div style="margin-bottom: 1rem;"><label style="display: block; font-weight: 600; margin-bottom: 0.3rem; font-size: 0.8rem;">Coordinates:</label><input type="text" id="savePointCoords" readonly style="width: 100%; padding: 0.6rem; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 12px; font-family: monospace;" value="${lat.toFixed(6)}, ${lng.toFixed(6)}"></div><div style="margin-bottom: 1rem;"><label style="display: block; font-weight: 600; margin-bottom: 0.3rem; font-size: 0.8rem;">📄 Reference No.</label><input type="text" id="savePointCertNo" class="form-control" placeholder="e.g., LC-2026-001" style="width: 100%;"></div><div style="margin-bottom: 1.5rem;"><label style="display: block; font-weight: 600; margin-bottom: 0.3rem; font-size: 0.8rem;">👤 Requested By</label><input type="text" id="savePointRequestedBy" class="form-control" placeholder="Name of requester" style="width: 100%;"></div><div style="display: flex; gap: 0.8rem; justify-content: flex-end;"><button class="btn btn-secondary" onclick="closeSavePointModal()">Cancel</button><button class="btn btn-primary" onclick="confirmSavePoint()">💾 Save Point</button></div></div></div>`;
+        const existingModal = document.getElementById("savePointModal");
+        if (existingModal) existingModal.remove();
+        document.body.insertAdjacentHTML("beforeend", modalHtml);
+    }
+
+    function closeSavePointModal() {
+        const modal = document.getElementById("savePointModal");
+        if (modal) modal.remove();
+        pendingCoordinates = null;
+        currentTempMarker = null;
+    }
+
+    function confirmSavePoint() {
+        const certNo = document.getElementById("savePointCertNo")?.value.trim();
+        const requestedBy = document.getElementById("savePointRequestedBy")?.value.trim();
+        if (!certNo) {
+            showToastMessage("Please enter Reference No.", "error");
+            return;
+        }
+        if (!requestedBy) {
+            showToastMessage("Please enter Requested By", "error");
+            return;
+        }
+        if (pendingCoordinates) {
+            savePointToStorage(pendingCoordinates.lat, pendingCoordinates.lng, certNo, requestedBy);
+            closeSavePointModal();
+            addSavedPointMarker(pendingCoordinates.lat, pendingCoordinates.lng, certNo, requestedBy);
+            showToastMessage(`✓ Point saved: ${certNo}`);
+            pendingCoordinates = null;
+            currentTempMarker = null;
+        }
+    }
+
+    function toggleSavePointMode(enable) {
+        savePointModeActive = enable;
+        const toggleBtn = document.getElementById("toggleSavePointBtn");
+        const hintText = document.getElementById("savePointHint");
+        if (savePointModeActive) {
+            if (toggleBtn) {
+                toggleBtn.innerHTML = "💾 Save Point Mode: ON ✓";
+                toggleBtn.classList.add("save-point-active");
+            }
+            if (hintText) {
+                hintText.innerHTML = "🔴 ACTIVE - Click anywhere on the map to save a point!";
+                hintText.style.color = "#10b981";
+                hintText.style.fontWeight = "bold";
+            }
+            if (measuringToolActive) {
+                if (currentMeasurementMode === "distance") document.getElementById("startMeasureLineBtn").click();
+                else if (currentMeasurementMode === "area") document.getElementById("startMeasureAreaBtn").click();
+            }
+            if (popupMap && !popupMap.savePointHandler) {
+                popupMap.savePointHandler = popupMap.on("click", (e) => {
+                    if (savePointModeActive && !measuringToolActive) {
+                        document.getElementById("popupLatitude").value = e.latlng.lat.toFixed(6);
+                        document.getElementById("popupLongitude").value = e.latlng.lng.toFixed(6);
+                        showSavePointDialog(e.latlng.lat, e.latlng.lng);
+                        if (mapMarker) mapMarker.setLatLng(e.latlng);
+                        else mapMarker = L.marker(e.latlng).addTo(popupMap);
+                    }
+                });
+            }
+        } else {
+            if (toggleBtn) {
+                toggleBtn.innerHTML = "💾 Save Point Mode: OFF";
+                toggleBtn.classList.remove("save-point-active");
+            }
+            if (hintText) {
+                hintText.innerHTML = "💡 Toggle ON to save points by clicking on the map";
+                hintText.style.color = "#64748b";
+                hintText.style.fontWeight = "normal";
+            }
+            if (popupMap && popupMap.savePointHandler) {
+                popupMap.off("click", popupMap.savePointHandler);
+                popupMap.savePointHandler = null;
+            }
+        }
+    }
+
+    let pendingCoordinates = null;
+    let currentTempMarker = null;
+
+    // Event Listeners for Survey Panel
+    document.getElementById("updateSurveyFromDMSBtn")?.addEventListener("click", updateTieFromDMS);
+    document.getElementById("popupApplyEditsBtn")?.addEventListener("click", syncRowsFromPopupTable);
+    document.getElementById("popupAddRowBtn")?.addEventListener("click", () => {
+        currentRows.push({
+            from: `Corner ${currentRows.length + 1}`,
+            to: `Corner ${currentRows.length + 2}`,
+            direction: "N",
+            degrees: "0",
+            minutes: "0",
+            seconds: "00",
+            quadrant: "E",
+            distance: "100.00",
+        });
+        refreshSurveyUI();
+    });
+    document.getElementById("popupResetTableBtn")?.addEventListener("click", () => {
+        if (confirm("⚠️ WARNING: This will REMOVE ALL LEGS from the table. Continue?")) {
+            currentRows = [];
+            refreshSurveyUI();
+            showToastMessage("✓ Table cleared: 0 legs.");
+        }
+    });
+    document.getElementById("popupExportGeoJSONBtn")?.addEventListener("click", exportSurveyGeoJSON);
+    document.getElementById("popupExportShapefileBtn")?.addEventListener("click", exportSurveyShapefile);
+
+    // Expose functions globally
+    window.openSurveyMapPopup = openSurveyMapPopup;
+    window.closeMapPopup = closeMapPopup;
+    window.saveCoordinatesFromPopup = saveCoordinatesFromPopup;
+    window.clearSelectedCoords = clearSelectedCoords;
+    window.loadSavedPoints = loadSavedPoints;
+    window.showSavedPointsList = showSavedPointsList;
+    window.closeSavedPointsList = closeSavedPointsList;
+    window.clearAllSavedPoints = clearAllSavedPoints;
+    window.viewSavedPoint = viewSavedPoint;
+    window.deleteSavedPointMarker = deleteSavedPointMarker;
+    window.zoomToSavedPoint = zoomToSavedPoint;
+    window.zoomToAddress = zoomToAddress;
+    window.searchMapLocation = searchMapLocation;
+    window.changeMapView = changeMapView;
+    window.toggleSavePointMode = toggleSavePointMode;
+    window.updateCategoryFilterFromAttribute = updateCategoryFilterFromAttribute;
+    window.resetLayerColors = resetLayerColors;
+    window.applyCategoryFilter = applyCategoryFilter;
+    window.clearAllLayers = clearAllLayers;
+    window.toggleLayerVisibility = toggleLayerVisibility;
+    window.removeLayer = removeLayer;
+    window.showSavePointDialog = showSavePointDialog;
+    window.closeSavePointModal = closeSavePointModal;
+    window.confirmSavePoint = confirmSavePoint;
+
+    // Initialize
+    checkSession();
+    renderMainNavigation();
+    renderUserMenu();
+    fetchRecords();
+
+    window.switchView = switchView;
+    window.updateStatus = updateStatus;
+    window.viewRecord = viewRecord;
+    window.editRecord = editRecord;
+    window.deleteRecord = deleteRecord;
+    window.printRecord = printRecord;
+    window.clearStatusSearch = clearStatusSearch;
+    window.clearAccSearch = clearAccSearch;
+    window.clearForm = clearForm;
+    window.exportToExcel = exportToExcel;
+    window.closeModal = closeModal;
+    window.manualRefresh = manualRefresh;
+    window.onclick = function (e) {
+        const modal = document.getElementById("loginModal");
+        if (e.target === modal) modal.classList.remove("active");
+    };
+	
+// Get the next sequence number for Application No.
+async function getNextAppSequence(month, year) {
+    let maxSeq = 0;
+    const prefix = `ELUPDD-${month}-${year}-`;
+    
+    for (const record of locationalRecords) {
+        if (record.applicationNo && record.applicationNo.startsWith(prefix)) {
+            const parts = record.applicationNo.split('-');
+            if (parts.length === 4) {
+                const seq = parseInt(parts[3], 10);
+                if (!isNaN(seq) && seq > maxSeq) {
+                    maxSeq = seq;
+                }
+            }
+        }
+    }
+    return maxSeq + 1;
+}
+
+// Get the next sequence number for Decision No.
+async function getNextDecSequence(month, year) {
+    let maxSeq = 0;
+    const prefix = `LC-${month}-${year}-`;
+    
+    for (const record of locationalRecords) {
+        if (record.decisionNo && record.decisionNo.startsWith(prefix)) {
+            const parts = record.decisionNo.split('-');
+            if (parts.length === 4) {
+                const seq = parseInt(parts[3], 10);
+                if (!isNaN(seq) && seq > maxSeq) {
+                    maxSeq = seq;
+                }
+            }
+        }
+    }
+    return maxSeq + 1;
+}
+
+// Update the latest numbers display panel
+async function refreshLatestNumbersDisplay() {
+    const now = new Date();
+    const currentMonth = (now.getMonth() + 1).toString().padStart(2, '0');
+    const currentYear = now.getFullYear().toString().slice(-2);
+    const monthName = now.toLocaleString('default', { month: 'long' });
+    const fullYear = now.getFullYear();
+    
+    // Update month badge
+    const monthBadge = document.getElementById('currentMonthBadge');
+    if (monthBadge) {
+        monthBadge.innerHTML = `📅 Current: ${monthName} ${fullYear}`;
+    }
+    
+    // Get next sequences
+    const nextAppSeq = await getNextAppSequence(currentMonth, currentYear);
+    const nextDecSeq = await getNextDecSequence(currentMonth, currentYear);
+    
+    // Update display
+    const latestApp = `ELUPDD-${currentMonth}-${currentYear}-${nextAppSeq.toString().padStart(3, '0')}`;
+    const latestDec = `LC-${currentMonth}-${currentYear}-${nextDecSeq.toString().padStart(3, '0')}`;
+    
+    const latestAppDisplay = document.getElementById('latestAppNoDisplay');
+    const latestDecDisplay = document.getElementById('latestDecNoDisplay');
+    
+    if (latestAppDisplay) latestAppDisplay.innerHTML = latestApp;
+    if (latestDecDisplay) latestDecDisplay.innerHTML = latestDec;
+    
+    // Also update the editable fields
+    const appMonthField = document.getElementById('appMonth');
+    const appYearField = document.getElementById('appYear');
+    const appSeqField = document.getElementById('appSeq');
+    const decMonthField = document.getElementById('decMonth');
+    const decYearField = document.getElementById('decYear');
+    const decSeqField = document.getElementById('decSeq');
+    
+    if (appMonthField) appMonthField.value = currentMonth;
+    if (appYearField) appYearField.value = currentYear;
+    if (appSeqField) appSeqField.value = nextAppSeq.toString().padStart(3, '0');
+    
+    if (decMonthField) decMonthField.value = currentMonth;
+    if (decYearField) decYearField.value = currentYear;
+    if (decSeqField) decSeqField.value = nextDecSeq.toString().padStart(3, '0');
+    
+    // Update previews
+    updateNumberPreviews();
+    
+    showToastMessage(`Latest numbers: ${latestApp}`, "success");
+}
+
+// Get the latest numbers (auto-fill with current month/year and next sequence)
+async function getLatestNumbers() {
+    await refreshLatestNumbersDisplay();
+}
+
+// Update preview displays
+function updateNumberPreviews() {
+    const appMonth = document.getElementById('appMonth')?.value.padStart(2, '0') || 'MM';
+    const appYear = document.getElementById('appYear')?.value.padStart(2, '0') || 'YY';
+    const appSeq = document.getElementById('appSeq')?.value.padStart(3, '0') || 'NNN';
+    const fullAppNo = `ELUPDD-${appMonth}-${appYear}-${appSeq}`;
+    
+    const appPreview = document.getElementById('appPreview');
+    const locAppNo = document.getElementById('locAppNo');
+    if (appPreview) appPreview.innerHTML = `Full: ${fullAppNo}`;
+    if (locAppNo) locAppNo.value = fullAppNo;
+    
+    const decMonth = document.getElementById('decMonth')?.value.padStart(2, '0') || 'MM';
+    const decYear = document.getElementById('decYear')?.value.padStart(2, '0') || 'YY';
+    const decSeq = document.getElementById('decSeq')?.value.padStart(3, '0') || 'NNN';
+    const fullDecNo = `LC-${decMonth}-${decYear}-${decSeq}`;
+    
+    const decPreview = document.getElementById('decPreview');
+    const locDecisionNo = document.getElementById('locDecisionNo');
+    if (decPreview) decPreview.innerHTML = `Full: ${fullDecNo}`;
+    if (locDecisionNo) locDecisionNo.value = fullDecNo;
+}
+
+// Validate number formats
+function validateNumberFormats() {
+    const appMonth = document.getElementById('appMonth')?.value;
+    const appSeq = document.getElementById('appSeq')?.value;
+    const decSeq = document.getElementById('decSeq')?.value;
+    
+    // Validate month (01-12) if provided
+    if (appMonth && (parseInt(appMonth) < 1 || parseInt(appMonth) > 12)) {
+        showToastMessage("Month must be between 01 and 12", "error");
+        return false;
+    }
+    
+    // Validate sequence (numeric, 1-999)
+    if (appSeq && (isNaN(parseInt(appSeq)) || parseInt(appSeq) < 1 || parseInt(appSeq) > 999)) {
+        showToastMessage("Sequence number must be between 001 and 999", "error");
+        return false;
+    }
+    
+    if (decSeq && (isNaN(parseInt(decSeq)) || parseInt(decSeq) < 1 || parseInt(decSeq) > 999)) {
+        showToastMessage("Sequence number must be between 001 and 999", "error");
+        return false;
+    }
+    
+    return true;
+}
+
+// Get full Application No. from parts
+function getFullApplicationNo() {
+    const month = document.getElementById('appMonth')?.value.padStart(2, '0') || '00';
+    const year = document.getElementById('appYear')?.value.padStart(2, '0') || '00';
+    const seq = document.getElementById('appSeq')?.value.padStart(3, '0') || '000';
+    return `ELUPDD-${month}-${year}-${seq}`;
+}
+
+// Get full Decision No. from parts
+function getFullDecisionNo() {
+    const month = document.getElementById('decMonth')?.value.padStart(2, '0') || '00';
+    const year = document.getElementById('decYear')?.value.padStart(2, '0') || '00';
+    const seq = document.getElementById('decSeq')?.value.padStart(3, '0') || '000';
+    return `LC-${month}-${year}-${seq}`;
+}
+
+// Set number parts from full number
+function setNumberParts(type, fullNumber) {
+    if (type === 'app' && fullNumber && fullNumber.startsWith('ELUPDD-')) {
+        const parts = fullNumber.split('-');
+        if (parts.length === 4) {
+            const appMonth = document.getElementById('appMonth');
+            const appYear = document.getElementById('appYear');
+            const appSeq = document.getElementById('appSeq');
+            if (appMonth) appMonth.value = parts[1];
+            if (appYear) appYear.value = parts[2];
+            if (appSeq) appSeq.value = parts[3];
+        }
+    } else if (type === 'dec' && fullNumber && fullNumber.startsWith('LC-')) {
+        const parts = fullNumber.split('-');
+        if (parts.length === 4) {
+            const decMonth = document.getElementById('decMonth');
+            const decYear = document.getElementById('decYear');
+            const decSeq = document.getElementById('decSeq');
+            if (decMonth) decMonth.value = parts[1];
+            if (decYear) decYear.value = parts[2];
+            if (decSeq) decSeq.value = parts[3];
+        }
+    }
+    updateNumberPreviews();
+}
+
+// Add event listeners for number inputs
+function initNumberEditors() {
+    const inputs = ['appMonth', 'appYear', 'appSeq', 'decMonth', 'decYear', 'decSeq'];
+    inputs.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('input', updateNumberPreviews);
+            element.addEventListener('change', updateNumberPreviews);
+        }
+    });
+}
+
+// Auto-check month change (runs every minute)
+let lastCheckedMonth = null;
+
+function startAutoMonthChecker() {
+    const now = new Date();
+    lastCheckedMonth = (now.getMonth() + 1).toString().padStart(2, '0');
+    
+    setInterval(async function() {
+        const now = new Date();
+        const currentMonth = (now.getMonth() + 1).toString().padStart(2, '0');
+        
+        if (lastCheckedMonth !== currentMonth) {
+            lastCheckedMonth = currentMonth;
+            await refreshLatestNumbersDisplay();
+            const monthName = now.toLocaleString('default', { month: 'long' });
+            showToastMessage(`📅 New month detected (${monthName}). Numbers updated!`, "info");
+        }
+    }, 60000); // Check every minute
+}
+
+// Initialize everything when page loads
+// Make sure this runs AFTER all functions are defined
+setTimeout(function() {
+    initNumberEditors();
+    refreshLatestNumbersDisplay();
+    startAutoMonthChecker();
+}, 100);
+
+// Helper function to color decision text
+function getColoredDecisionText(decisionText) {
+    if (decisionText === 'Locational Clearance Granted') {
+        return 'Locational Clearance <span style="color: red;">Granted</span>';
+    } else if (decisionText === 'Disapproved') {
+        return '<span style="color: red;">Disapproved</span>';
+    } else if (decisionText === 'Approved with Conditions') {
+        return 'Approved with Conditions';
+    }
+    return decisionText;
+}
+
+async function deleteRecord(id) {
+    if (confirm("Delete permanently?")) {
+        const recordToDelete = locationalRecords.find((r) => r.id === id);
+        if (!recordToDelete) return;
+        
+        // Remove from local array first
+        locationalRecords = locationalRecords.filter((r) => r.id !== id);
+        localStorage.setItem("locationalRecords", JSON.stringify(locationalRecords));
+        
+        // Try to delete from backend
+        try {
+            const params = new URLSearchParams();
+            params.append("action", "delete");
+            params.append("data_type", "locational");
+            params.append("id", id.toString());  // Send ID as parameter
+            
+            const url = `${GOOGLE_SCRIPT_URL}?${params.toString()}`;
+            console.log("Delete URL:", url);
+            
+            const response = await fetch(url, {
+                method: "GET",
+                mode: "cors"
+            });
+            
+            const result = await response.json();
+            console.log("Delete result:", result);
+            
+            if (result.success) {
+                showToastMessage("Record deleted successfully", "success");
+            } else {
+                showToastMessage("Record deleted locally only. Sync failed: " + (result.error || "Unknown error"), "error");
+            }
+        } catch (error) {
+            console.error("Delete error:", error);
+            showToastMessage("Record deleted locally only. Server error.", "error");
+        }
+        
+        refreshStatusTable();
+        refreshAccTable();
+    }
+}
+
+// Combine lot area, floor area, province, and barangay into one string
+function updateAreaLocation() {
+    const lotArea = document.getElementById('locLotArea').value;
+    const floorArea = document.getElementById('locFloorArea').value;
+    const province = document.getElementById('locProvince').value;
+    const city = document.getElementById('locCity').value;
+    let barangay = document.getElementById('locBarangay').value;
+    
+    // Format barangay to include "Brgy." prefix if not already present
+    if (barangay && barangay.trim() !== '') {
+        barangay = barangay.trim();
+        // Check if it already starts with "Barangay" or "Brgy" (case insensitive)
+        const barangayPrefixPattern = /^(Barangay|Brgy\.?)\s/i;
+        if (!barangayPrefixPattern.test(barangay)) {
+            barangay = `Brgy. ${barangay}`;
+        }
+    }
+    
+    let areaParts = [];
+    
+    // Add lot area if provided
+    if (lotArea && lotArea !== '') {
+        areaParts.push(`${lotArea} sq.m. (lot area)`);
+    } else {
+        areaParts.push(`___ sq.m. (lot area)`);
+    }
+    
+    // Add floor area if provided
+    if (floorArea && floorArea !== '') {
+        areaParts.push(`${floorArea} sq.m. (floor area of proposed structure)`);
+    } else {
+        areaParts.push(`___ sq.m. (floor area of proposed structure)`);
+    }
+    
+    // Combine lot and floor area
+    let areaLocation = areaParts.join(' / ');
+    
+    // Add location parts - now barangay already has "Barangay" prefix
+    let locationParts = [];
+    if (barangay && barangay !== '') {
+        locationParts.push(barangay);
+    }
+    if (city && city !== '') {
+        locationParts.push(city);
+    }
+    if (province && province !== '') {
+        locationParts.push(province);
+    }
+    
+    if (locationParts.length > 0) {
+        areaLocation += ` - ${locationParts.join(', ')}`;
+    }
+    
+    document.getElementById('locAreaLocation').value = areaLocation;
+}
+
+// Initialize event listeners
+function initAreaLocationListeners() {
+    const fields = ['locLotArea', 'locFloorArea', 'locProvince', 'locCity', 'locBarangay'];
+    fields.forEach(fieldId => {
+        const element = document.getElementById(fieldId);
+        if (element) {
+            element.addEventListener('input', updateAreaLocation);
+            element.addEventListener('change', updateAreaLocation);
+        }
+    });
+    
+    // Add province change listener
+    const provinceSelect = document.getElementById('locProvince');
+    if (provinceSelect) {
+        provinceSelect.addEventListener('change', function() {
+            populateCities();
+            updateAreaLocation();
+        });
+    }
+    
+    // Add city change listener
+    const citySelect = document.getElementById('locCity');
+    if (citySelect) {
+        citySelect.addEventListener('change', function() {
+            updateAreaLocation();
+        });
+    }
+    
+    updateAreaLocation();
+}
+
+function editRecord(id) {
+    const r = locationalRecords.find(r => r.id === id);
+    if (!r) return;
+    currentEditingId = id;
+    switchView("dataEntry");
+    
+    // Set basic fields
+    document.getElementById("locDateReceipt").value = r.dateReceipt || "";
+    document.getElementById("locDateIssue").value = r.dateIssue || "";
+    document.getElementById("locApplicant").value = r.applicant || "";
+    document.getElementById("locCorporation").value = r.corporation || "";
+    document.getElementById("locApplicantAddress").value = r.applicantAddress || "";
+    document.getElementById("locCorpAddress").value = r.corpAddress || "";
+    document.getElementById("locProjectType").value = r.projectType || "";
+    document.getElementById("locDecision").value = r.decision || "";
+    document.getElementById("locRightOverLand").value = r.rightOverLand || "";
+    document.getElementById("locConditions").value = r.conditions || "";
+    document.getElementById("locOrNo").value = r.orNo || "";
+    document.getElementById("locAmountPaid").value = r.amountPaid || "";
+    document.getElementById("locOrDate").value = r.orDate || "";
+    
+    // Set number parts
+    if (r.applicationNo) setNumberParts('app', r.applicationNo);
+    if (r.decisionNo) setNumberParts('dec', r.decisionNo);
+    
+    // Parse areaLocation into separate fields
+    if (r.areaLocation) {
+        const areaLocation = r.areaLocation;
+        
+        // Extract lot area (e.g., "5000 sq.m. (lot area)")
+        const lotMatch = areaLocation.match(/(\d+(?:\.\d+)?)\s*sq\.m\.\s*\(lot area\)/);
+        if (lotMatch) {
+            document.getElementById("locLotArea").value = lotMatch[1];
+        }
+        
+        // Extract floor area
+        const floorMatch = areaLocation.match(/(\d+(?:\.\d+)?)\s*sq\.m\.\s*\(floor area of proposed structure\)/);
+        if (floorMatch) {
+            document.getElementById("locFloorArea").value = floorMatch[1];
+        }
+        
+        // Extract location (after " - ")
+        const locationMatch = areaLocation.match(/-\s*(.+)$/);
+        if (locationMatch) {
+            const location = locationMatch[1];
+            const parts = location.split(', ').map(p => p.trim());
+            
+            // Try to match province
+            const provinces = ['Aklan', 'Antique', 'Capiz', 'Guimaras', 'Iloilo', 'Negros Occidental'];
+            let provinceFound = '';
+            let remainingParts = [...parts];
+            
+            for (let i = 0; i < remainingParts.length; i++) {
+                if (provinces.includes(remainingParts[i])) {
+                    provinceFound = remainingParts[i];
+                    remainingParts.splice(i, 1);
+                    break;
+                }
+            }
+            
+            if (provinceFound) {
+                document.getElementById("locProvince").value = provinceFound;
+                populateCities(); // Load cities for this province
+                
+                // Try to match city (after province is set)
+                setTimeout(() => {
+                    const cities = philippineLocations[provinceFound]?.cities || [];
+                    let cityFound = '';
+                    let barangayParts = [...remainingParts];
+                    
+                    for (let i = 0; i < barangayParts.length; i++) {
+                        if (cities.includes(barangayParts[i])) {
+                            cityFound = barangayParts[i];
+                            barangayParts.splice(i, 1);
+                            break;
+                        }
+                    }
+                    
+                    if (cityFound) {
+                        document.getElementById("locCity").value = cityFound;
+                    }
+                    
+                    // Barangay is now a text input, just set its value
+                    // Remove "Barangay" prefix for display in input field (clean version)
+                    let barangayName = barangayParts.join(', ');
+                    if (barangayName) {
+                        // Remove "Barangay" prefix for display in input field
+                        barangayName = barangayName.replace(/^(Barangay|Brgy\.?)\s/i, '');
+                        document.getElementById("locBarangay").value = barangayName;
+                    }
+                }, 50);
+            } else {
+                // No province found, set barangay directly as text (remove prefix for display)
+                let barangayName = location;
+                barangayName = barangayName.replace(/^(Barangay|Brgy\.?)\s/i, '');
+                document.getElementById("locBarangay").value = barangayName;
+            }
+        }
+    }
+    
+    // Make the numbers editable when editing
+    makeNumberEditable();
+    
+    // Update the hidden area location field
+    updateAreaLocation();
+    
+    showToastMessage(`Editing: ${r.applicationNo}`);
+}
+
+function clearForm() {
+    document.getElementById("locationalForm").reset();
+    currentEditingId = null;
+    
+    // Clear location fields
+    document.getElementById("locLotArea").value = "";
+    document.getElementById("locFloorArea").value = "";
+    document.getElementById("locProvince").value = "";
+    document.getElementById("locCity").innerHTML = '<option value="">-- Select City/Municipality --</option>';
+    document.getElementById("locBarangay").value = ""; // Clear text input
+    
+    // Load latest numbers for new record
+    refreshLatestNumbersDisplay();
+    
+    // Update hidden field
+    updateAreaLocation();
+    
+    // Clear other fields
+    document.getElementById("locDateReceipt").value = "";
+    document.getElementById("locDateIssue").value = "";
+    document.getElementById("locApplicant").value = "";
+    document.getElementById("locCorporation").value = "";
+    document.getElementById("locApplicantAddress").value = "";
+    document.getElementById("locCorpAddress").value = "";
+    document.getElementById("locProjectType").value = "";
+    document.getElementById("locDecision").value = "";
+    document.getElementById("locRightOverLand").value = "";
+    document.getElementById("locOrNo").value = "";
+    document.getElementById("locAmountPaid").value = "";
+    document.getElementById("locOrDate").value = "";
+}
+
+// Initialize area location listeners
+initAreaLocationListeners();
+
+// Philippine Location Data
+const philippineLocations = {
+    "Aklan": {
+        cities: ["Kalibo", "Malay", "Numancia", "Banga", "Balete", "Batan", "Buruanga", "Ibajay", "Lezo", "Libacao", "Madalag", "Makato", "Malinao", "Nabas", "New Washington", "Tangalan"],
+        barangays: {
+            "Kalibo": ["Andagao", "Bakhaw Norte", "Bakhaw Sur", "Buswang New", "Buswang Old", "Caano", "Estancia", "Linabuan Norte", "Mabilo", "Nalook", "Poblacion", "Pook", "Tigayon", "Toting", "Veloso"],
+            "Malay": ["Caticlan", "Cogon", "Manoc-Manoc", "Motag", "Poblacion", "Yapak"],
+            "Ibajay": ["Bagacay", "Bacalan", "Bangay", "Bianoan", "Bugtong", "Cagay", "Calucan", "Camanci", "Daguitan", "Gibon", "Ginarlan", "Jaguimitan", "Jinalinan", "Laca", "Lagay", "Malingin", "Mojon", "Nalumsan", "Napatag", "Navas", "Naisud", "Panalipagon", "San Isidro", "Tagbubunga", "Tambo", "Tulang", "Tumboy"],
+            "Banga": ["Aglibacao", "Agtambi", "Bacan", "Badiangan", "Cabulang", "Cagban", "Calalibutan", "Camalig", "Culit", "Dumaguit", "Jumarap", "Linabuan Sur", "Linayuan", "Lumaynat", "Lumogbong", "Magsaysay", "Malayat", "Manlawaan", "Maravilla", "Masantol", "Nabay", "Osmena", "Polo", "Pook", "Puentebella", "Rosal", "San Jose", "San Vicente", "Sinayawan", "Tabayon", "Taboc", "Timbaban", "Tinogboc", "Tondog", "Tugbo"],
+            "Lezo": ["Agcawilan", "Bagto", "Bugtong", "Carugdog", "Cogon", "Ibao", "Limbaga", "Maguilay", "Poblacion", "Pulag", "Sulong", "Tagaytay", "Tigobolo"]
+        }
+    },
+    "Antique": {
+        cities: ["San Jose de Buenavista", "Caluya", "Culasi", "Hamtic", "Laua-an", "Libertad", "Pandan", "Patnongon", "Sibalom", "Tobias Fornier", "Valderrama", "Anini-y", "Barbaza", "Belison", "Bugasong", "Sebaste"],
+        barangays: {}
+    },
+    "Capiz": {
+        cities: ["Roxas City", "Cuartero", "Dao", "Dumalag", "Dumarao", "Ivisan", "Jamindan", "Maayon", "Mambusao", "Panay", "Panitan", "Pilar", "Pontevedra", "President Roxas", "Sapi-an", "Sigma", "Tapaz"],
+        barangays: {}
+    },
+    "Guimaras": {
+        cities: ["Jordan", "Buenavista", "San Lorenzo", "Sibunag", "Nueva Valencia"],
+        barangays: {}
+    },
+    "Iloilo": {
+        cities: ["Iloilo City", "Passi City", "Ajuy", "Alimodian", "Anilao", "Badiangan", "Balasan", "Banate", "Barotac Nuevo", "Barotac Viejo", "Batad", "Bingawan", "Cabatuan", "Calinog", "Carles", "Concepcion", "Dingle", "Dueñas", "Dumangas", "Estancia", "Guimbal", "Igbaras", "Janiuay", "Lambunao", "Leganes", "Lemery", "Leon", "Maasin", "Miagao", "Mina", "New Lucena", "Oton", "Pavia", "Pototan", "San Dionisio", "San Enrique", "San Joaquin", "San Miguel", "San Rafael", "Santa Barbara", "Sara", "Tigbauan", "Tubungan", "Zarraga"],
+        barangays: {
+            "Iloilo City": ["Arevalo", "City Proper", "Jaro", "La Paz", "Lapuz", "Mandurriao", "Molo", "Villa Arevalo"],
+            "Passi City": ["Agdahon", "Agtambo", "Agtabo", "Agtina", "Aglalana", "Agtambong", "Aglibac", "Ag-agit", "Badiang", "Badiangan", "Bagacay", "Bago", "Bakhawan", "Badiang", "Binalod", "Bita", "Burgos", "Cabato", "Cagay", "Calam-an", "Camingawan", "Camina", "Canapi", "Cancillan", "Cansilayan", "Capinang", "Casambahan", "Cawayanan", "Diel", "Duyog", "Ginictan", "Gines", "Guibuangan", "Guin-am", "Guinpanaan", "Guintas", "Guintas", "Hipul-an", "Hipon", "Hipul-an", "Imbang", "Induyan", "Jemaritan", "Jemaritan", "Jiabong", "Jubasan", "Jumarap", "Juntador", "Juntador", "Lacaron", "Lanot", "Libtong", "Lico", "Lico", "Linambinan", "Lublub", "Lublub", "Lumbia", "Lupa", "Lupa", "Maasin", "Maasin", "Mabini", "Mabini", "Macatol", "Macatol", "Magsaysay", "Magsaysay", "Malacañang", "Malacañang", "Malag-it", "Malag-it", "Malangabang", "Malangabang", "Malapaya", "Malapaya", "Malitbog", "Malitbog", "Mambag-A", "Mambag-A", "Mambog", "Mambog", "Mangatas", "Mangatas", "Man-it", "Man-it", "Man-it", "Marayo", "Marayo", "Matab-ang", "Matab-ang", "Mina", "Mina", "Mina", "Nagtang", "Nagtang", "Nagtang", "Navalas", "Navalas", "Navalas", "Olotayan", "Olotayan", "Olotayan", "Pajo", "Pajo", "Pajo", "Palanas", "Palanas", "Palanas", "Pandan", "Pandan", "Pandan", "Pantalan", "Pantalan", "Pantalan", "Poblacion", "Poblacion", "Poblacion", "Punta", "Punta", "Punta", "Quinagaringan", "Quinagaringan", "Quinagaringan", "San Antonio", "San Antonio", "San Antonio", "San Carlos", "San Carlos", "San Carlos", "San Enrique", "San Enrique", "San Enrique", "San Francisco", "San Francisco", "San Francisco", "San Isidro", "San Isidro", "San Isidro", "San Jose", "San Jose", "San Jose", "San Juan", "San Juan", "San Juan", "San Miguel", "San Miguel", "San Miguel", "San Nicolas", "San Nicolas", "San Nicolas", "San Pedro", "San Pedro", "San Pedro", "San Rafael", "San Rafael", "San Rafael", "San Roque", "San Roque", "San Roque", "San Vicente", "San Vicente", "San Vicente", "Santa Cruz", "Santa Cruz", "Santa Cruz", "Santa Isabel", "Santa Isabel", "Santa Isabel", "Santa Maria", "Santa Maria", "Santa Maria", "Santo Cristo", "Santo Cristo", "Santo Cristo", "Santo Domingo", "Santo Domingo", "Santo Domingo", "Santo Niño", "Santo Niño", "Santo Niño", "Sibucao", "Sibucao", "Sibucao", "Sinamay", "Sinamay", "Sinamay", "Sinaw", "Sinaw", "Sinaw", "Sinuagan", "Sinuagan", "Sinuagan", "Tabucan", "Tabucan", "Tabucan", "Tabucan", "Tacas", "Tacas", "Tacas", "Tagbac", "Tagbac", "Tagbac", "Tambal", "Tambal", "Tambal", "Tambun-ac", "Tambun-ac", "Tambun-ac", "Tanggapan", "Tanggapan", "Tanggapan", "Tinorian", "Tinorian", "Tinorian", "To-og", "To-og", "To-og", "Tuguis", "Tuguis", "Tuguis", "Ubian", "Ubian", "Ubian", "Ubian"]
+        }
+    },
+    "Negros Occidental": {
+        cities: ["Bacolod City", "Bago City", "Cadiz City", "Escalante City", "Himamaylan City", "Kabankalan City", "La Carlota City", "Sagay City", "San Carlos City", "Silay City", "Sipalay City", "Talisay City", "Victorias City"],
+        barangays: {
+            "Bacolod City": ["Barangay 1", "Barangay 2", "Barangay 3", "Barangay 4", "Barangay 5", "Barangay 6", "Barangay 7", "Barangay 8", "Barangay 9", "Barangay 10", "Barangay 11", "Barangay 12", "Barangay 13", "Barangay 14", "Barangay 15", "Barangay 16", "Barangay 17", "Barangay 18", "Barangay 19", "Barangay 20", "Barangay 21", "Barangay 22", "Barangay 23", "Barangay 24", "Barangay 25", "Barangay 26", "Barangay 27", "Barangay 28", "Barangay 29", "Barangay 30", "Barangay 31", "Barangay 32", "Barangay 33", "Barangay 34", "Barangay 35", "Barangay 36", "Barangay 37", "Barangay 38", "Barangay 39", "Barangay 40", "Barangay 41"]
+        }
+    }
+};
+
+// Populate City/Municipality based on selected Province
+function populateCities() {
+    const province = document.getElementById('locProvince').value;
+    const citySelect = document.getElementById('locCity');
+    
+    // Clear existing options
+    citySelect.innerHTML = '<option value="">-- Select City/Municipality --</option>';
+    
+    if (province && philippineLocations[province]) {
+        const cities = philippineLocations[province].cities;
+        cities.sort().forEach(city => {
+            const option = document.createElement('option');
+            option.value = city;
+            option.textContent = city;
+            citySelect.appendChild(option);
+        });
+    }
+}
+
+// Add this to your print function to remove bold from labels
+function removeBoldFromLabels() {
+    const labels = document.querySelectorAll('.print-label');
+    labels.forEach(label => {
+        label.style.fontWeight = 'normal';
+        // Also remove bold from any strong tags inside
+        const strongs = label.querySelectorAll('strong');
+        strongs.forEach(strong => {
+            strong.style.fontWeight = 'normal';
+        });
+    });
+}
+
+// Call this before printing
+removeBoldFromLabels();
+
+</script>
+
+</body>
+</html>

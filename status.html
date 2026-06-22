@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, print-scale: 1.0">
+  <title>DHSUD - Status of CLUP/ZO Formulation (Blue)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+   * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
+    font-family: "Inter", sans-serif;
+    background: #f4f7fc;
+    color: #0f2b3a;
+    line-height: 1.45;
+}
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+/* Header styles - Two row layout (PRESERVED) */
+header {
+    background: white;
+    border-bottom: 1px solid #eef2ff;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+    background: rgba(255, 255, 255, 0.96);
+}
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem 0;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+.logo-area-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.header-logo-img {
+    height: 42px;
+    background: #f1f5f9;
+    padding: 4px 16px;
+    border-radius: 40px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #1e3a8a;
+    white-space: nowrap;
+}
+.header-logo-img img {
+    height: 32px;
+    width: auto;
+}
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.user-menu {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #f1f5f9;
+    padding: 0.3rem 0.8rem 0.3rem 1rem;
+    border-radius: 60px;
+    cursor: pointer;
+    position: relative;
+}
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    background: #2563eb;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+}
+.login-prompt {
+    background: #f1f5f9;
+    padding: 0.3rem 1rem;
+    border-radius: 40px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+.role-badge-header {
+    background: #e2e8f0;
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
+.role-badge-header.admin {
+    background: #dcfce7;
+    color: #166534;
+}
+.role-badge-header.staff {
+    background: #dbeafe;
+    color: #1e40af;
+}
+.user-dropdown-menu {
+    position: absolute;
+    top: 48px;
+    right: 0;
+    background: white;
+    border-radius: 20px;
+    min-width: 180px;
+    box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.15);
+    border: 1px solid #eef2ff;
+    overflow: hidden;
+    display: none;
+    z-index: 200;
+}
+.user-dropdown-item {
+    padding: 0.8rem 1.2rem;
+    border-bottom: 1px solid #f1f5f9;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+.user-dropdown-item:hover {
+    background: #f8fafc;
+}
+.user-name {
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.nav-bottom {
+    background: #ffffff;
+    border-top: 1px solid #eef2ff;
+    padding: 0.5rem 0;
+}
+.main-nav-links {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+.main-nav-links a,
+.main-nav-links .dropdown {
+    text-decoration: none;
+    color: #334155;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: 0.2s;
+}
+.main-nav-links a:hover,
+.main-nav-links .dropbtn:hover {
+    color: #2563eb;
+}
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+.dropbtn {
+    background: none;
+    border: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: #334155;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 0.4rem 0;
+}
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background: white;
+    min-width: 220px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+    z-index: 1000;
+    top: 30px;
+    left: 0;
+    border: 1px solid #eef2ff;
+    padding: 0.3rem 0;
+}
+/* ADD THIS - Show dropdown on hover */
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+.dropdown-content a {
+    display: block;
+    padding: 0.7rem 1.2rem;
+    color: #1e293b;
+    font-size: 0.8rem;
+    text-decoration: none;
+}
+.dropdown-content a:hover {
+    background: #eff6ff;
+}
+.dropdown.open .dropdown-content {
+    display: block;
+}
+.dropdown-submenu {
+    position: relative;
+}
+.submenu-trigger {
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    padding: 0.7rem 1.2rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #1e293b;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: inherit;
+}
+.submenu-trigger:hover {
+    background: #eff6ff;
+}
+.arrow-right {
+    font-size: 0.7rem;
+    margin-left: 1rem;
+}
+.submenu-content {
+    display: none;
+    position: absolute;
+    left: 100%;
+    top: 0;
+    background: white;
+    min-width: 180px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+    border: 1px solid #eef2ff;
+    z-index: 1001;
+    padding: 0.3rem 0;
+}
+/* ADD THIS - Show submenu on hover */
+.dropdown-submenu:hover .submenu-content {
+    display: block;
+}
+.submenu-content a {
+    padding: 0.7rem 1.2rem;
+}
+.dropdown-submenu.open .submenu-content {
+    display: block;
+}
+
+/* Login Modal (Preserved) */
+.login-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+.login-modal.active {
+    display: flex;
+}
+.login-modal-content {
+    background: white;
+    border-radius: 32px;
+    max-width: 450px;
+    width: 90%;
+    overflow: hidden;
+    animation: modalSlideIn 0.3s ease;
+}
+.login-modal-header {
+    background: linear-gradient(135deg, #1e3a8a, #2563eb);
+    padding: 1.5rem;
+    text-align: center;
+    color: white;
+}
+.login-modal-header .seal-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+.login-modal-header h3 {
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+.login-modal-body {
+    padding: 1.5rem;
+}
+.input-group {
+    margin-bottom: 1.2rem;
+    position: relative;
+}
+.input-group label {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #54708f;
+    margin-bottom: 0.4rem;
+}
+.input-group input {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 1rem;
+    font-size: 0.9rem;
+    font-family: "Inter", sans-serif;
+    padding-right: 45px;
+}
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    top: 38px;
+    cursor: pointer;
+    font-size: 1rem;
+    background: none;
+    border: none;
+    color: #94a3b8;
+}
+.login-submit-btn {
+    width: 100%;
+    padding: 0.9rem;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 1.2rem;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    margin-top: 0.5rem;
+}
+.login-submit-btn:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+}
+.login-modal-footer {
+    border-top: 1px solid #eef2ff;
+    padding: 1rem;
+    text-align: center;
+    font-size: 0.65rem;
+    color: #94a3b8;
+    background: #fafcff;
+}
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+.toast-msg {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #1e293b;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 40px;
+    z-index: 9999;
+    font-size: 0.8rem;
+}
+
+/* Status page specific styles (Original GUI preserved) */
+.page-header {
+    background: linear-gradient(135deg, #0f2b3a 0%, #1e4a6e 100%);
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+    text-align: center;
+    color: white;
+    border-radius: 0 0 2rem 2rem;
+}
+.report-card {
+    background: white;
+    border-radius: 28px;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.03);
+    overflow: hidden;
+    margin-bottom: 32px;
+    border: 1px solid #eef2ff;
+}
+.report-header {
+    background: linear-gradient(135deg, #1e3a8a, #2563eb);
+    color: white;
+    padding: 20px 28px;
+    text-align: center;
+}
+.report-header h1 {
+    font-size: 1.7rem;
+    font-weight: 600;
+}
+.report-body {
+    padding: 28px 32px;
+}
+.two-col-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    margin-bottom: 20px;
+}
+.info-section {
+    margin-bottom: 28px;
+}
+.section-title-sm {
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #2563eb;
+    border-left: 3px solid #2563eb;
+    padding-left: 12px;
+    margin-bottom: 16px;
+}
+.info-row {
+    display: flex;
+    padding: 8px 0;
+    border-bottom: 1px solid #eff3f8;
+    flex-wrap: wrap;
+    font-size: 0.85rem;
+}
+.info-label {
+    width: 180px;
+    font-weight: 600;
+    color: #4a6f88;
+}
+.info-value {
+    flex: 1;
+    color: #1f3e54;
+    font-weight: 500;
+}
+.badge-status {
+    background: #e1f2ea;
+    color: #176b43;
+    padding: 3px 12px;
+    border-radius: 40px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    display: inline-block;
+}
+.action-row {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin: 20px 0;
+}
+.btn {
+    padding: 10px 26px;
+    border-radius: 60px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    border: 1px solid #cbdde8;
+    background: white;
+    color: #2c4e6b;
+    transition: 0.2s;
+}
+.btn-primary {
+    background: #2563eb;
+    border: none;
+    color: white;
+}
+.btn-primary:hover {
+    background: #1e3a8a;
+    transform: translateY(-1px);
+}
+.btn-print {
+    background: #f0f6fa;
+}
+.btn-success {
+    background: #166953;
+    color: white;
+    border: none;
+}
+.btn-success:hover {
+    background: #0e4f3e;
+}
+.edit-panel {
+    background: white;
+    border-radius: 24px;
+    padding: 28px;
+    margin: 20px 0;
+    border: 1px solid #eef2ff;
+    display: none;
+}
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 18px;
+}
+.form-group label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #5f7f97;
+    display: block;
+    margin-bottom: 5px;
+}
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #d0dfe8;
+    border-radius: 14px;
+    font-size: 0.85rem;
+    font-family: "Inter", sans-serif;
+}
+.submit-btn {
+    background: #2563eb;
+    color: white;
+    padding: 10px 28px;
+    border: none;
+    border-radius: 40px;
+    margin-top: 18px;
+    cursor: pointer;
+}
+.submit-btn:hover {
+    background: #1e3a8a;
+}
+.success-msg {
+    background: #dff3e9;
+    color: #146b45;
+    padding: 12px;
+    border-radius: 40px;
+    margin-bottom: 20px;
+    display: none;
+    text-align: center;
+}
+/* Additional TPAP styles integrated */
+.phase-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 24px;
+    overflow: hidden;
+    margin-top: 16px;
+}
+.phase-table th,
+.phase-table td {
+    padding: 1rem 1rem;
+    border: 1px solid #e4edef;
+    vertical-align: middle;
+    background: white;
+}
+.phase-table th {
+    background: #f2f9f6;
+    font-weight: 800;
+    font-size: 0.8rem;
+    color: #0f5a46;
+}
+.phase-status-select {
+    padding: 0.5rem 0.8rem;
+    border-radius: 40px;
+    border: 1.5px solid #cbdad5;
+    background: white;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    width: 130px;
+}
+.mov-text {
+    font-size: 0.7rem;
+    color: #56786a;
+    margin-top: 0.3rem;
+    line-height: 1.3;
+}
+.file-input-small {
+    font-size: 0.7rem;
+    padding: 5px;
+    border: 1px dashed #bcd0c8;
+    border-radius: 30px;
+    background: #fefefe;
+    cursor: pointer;
+    width: 100%;
+}
+.btn-clear-file {
+    background: none;
+    border: none;
+    color: #b91c1c;
+    font-size: 0.65rem;
+    cursor: pointer;
+    margin-left: 8px;
+}
+.file-upload-area {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.records-table-wrapper {
+    overflow-x: auto;
+    border-radius: 24px;
+    border: 1px solid #e4edef;
+    background: white;
+    margin-top: 20px;
+}
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+}
+.data-table th {
+    background: #f0f8f4;
+    padding: 1rem 0.8rem;
+    font-weight: 800;
+    color: #166953;
+}
+.data-table td {
+    padding: 0.8rem;
+    border-bottom: 1px solid #eaf1ed;
+}
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.9rem;
+    border-radius: 40px;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+.status-updated {
+    background: #dff0e6;
+    color: #0f5a46;
+}
+.status-for-updating {
+    background: #fff2dd;
+    color: #b45309;
+}
+.status-no {
+    background: #fee9e6;
+    color: #b91c1c;
+}
+.action-btn {
+    padding: 0.35rem 0.8rem;
+    border-radius: 30px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    margin: 0 2px;
+}
+.action-view {
+    background: #d9efff;
+    color: #0369a1;
+}
+.action-edit {
+    background: #fff0db;
+    color: #b45309;
+}
+.action-delete {
+    background: #ffe2e0;
+    color: #b91c1c;
+}
+.lgu-badge {
+    background: #e8f0fe;
+    color: #166953;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+.lgu-switch-area {
+    background: #f9f4e8;
+    border-radius: 28px;
+    padding: 12px 24px;
+    margin-bottom: 24px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+.select-lgu {
+    padding: 8px 18px;
+    border-radius: 40px;
+    border: 1px solid #cbd5e1;
+    background: white;
+    font-family: "Inter", sans-serif;
+    font-weight: 500;
+    min-width: 240px;
+}
+.switch-btn {
+    background: #166953;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 40px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.info-note {
+    background: #e8f0fe;
+    border-left: 4px solid #166953;
+    padding: 12px 16px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    font-size: 0.8rem;
+    color: #2c5e4a;
+}
+hr {
+    margin: 1.5rem 0;
+    border: none;
+    border-top: 1px solid #ddece6;
+}
+footer {
+    background: #0f2b3a;
+    color: #cbd5e1;
+    padding: 2rem 0 1.5rem;
+    margin-top: 3rem;
+}
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+.copyright {
+    margin-top: 2rem;
+    text-align: center;
+    border-top: 1px solid #2d3a4a;
+    padding-top: 1.5rem;
+    font-size: 0.8rem;
+}
+@media print {
+    body {
+        background: white;
+    }
+    header,
+    .action-row,
+    .edit-panel,
+    .footer,
+    .btn,
+    .nav-links,
+    .lgu-switch-area,
+    .login-modal {
+        display: none !important;
+    }
+    .report-card {
+        box-shadow: none;
+        border: 1px solid #ccc;
+    }
+    .report-header {
+        background: #1e3a8a !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+
+/* NEW POPUP STYLES */
+.clup-popup-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    justify-content: center;
+    align-items: center;
+    z-index: 20000;
+    padding: 20px;
+}
+.clup-popup-overlay.active {
+    display: flex;
+}
+.clup-popup-content {
+    background: white;
+    border-radius: 32px;
+    max-width: 1100px;
+    width: 100%;
+    max-height: 95vh;
+    overflow-y: auto;
+    padding: 28px 32px;
+    position: relative;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.3s ease;
+}
+.clup-popup-close {
+    position: sticky;
+    top: 0;
+    float: right;
+    background: #f1f5f9;
+    border: none;
+    font-size: 1.8rem;
+    line-height: 1;
+    width: 44px;
+    height: 44px;
+    border-radius: 60px;
+    cursor: pointer;
+    color: #1e293b;
+    transition: 0.2s;
+    z-index: 10;
+}
+.clup-popup-close:hover {
+    background: #e2e8f0;
+    transform: scale(1.05);
+}
+.clup-popup-content .report-card {
+    border-radius: 24px;
+    margin-bottom: 24px;
+    border: 1px solid #eef2ff;
+}
+.clup-popup-content .report-header {
+    border-radius: 24px 24px 0 0;
+}
+@media print {
+    .clup-popup-overlay {
+        display: none !important;
+    }
+}
+/* ADD THIS - Dropdown arrow indicator */
+.dropbtn::after {
+    content: " ▾";
+    font-size: 0.7rem;
+    opacity: 0.6;
+}
+.dropdown:hover .dropbtn::after {
+    content: " ▾";
+    opacity: 1;
+}
+  </style>
+</head>
+<body>
+  <header> <!-- PRESERVED ORIGINAL HEADER STRUCTURE -->
+    <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 0 24px;">
+      <div class="top-bar">
+        <div class="logo-area-header">
+          <div class="header-logo-img">
+            <img src="DHSUD_LOGO.png" alt="DHSUD Logo">
+            <span>DHSUD VI - ELUPDD Integrated Database and Information System</span>
+          </div>
+        </div>
+        <div class="nav-right" id="userMenuContainer"></div>
+      </div>
+    </div>
+    <div class="nav-bottom">
+      <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 0 24px;">
+        <div class="main-nav-links" id="mainNavContainer"></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="page-header">
+    <div class="container">
+      <h1>STATUS OF CLUP/ZO FORMULATION</h1>
+      <p>Comprehensive Land Use Plan and Zoning Ordinance Monitoring</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- LGU Quick Switch (Integrated from statusdaw) -->
+    <div class="lgu-switch-area">
+      <div><strong>🏛️ Active LGU Session:</strong> <span id="activeLguBadge" class="lgu-badge">---</span></div>
+      <div style="display: flex; gap: 12px; align-items: center;">
+        <span style="font-size:0.8rem;">🔄 Switch LGU:</span>
+        <select id="lguSelector" class="select-lgu"></select>
+        <button id="switchLguBtn" class="switch-btn">▶ Switch context</button>
+      </div>
+      <div><small class="mov-text">ℹ️ Data & records stored per LGU.</small></div>
+    </div>
+
+    <!-- Original Status Report Card (GUI PRESERVED) -->
+    <div class="report-card" id="statusReportCard">
+      <div class="report-header">
+        <h1>STATUS OF CLUP/ZO FORMULATION</h1>
+        <div class="sub" id="headerLGU">ALTAVAS, AKLAN</div>
+      </div>
+      <div class="report-body">
+        <div class="two-col-grid">
+          <div>
+            <div class="info-section">
+              <div class="section-title-sm" style="display: flex; justify-content: space-between; align-items: center;">
+                <span>🏛️ LGU PROFILE</span>
+                <button id="openClupPopupBtn" class="btn btn-primary" style="padding: 6px 20px; font-size: 0.75rem;">📋 CLUP Prep & Records</button>
+              </div>
+              <div class="info-row"><div class="info-label">Region</div><div class="info-value" id="displayRegion">WESTERN VISAYAS</div></div>
+              <div class="info-row"><div class="info-label">Income Classification</div><div class="info-value" id="displayIncomeClass">4TH</div></div>
+              <div class="info-row"><div class="info-label">City/Municipality</div><div class="info-value" id="displayLGU">ALTAVAS</div></div>
+              <div class="info-row"><div class="info-label">Province</div><div class="info-value" id="displayProvince">AKLAN</div></div>
+            </div>
+            <div class="info-section">
+              <div class="section-title-sm">📘 LATEST CLUP</div>
+              <div class="info-row"><div class="info-label">Year of Approval</div><div class="info-value" id="latestYearApproval">2003</div></div>
+              <div class="info-row"><div class="info-label">Planning Period</div><div class="info-value" id="latestPlanningPeriod">2003-2012</div></div>
+              <div class="info-row"><div class="info-label">SP/HLURB Resolution</div><div class="info-value" id="latestResolution">SP R-03-084</div></div>
+              <div class="info-row"><div class="info-label">Date Approved</div><div class="info-value" id="latestDateApproved">3/18/2003</div></div>
+              <div class="info-row"><div class="info-label">SB/SP Resolution Adopting CLUP</div><div class="info-value" id="sbResolution">SB Res. 2003-12</div></div>
+              <div class="info-row"><div class="info-label">Zoning Ordinance (ZO) No.</div><div class="info-value" id="zoNumber">ZO-2003-001</div></div>
+              <div class="info-row"><div class="info-label">CCA-DRR Mainstreamed</div><div class="info-value"><span class="badge-status" id="ccaDrrBadge">Yes</span></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Original Edit Panel (preserved but integrated logic) -->
+    <div class="edit-panel" id="editPanel">
+      <div id="editSuccessMsg" class="success-msg">✓ Status report updated successfully</div>
+      <h3 style="font-weight:500; margin-bottom:18px;">✏️ Edit CLUP/ZO Formulation Data</h3>
+      <form id="editForm" onsubmit="return updateAllData(event)">
+        <div class="form-grid">
+          <div class="form-group"><label>City/Municipality</label><input id="editLGU" value="ALTAVAS"></div>
+          <div class="form-group"><label>Province</label><input id="editProvince" value="AKLAN"></div>
+          <div class="form-group"><label>Region</label><input id="editRegion" value="WESTERN VISAYAS"></div>
+          <div class="form-group"><label>Income Class</label><input id="editIncomeClass" value="4TH"></div>
+          <div class="form-group"><label>Latest CLUP Year Approval</label><input id="editLatestYear" value="2003"></div>
+          <div class="form-group"><label>Latest CLUP Planning Period</label><input id="editLatestPeriod" value="2003-2012"></div>
+          <div class="form-group"><label>SP/HLURB Resolution (Latest)</label><input id="editLatestRes" value="SP R-03-084"></div>
+          <div class="form-group"><label>Date Approved (Latest)</label><input id="editLatestDate" value="3/18/2003"></div>
+          <div class="form-group"><label>SB/SP Resolution Adopting CLUP</label><input id="editSbRes" value="SB Res. 2003-12"></div>
+          <div class="form-group"><label>ZO Number</label><input id="editZoNo" value="ZO-2003-001"></div>
+          <div class="form-group"><label>CCA-DRR Mainstreamed</label><select id="editCcaDrr"><option>Yes</option><option>No</option></select></div>
+        </div>
+        <button type="submit" class="submit-btn">💾 Save All Changes</button>
+        <button type="button" style="margin-left:12px; background:none; border:1px solid #ccc; padding:10px 26px; border-radius:40px;" onclick="hideEditPanel()">Cancel</button>
+      </form>
+    </div>
+    <div class="action-row"><button class="btn btn-primary" onclick="showEditPanel()">✎ Edit Status</button><button class="btn btn-print" onclick="window.print()">🖨️ Print</button></div>
+  </div>
+
+  <!-- CLUP POPUP (integrated: CLUP PREPARATION & TPAP PHASE MONITORING + MY CLUP RECORDS) -->
+  <div id="clupPopupOverlay" class="clup-popup-overlay">
+    <div class="clup-popup-content">
+      <button class="clup-popup-close" id="closeClupPopupBtn">&times;</button>
+      <!-- CLUP Preparation & TPAP Phase Monitoring -->
+      <div class="report-card" style="margin-top: 0;">
+        <div class="report-header" style="background: linear-gradient(135deg, #166953, #1e8a6b);">
+          <h1>📋 CLUP PREPARATION & TPAP PHASE MONITORING</h1>
+        </div>
+        <div class="report-body">
+          <div class="info-note">
+            <strong>📍 Current LGU:</strong> <span id="currentLguDisplayPopup"></span> — Manage CLUP status, TPAP phases, and supporting documents.
+          </div>
+          <form id="clupIntegratedFormPopup">
+            <div class="form-grid">
+              <div class="form-group"><label>Province</label><input type="text" id="clupProvincePopup" class="form-control" readonly style="background:#f5f7f6;"></div>
+              <div class="form-group"><label>LGU Name</label><input type="text" id="clupLguNamePopup" class="form-control" readonly></div>
+              <div class="form-group"><label>LGU Type</label><input type="text" id="clupLguTypePopup" class="form-control" readonly></div>
+            </div>
+            <hr>
+            <div class="form-group"><label>📌 CLUP Status (Overall)</label><div style="display:flex; gap:1rem; flex-wrap:wrap; margin-top:6px;"><label><input type="radio" name="clupStatusPopup" value="Updated"> ✅ Updated</label><label><input type="radio" name="clupStatusPopup" value="For updating"> 🔄 For updating</label><label><input type="radio" name="clupStatusPopup" value="No CLUP"> ❌ No CLUP</label></div></div>
+            <div class="form-group"><label>✅ Review and Approval Status (RA Code)</label><select id="raStatusPopup" class="form-control"><option value="">-- Select RA Code --</option><option>RA 1 – Transmitted</option><option>RA 2 – Under review</option><option>RA 3 – Under revision</option><option>RA 4 – Returned for final review</option><option>RA 5 – Endorsed for adoption</option><option>RA 6 – Adopted & enacted</option><option>RA 7 – For DHSUD approval</option></select></div>
+            <hr>
+            <div class="form-group"><label>⚙️ TPAP Phase Status + MOV / File Uploads</label>
+              <table class="phase-table" id="tpapTableIntegratedPopup">
+                <thead><tr><th>Phase</th><th>Definition</th><th>Status</th><th>Means of Verification (MOV)</th><th>📎 Upload File</th></tr></thead>
+                <tbody id="tpapBodyIntegratedPopup"></tbody>
+              </table>
+            </div>
+            <button type="submit" class="btn btn-success" style="margin-top: 24px; width:100%;">💾 Save CLUP Record (with TPAP data & files)</button>
+          </form>
+        </div>
+      </div>
+      <!-- MY CLUP RECORDS -->
+      <div class="report-card" style="margin-top: 24px;">
+        <div class="report-header" style="background: linear-gradient(135deg, #1e3a8a, #3b5db0);">
+          <h1>📊 MY CLUP RECORDS</h1>
+          <div class="sub" id="recordsLguDisplayHeaderPopup">LGU Records</div>
+        </div>
+        <div class="report-body">
+          <div class="info-note">📌 Showing CLUP entries for: <strong id="recordsLguDisplayPopup"></strong> <button class="btn btn-print" style="margin-left: 12px;" onclick="loadCurrentLguRecordsPopup()">🔄 Refresh</button></div>
+          <div class="records-table-wrapper">
+            <table class="data-table">
+              <thead><tr><th>LGU</th><th>Province</th><th>Status</th><th>RA Code</th><th>TPAP Summary</th><th>Date</th><th>Actions</th></tr></thead>
+              <tbody id="recordsTableBodyPopup"><tr><td colspan="7" style="text-align:center;">Loading...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="loginModal" class="login-modal"> <!-- Preserved login modal -->
+    <div class="login-modal-content">
+      <div class="login-modal-header"><div class="seal-icon">🏛️</div><h3>DHSUD Region VI</h3><p style="font-size:0.8rem; opacity:0.9;">Sign in to access your account</p></div>
+      <div class="login-modal-body"><form id="modalLoginForm" onsubmit="return handleModalLogin(event)"><div class="input-group"><label>📧 Email Address</label><input type="email" id="modalLoginEmail" placeholder="name@dhsud.gov.ph" required></div><div class="input-group"><label>🔒 Password</label><input type="password" id="modalLoginPassword" placeholder="Enter your password" required><button type="button" class="toggle-password" onclick="toggleModalPassword()">👁️</button></div><button type="submit" class="login-submit-btn">→ Sign In</button></form></div>
+      <div class="login-modal-footer">🔐 Role-Based Access: Admin | Staff/Officer</div>
+    </div>
+  </div>
+
+
+  <script>
+    // ========== INTEGRATED FUNCTIONS FROM statusdaw + PRESERVED ORIGINAL ==========
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1OCTwE_aaIm4bTAWQM3mXJq4m7LMREa3QlCl5FAY_XwZ1P1ohRaGJFzLWKDSVET1Q/exec";
+    let currentUser = null;
+    function escapeHtml(s) { return String(s).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
+    function showToastMessage(msg, type) { let toast = document.createElement("div"); toast.className = "toast-msg"; toast.style.background = type === "error" ? "#b91c1c" : "#166534"; toast.innerText = msg; document.body.appendChild(toast); setTimeout(() => toast.remove(), 3000); }
+    function encodePassword(p) { return btoa(p); }
+    function checkSession() { const raw = localStorage.getItem("dhsud_session"); if (raw) { try { const s = JSON.parse(raw); const diff = (new Date() - new Date(s.loggedInAt)) / (1000 * 60 * 60); if (diff < 12 && s.email) { currentUser = s; return true; } else localStorage.removeItem("dhsud_session"); } catch(e) { localStorage.removeItem("dhsud_session"); } } currentUser = null; return false; }
+    function getUserInitials(n) { if(!n) return "U"; let p = n.split(" "); if(p.length>=2) return (p[0][0]+p[1][0]).toUpperCase(); return n.substring(0,2).toUpperCase(); }
+    function getRoleLabel(r) { if(r==="admin") return "👑 Admin"; if(r==="encoder"||r==="staff") return "📋 Staff/Officer"; return "👁️ Viewer"; }
+    function getRoleClass(r) { if(r==="admin") return "admin"; if(r==="encoder"||r==="staff") return "staff"; return "viewer"; }
+    function renderMainNavigation() {
+    const container = document.getElementById("mainNavContainer");
+    if (!container) return;
+    let navHtml = `<a href="index.html">Home</a>`;
+    if (currentUser) {
+        navHtml += `<div class="dropdown" id="certDropdown"><button class="dropbtn">Certification</button><div class="dropdown-content"><a href="lc.html">Locational Clearance</a><a href="SZC.html">Site Zoning Clarification</a></div></div>
+          <div class="dropdown" id="landUseDropdown"><button class="dropbtn">Land Use Plans</button><div class="dropdown-content"><div class="dropdown-submenu" id="clupSubmenu"><button class="submenu-trigger">CLUP & ZO <span class="arrow-right">▸</span></button><div class="submenu-content"><a href="inventory.html">Inventory</a><a href="status.html">Status</a></div></div><a href="status.html">PDPFP</a></div></div>
+          <a href="lgu-info.html">LGU Information</a><a href="report.html">Reports</a><a href="calendar.html">Calendar of Activities</a><a href="issuance.html">Issuances</a><a href="#about">About</a><a href="#contact">Contact</a>`;
+    } else { navHtml += `<a href="#about">About</a><a href="#contact">Contact</a>`; }
+    container.innerHTML = navHtml;
+    // Keep click functionality for submenu items if needed
+    setTimeout(() => {
+        document.querySelectorAll(".dropdown-submenu .submenu-trigger").forEach((trigger) => {
+            trigger.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const submenu = trigger.closest(".dropdown-submenu");
+                if (submenu) submenu.classList.toggle("open");
+            });
+        });
+        document.addEventListener("click", function (e) {
+            if (!e.target.closest(".dropdown-submenu")) {
+                document.querySelectorAll(".dropdown-submenu.open").forEach((s) => s.classList.remove("open"));
+            }
+        });
+    }, 10);
+}
+
+    function renderUserMenu() { const container = document.getElementById("userMenuContainer"); if(!container) return; if (currentUser) { const initials = getUserInitials(currentUser.fullName); const firstName = currentUser.fullName?.split(" ")[0] || "User"; const isAdmin = currentUser.role === "admin"; const roleLabel = getRoleLabel(currentUser.role); const roleClass = getRoleClass(currentUser.role); container.innerHTML = `<div class="user-menu" id="userMenuDropdown"><div class="user-avatar">${initials}</div><span class="user-name">${escapeHtml(firstName)}</span><span class="role-badge-header ${roleClass}" style="font-size:0.65rem;">${roleLabel}</span><span style="font-size:0.7rem;">▼</span><div class="user-dropdown-menu"><div class="user-dropdown-item">👤 ${escapeHtml(currentUser.email)}</div><div class="user-dropdown-item">🏢 ${escapeHtml(currentUser.office||"ELUPDD")}</div>${isAdmin ? `<div class="user-dropdown-item" id="adminConsoleLink">⚙️ Manage Users (Admin Panel)</div>` : ""}<div class="user-dropdown-item" id="logoutDropdownBtn" style="color:#dc2626;">🚪 Sign Out</div></div></div>`; const userDiv = document.getElementById("userMenuDropdown"); if (userDiv) { userDiv.addEventListener("click", (e) => { e.stopPropagation(); const menu = userDiv.querySelector(".user-dropdown-menu"); if(menu) menu.style.display = menu.style.display === "block" ? "none" : "block"; }); document.addEventListener("click", () => { const menu = userDiv.querySelector(".user-dropdown-menu"); if(menu) menu.style.display = "none"; }); } if (isAdmin) { const adminBtn = document.getElementById("adminConsoleLink"); if(adminBtn) adminBtn.addEventListener("click", () => window.location.href = "admin.html"); } const logoutBtn = document.getElementById("logoutDropdownBtn"); if(logoutBtn) logoutBtn.addEventListener("click", () => { localStorage.removeItem("dhsud_session"); showToastMessage("Logged out successfully.", "info"); setTimeout(() => window.location.reload(), 700); }); } else { container.innerHTML = `<div class="login-prompt" onclick="openLoginModal()">🔐 Sign In</div>`; } }
+    function openLoginModal() { document.getElementById("loginModal").classList.add("active"); }
+    function toggleModalPassword() { let pwd = document.getElementById("modalLoginPassword"); pwd.type = pwd.type === "password" ? "text" : "password"; }
+    async function handleModalLogin(e) { e.preventDefault(); const email = document.getElementById("modalLoginEmail").value.trim().toLowerCase(); const password = document.getElementById("modalLoginPassword").value; const btn = e.submitter; const originalText = btn.innerHTML; btn.innerHTML = "⏳ Authenticating..."; btn.disabled = true; try { const resp = await fetch(`${GOOGLE_SCRIPT_URL}?action=get&data_type=users&_=${Date.now()}`); const users = await resp.json(); const user = users.find(u => u.email?.toLowerCase() === email); if (!user) { showToastMessage("Account not found.", "error"); btn.innerHTML = originalText; btn.disabled = false; return false; } const encodedPassword = encodePassword(password); if (user.password === encodedPassword) { const session = { userId: user.id, email: user.email, fullName: user.fullName, office: user.office || "ELUPDD", role: user.role, loggedInAt: new Date().toISOString() }; localStorage.setItem("dhsud_session", JSON.stringify(session)); showToastMessage(`Welcome ${user.fullName?.split(" ")[0] || ""}!`, "success"); document.getElementById("loginModal").classList.remove("active"); setTimeout(() => window.location.reload(), 1000); } else { showToastMessage("Invalid password.", "error"); } } catch(error) { showToastMessage("Connection error. Please try again.", "error"); } finally { btn.innerHTML = originalText; btn.disabled = false; } return false; }
+
+    // CLUP Records Management (Integrated from statusdaw)
+    const masterLguList = [ { name: "Bacolod City", province: "Negros Occidental", type: "City" }, { name: "Bago City", province: "Negros Occidental", type: "City" }, { name: "Cadiz City", province: "Negros Occidental", type: "City" }, { name: "ALTAVAS", province: "AKLAN", type: "Municipality" } ];
+    const tpapPhases = [{ name: "Preparatory phase", def: "MOA and TWG formed", mov: "MOA, TNA" }, { name: "Phase 1", def: "Data generation", mov: "Ecosystem Analysis" }, { name: "Phase 2", def: "CDRA/DRR", mov: "CDRA Report" }, { name: "Phase 3", def: "Vision/Goals", mov: "Structure Plan" }, { name: "Phase 4", def: "Land Use Plan", mov: "Draft CLUP" }, { name: "Phase 5", def: "ZO & M&E", mov: "Draft ZO" }];
+    let currentLGU = { name: "Bacolod City", province: "Negros Occidental", type: "City" };
+    let clupRecords = JSON.parse(localStorage.getItem('clup_records_master') || '[]');
+    let currentEditId = null;
+
+    function buildTpapTable(targetBodyId) {
+      const tbody = document.getElementById(targetBodyId);
+      if(!tbody) return;
+      tbody.innerHTML = '';
+      tpapPhases.forEach((phase, idx) => {
+        const row = tbody.insertRow();
+        row.insertCell(0).innerHTML = `<strong>${escapeHtml(phase.name)}</strong>`;
+        row.insertCell(1).innerHTML = `<span style="font-size:0.75rem;">${escapeHtml(phase.def)}</span>`;
+        row.insertCell(2).innerHTML = `<select class="phase-status-select" data-phase-index="${idx}" data-popup="true"><option value="Not Started">⭕ Not Started</option><option value="Ongoing">🔄 Ongoing</option><option value="Completed">✅ Completed</option></select>`;
+        row.insertCell(3).innerHTML = `<div class="mov-text">📎 ${escapeHtml(phase.mov)}</div>`;
+        row.insertCell(4).innerHTML = `<div class="file-upload-area" id="file-area-popup-${idx}"><input type="file" class="file-input-small" data-phase-idx="${idx}" data-popup="true" accept=".pdf,.jpg,.png"><div id="filePreviewPopup-${idx}" class="mov-text"></div></div>`;
+      });
+      // Attach file listeners for popup
+      document.querySelectorAll('#tpapBodyIntegratedPopup .file-input-small').forEach(input => {
+        input.addEventListener('change', async (e) => {
+          const idx = input.getAttribute('data-phase-idx');
+          const file = e.target.files[0];
+          if (file && idx !== null) {
+            const previewDiv = document.getElementById(`filePreviewPopup-${idx}`);
+            if (previewDiv) previewDiv.innerHTML = `📄 ${escapeHtml(file.name)} <button type="button" class="btn-clear-file" data-clear-idx="${idx}">✖ clear</button>`;
+            const clearBtn = previewDiv?.querySelector('.btn-clear-file');
+            if (clearBtn) clearBtn.onclick = () => {
+              input.value = '';
+              if(previewDiv) previewDiv.innerHTML = '';
+            };
+          }
+        });
+      });
+    }
+
+    async function storeFileAsBase64(file) { return new Promise((resolve) => { if (!file) { resolve(null); return; } const reader = new FileReader(); reader.onload = (e) => resolve({ name: file.name, data: e.target.result, type: file.type }); reader.onerror = () => resolve(null); reader.readAsDataURL(file); }); }
+    async function getCurrentPhaseAttachments(popup = true) {
+      const final = [];
+      const prefix = popup ? 'Popup' : '';
+      for (let i=0; i<tpapPhases.length; i++) {
+        const select = document.querySelector(`#tpapBodyIntegrated${prefix} .phase-status-select[data-phase-index="${i}"]`);
+        const status = select ? select.value : 'Not Started';
+        const fileInput = document.querySelector(`#tpapBodyIntegrated${prefix} .file-input-small[data-phase-idx="${i}"]`);
+        let fileAttachment = null;
+        if (fileInput && fileInput.files.length > 0) fileAttachment = await storeFileAsBase64(fileInput.files[0]);
+        else if (fileInput && fileInput.getAttribute('data-existing-file')) fileAttachment = JSON.parse(fileInput.getAttribute('data-existing-file'));
+        final.push({ phaseName: tpapPhases[i].name, status, fileAttachment, movDesc: tpapPhases[i].mov });
+      }
+      return final;
+    }
+    function getSelectedRadio(name) { const r = document.querySelector(`input[name="${name}"]:checked`); return r ? r.value : ''; }
+
+    async function saveClupRecord(event, popup = true) {
+      event.preventDefault();
+      const prefix = popup ? 'Popup' : '';
+      const clupStatus = getSelectedRadio(`clupStatus${prefix}`);
+      const raStatus = document.getElementById(`raStatus${prefix}`).value;
+      if (!clupStatus || !raStatus) { showToastMessage("Please fill CLUP Status and RA Code", "error"); return; }
+      const existingIdx = clupRecords.findIndex(r => r.lguName === currentLGU.name && r.province === currentLGU.province && (!currentEditId || r.id !== currentEditId));
+      if (existingIdx !== -1 && !currentEditId) { if (!confirm(`A CLUP record already exists for ${currentLGU.name}. Do you want to update it?`)) return; currentEditId = clupRecords[existingIdx].id; }
+      const phaseAttachments = await getCurrentPhaseAttachments(popup);
+      const tpapStatus = {};
+      phaseAttachments.forEach(p => { tpapStatus[p.phaseName] = p.status; });
+      const record = { id: currentEditId || Date.now(), type: 'CLUP', lguName: currentLGU.name, province: currentLGU.province, lguType: currentLGU.type, clupStatus, raStatus, tpapStatus, phaseAttachments: phaseAttachments.map(p => ({ phaseName: p.phaseName, fileAttachment: p.fileAttachment, status: p.status })), timestamp: new Date().toISOString() };
+      if (currentEditId) { const idx = clupRecords.findIndex(r => r.id === currentEditId); if (idx !== -1) clupRecords[idx] = record; else clupRecords.push(record); } else { clupRecords.push(record); }
+      localStorage.setItem('clup_records_master', JSON.stringify(clupRecords));
+      resetClupFormFields(popup);
+      loadCurrentLguRecordsPopup();
+      showToastMessage(`✓ CLUP saved for ${currentLGU.name}`, "success");
+    }
+
+    function resetClupFormFields(popup = true) {
+      const prefix = popup ? 'Popup' : '';
+      document.querySelectorAll(`input[name="clupStatus${prefix}"]`).forEach(r => r.checked = false);
+      document.getElementById(`raStatus${prefix}`).selectedIndex = 0;
+      for(let i=0;i<tpapPhases.length;i++){
+        const sel = document.querySelector(`#tpapBodyIntegrated${prefix} .phase-status-select[data-phase-index="${i}"]`);
+        if(sel) sel.value = 'Not Started';
+        const fileInput = document.querySelector(`#tpapBodyIntegrated${prefix} .file-input-small[data-phase-idx="${i}"]`);
+        if(fileInput) { fileInput.value = ''; fileInput.removeAttribute('data-existing-file'); }
+        const preview = document.getElementById(`filePreview${prefix}-${i}`);
+        if(preview) preview.innerHTML = '';
+      }
+      currentEditId = null;
+    }
+
+    function loadCurrentLguRecordsPopup() {
+      const myRecords = clupRecords.filter(r => r.lguName === currentLGU.name && r.province === currentLGU.province);
+      const tbody = document.getElementById('recordsTableBodyPopup');
+      if(myRecords.length === 0){ tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No CLUP records for this LGU.</td></tr>'; return; }
+      tbody.innerHTML = '';
+      myRecords.slice().reverse().forEach(r => {
+        const row = tbody.insertRow();
+        let summary = '';
+        if(r.tpapStatus) summary = Object.entries(r.tpapStatus).map(([p,s])=> (s==='Completed'?'✅':s==='Ongoing'?'🔄':'⭕') + p.slice(0,8)).join(' · ').substring(0,70);
+        row.innerHTML = `<td>${escapeHtml(r.lguName)}</td><td>${escapeHtml(r.province)}</td><td><span class="status-badge ${r.clupStatus === 'Updated' ? 'status-updated' : (r.clupStatus === 'For updating' ? 'status-for-updating' : 'status-no')}">${escapeHtml(r.clupStatus)}</span></td><td>${escapeHtml(r.raStatus)}</td><td style="font-size:0.7rem;">${summary}</td><td>${new Date(r.timestamp).toLocaleDateString()}</td><td><button class="action-btn action-view" onclick='viewRecordPopup(${JSON.stringify(r).replace(/'/g, "&#39;")})'>👁️</button><button class="action-btn action-edit" onclick="editRecordFromListPopup(${r.id})">✏️</button><button class="action-btn action-delete" onclick="deleteRecordPopup(${r.id})">🗑️</button></td>`;
+      });
+    }
+
+    window.viewRecordPopup = (rec) => { alert(`CLUP Record\nLGU: ${rec.lguName}\nStatus: ${rec.clupStatus}\nRA: ${rec.raStatus}\nAttachments: ${rec.phaseAttachments?.filter(f=>f.fileAttachment).length || 0}`); };
+    window.editRecordFromListPopup = (id) => {
+      const rec = clupRecords.find(r => r.id === id);
+      if(!rec || rec.lguName !== currentLGU.name) { alert("Cannot edit other LGU."); return; }
+      currentEditId = id;
+      document.querySelector(`input[name="clupStatusPopup"][value="${rec.clupStatus}"]`).checked = true;
+      document.getElementById('raStatusPopup').value = rec.raStatus;
+      for(let i=0;i<tpapPhases.length;i++){
+        const sel = document.querySelector(`#tpapBodyIntegratedPopup .phase-status-select[data-phase-index="${i}"]`);
+        if(sel && rec.tpapStatus && rec.tpapStatus[tpapPhases[i].name]) sel.value = rec.tpapStatus[tpapPhases[i].name];
+        const attached = rec.phaseAttachments?.find(p => p.phaseName === tpapPhases[i].name);
+        const previewDiv = document.getElementById(`filePreviewPopup-${i}`);
+        if(attached?.fileAttachment?.data){
+          previewDiv.innerHTML = `📄 ${escapeHtml(attached.fileAttachment.name)} <button type="button" class="btn-clear-file">✖ clear</button>`;
+          const fileInput = document.querySelector(`#tpapBodyIntegratedPopup .file-input-small[data-phase-idx="${i}"]`);
+          if(fileInput) fileInput.setAttribute('data-existing-file', JSON.stringify(attached.fileAttachment));
+          previewDiv.querySelector('.btn-clear-file')?.addEventListener('click',()=>{ if(fileInput){ fileInput.value=''; fileInput.removeAttribute('data-existing-file');} previewDiv.innerHTML=''; });
+        } else { if(previewDiv) previewDiv.innerHTML = ''; }
+      }
+      showToastMessage(`Editing ${rec.lguName}`, "info");
+    };
+    window.deleteRecordPopup = (id) => { if(confirm("Delete record?")){ clupRecords = clupRecords.filter(r => r.id !== id); localStorage.setItem('clup_records_master', JSON.stringify(clupRecords)); loadCurrentLguRecordsPopup(); showToastMessage("Deleted", "info"); } };
+
+    function populateLguSelector() { const select = document.getElementById('lguSelector'); if(!select) return; select.innerHTML = ''; masterLguList.forEach(lgu => { const opt = document.createElement('option'); opt.value = JSON.stringify(lgu); opt.textContent = `${lgu.name} (${lgu.province})`; if(currentLGU.name === lgu.name && currentLGU.province === lgu.province) opt.selected = true; select.appendChild(opt); }); }
+    function switchActiveLGU(newLgu) { currentLGU = { ...newLgu }; document.getElementById('activeLguBadge').innerText = `${currentLGU.name} (${currentLGU.province})`; document.getElementById('currentLguDisplayPopup').innerHTML = `${currentLGU.name}, ${currentLGU.province}`; document.getElementById('recordsLguDisplayPopup').innerHTML = `${currentLGU.name} · ${currentLGU.province}`; document.getElementById('recordsLguDisplayHeaderPopup').innerHTML = `${currentLGU.name} Records`; document.getElementById('clupProvincePopup').value = currentLGU.province; document.getElementById('clupLguNamePopup').value = currentLGU.name; document.getElementById('clupLguTypePopup').value = currentLGU.type; currentEditId = null; resetClupFormFields(true); loadCurrentLguRecordsPopup(); showToastMessage(`Switched to ${currentLGU.name}`, "info"); }
+
+    function updateAllData(e) { e.preventDefault(); document.getElementById("displayLGU").innerText = document.getElementById("editLGU").value; document.getElementById("displayProvince").innerText = document.getElementById("editProvince").value; document.getElementById("displayRegion").innerText = document.getElementById("editRegion").value; document.getElementById("displayIncomeClass").innerText = document.getElementById("editIncomeClass").value; document.getElementById("headerLGU").innerHTML = `${document.getElementById("editLGU").value}, ${document.getElementById("editProvince").value}`; document.getElementById("latestYearApproval").innerText = document.getElementById("editLatestYear").value; document.getElementById("latestPlanningPeriod").innerText = document.getElementById("editLatestPeriod").value; document.getElementById("latestResolution").innerText = document.getElementById("editLatestRes").value; document.getElementById("latestDateApproved").innerText = document.getElementById("editLatestDate").value; document.getElementById("sbResolution").innerText = document.getElementById("editSbRes").value; document.getElementById("zoNumber").innerText = document.getElementById("editZoNo").value; const cca = document.getElementById("editCcaDrr").value; document.getElementById("ccaDrrBadge").innerHTML = `<span class="badge-status">${cca}</span>`; saveFullData(); document.getElementById("editSuccessMsg").style.display = "block"; document.getElementById("editPanel").style.display = "none"; setTimeout(() => document.getElementById("editSuccessMsg").style.display = "none", 2500); return false; }
+    function saveFullData() { const f = { lgu: document.getElementById("displayLGU").innerText, province: document.getElementById("displayProvince").innerText, region: document.getElementById("displayRegion").innerText, income: document.getElementById("displayIncomeClass").innerText, latestYear: document.getElementById("latestYearApproval").innerText, latestPeriod: document.getElementById("latestPlanningPeriod").innerText, latestRes: document.getElementById("latestResolution").innerText, latestDate: document.getElementById("latestDateApproved").innerText, sbRes: document.getElementById("sbResolution").innerText, zoNo: document.getElementById("zoNumber").innerText, ccaDrr: document.getElementById("ccaDrrBadge").innerText }; localStorage.setItem("clupFullReport", JSON.stringify(f)); }
+    function loadFullData() { const s = localStorage.getItem("clupFullReport"); if(!s) return; const d = JSON.parse(s); document.getElementById("displayLGU").innerText = d.lgu; document.getElementById("displayProvince").innerText = d.province; document.getElementById("displayRegion").innerText = d.region; document.getElementById("displayIncomeClass").innerText = d.income; document.getElementById("headerLGU").innerHTML = `${d.lgu}, ${d.province}`; document.getElementById("latestYearApproval").innerText = d.latestYear; document.getElementById("latestPlanningPeriod").innerText = d.latestPeriod; document.getElementById("latestResolution").innerText = d.latestRes; document.getElementById("latestDateApproved").innerText = d.latestDate; document.getElementById("sbResolution").innerText = d.sbRes; document.getElementById("zoNumber").innerText = d.zoNo; document.getElementById("ccaDrrBadge").innerHTML = `<span class="badge-status">${d.ccaDrr}</span>`; }
+    function showEditPanel() { document.getElementById("editLGU").value = document.getElementById("displayLGU").innerText; document.getElementById("editProvince").value = document.getElementById("displayProvince").innerText; document.getElementById("editRegion").value = document.getElementById("displayRegion").innerText; document.getElementById("editIncomeClass").value = document.getElementById("displayIncomeClass").innerText; document.getElementById("editLatestYear").value = document.getElementById("latestYearApproval").innerText; document.getElementById("editLatestPeriod").value = document.getElementById("latestPlanningPeriod").innerText; document.getElementById("editLatestRes").value = document.getElementById("latestResolution").innerText; document.getElementById("editLatestDate").value = document.getElementById("latestDateApproved").innerText; document.getElementById("editSbRes").value = document.getElementById("sbResolution").innerText; document.getElementById("editZoNo").value = document.getElementById("zoNumber").innerText; document.getElementById("editCcaDrr").value = document.getElementById("ccaDrrBadge").innerText.trim(); document.getElementById("editPanel").style.display = "block"; document.getElementById("editPanel").scrollIntoView({ behavior: "smooth" }); }
+    function hideEditPanel() { document.getElementById("editPanel").style.display = "none"; }
+
+    // POPUP controls
+    function openClupPopup() { document.getElementById('clupPopupOverlay').classList.add('active'); document.body.style.overflow = 'hidden'; }
+    function closeClupPopup() { document.getElementById('clupPopupOverlay').classList.remove('active'); document.body.style.overflow = ''; }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      checkSession(); renderMainNavigation(); renderUserMenu(); loadFullData();
+      buildTpapTable('tpapBodyIntegratedPopup');
+      populateLguSelector();
+      document.getElementById('switchLguBtn').addEventListener('click', () => { const selectedVal = document.getElementById('lguSelector').value; if(selectedVal){ const newLgu = JSON.parse(selectedVal); switchActiveLGU(newLgu); populateLguSelector(); } });
+      document.getElementById('clupIntegratedFormPopup').addEventListener('submit', (e) => saveClupRecord(e, true));
+      switchActiveLGU(currentLGU);
+      window.onclick = function(e) { const modal = document.getElementById("loginModal"); if(e.target === modal) modal.classList.remove("active"); };
+      document.getElementById('openClupPopupBtn').addEventListener('click', openClupPopup);
+      document.getElementById('closeClupPopupBtn').addEventListener('click', closeClupPopup);
+      document.getElementById('clupPopupOverlay').addEventListener('click', function(e) { if(e.target === this) closeClupPopup(); });
+    });
+  </script>
+</body>
+</html>

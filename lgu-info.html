@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>DHSUD - LGU Management Suite (Blue)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+   * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
+    font-family: "Inter", sans-serif;
+    background: #f4f7fc;
+    color: #0f2b3a;
+    line-height: 1.45;
+}
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+/* Header styles - Two row layout */
+header {
+    background: white;
+    border-bottom: 1px solid #eef2ff;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+    background: rgba(255, 255, 255, 0.96);
+}
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem 0;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+.logo-area-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.header-logo-img {
+    height: 42px;
+    background: #f1f5f9;
+    padding: 4px 16px;
+    border-radius: 40px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #1e3a8a;
+    white-space: nowrap;
+}
+.header-logo-img img {
+    height: 32px;
+    width: auto;
+}
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.user-menu {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #f1f5f9;
+    padding: 0.3rem 0.8rem 0.3rem 1rem;
+    border-radius: 60px;
+    cursor: pointer;
+    position: relative;
+}
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    background: #2563eb;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+}
+.login-prompt {
+    background: #f1f5f9;
+    padding: 0.3rem 1rem;
+    border-radius: 40px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+.role-badge-header {
+    background: #e2e8f0;
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
+.role-badge-header.admin {
+    background: #dcfce7;
+    color: #166534;
+}
+.role-badge-header.staff {
+    background: #dbeafe;
+    color: #1e40af;
+}
+.user-dropdown-menu {
+    position: absolute;
+    top: 48px;
+    right: 0;
+    background: white;
+    border-radius: 20px;
+    min-width: 180px;
+    box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.15);
+    border: 1px solid #eef2ff;
+    overflow: hidden;
+    display: none;
+    z-index: 200;
+}
+.user-dropdown-item {
+    padding: 0.8rem 1.2rem;
+    border-bottom: 1px solid #f1f5f9;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+.user-dropdown-item:hover {
+    background: #f8fafc;
+}
+.user-name {
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.nav-bottom {
+    background: #ffffff;
+    border-top: 1px solid #eef2ff;
+    padding: 0.5rem 0;
+}
+.main-nav-links {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+.main-nav-links a,
+.main-nav-links .dropdown {
+    text-decoration: none;
+    color: #334155;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: 0.2s;
+}
+.main-nav-links a:hover,
+.main-nav-links .dropbtn:hover {
+    color: #2563eb;
+}
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+.dropbtn {
+    background: none;
+    border: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: #334155;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 0.4rem 0;
+}
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background: white;
+    min-width: 220px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+    z-index: 1000;
+    top: 30px;
+    left: 0;
+    border: 1px solid #eef2ff;
+    padding: 0.3rem 0;
+}
+/* ADD THIS - Show dropdown on hover */
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+.dropdown-content a {
+    display: block;
+    padding: 0.7rem 1.2rem;
+    color: #1e293b;
+    font-size: 0.8rem;
+    text-decoration: none;
+}
+.dropdown-content a:hover {
+    background: #eff6ff;
+}
+.dropdown.open .dropdown-content {
+    display: block;
+}
+.dropdown-submenu {
+    position: relative;
+}
+.submenu-trigger {
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    padding: 0.7rem 1.2rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #1e293b;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: inherit;
+}
+.submenu-trigger:hover {
+    background: #eff6ff;
+}
+.arrow-right {
+    font-size: 0.7rem;
+    margin-left: 1rem;
+}
+.submenu-content {
+    display: none;
+    position: absolute;
+    left: 100%;
+    top: 0;
+    background: white;
+    min-width: 180px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+    border: 1px solid #eef2ff;
+    z-index: 1001;
+    padding: 0.3rem 0;
+}
+/* ADD THIS - Show submenu on hover */
+.dropdown-submenu:hover .submenu-content {
+    display: block;
+}
+.submenu-content a {
+    padding: 0.7rem 1.2rem;
+}
+.dropdown-submenu.open .submenu-content {
+    display: block;
+}
+
+.login-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+.login-modal.active {
+    display: flex;
+}
+.login-modal-content {
+    background: white;
+    border-radius: 32px;
+    max-width: 450px;
+    width: 90%;
+    overflow: hidden;
+    animation: modalSlideIn 0.3s ease;
+}
+.login-modal-header {
+    background: linear-gradient(135deg, #1e3a8a, #2563eb);
+    padding: 1.5rem;
+    text-align: center;
+    color: white;
+}
+.login-modal-header .seal-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+.login-modal-header h3 {
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+.login-modal-body {
+    padding: 1.5rem;
+}
+.input-group {
+    margin-bottom: 1.2rem;
+    position: relative;
+}
+.input-group label {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #54708f;
+    margin-bottom: 0.4rem;
+}
+.input-group input {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 1rem;
+    font-size: 0.9rem;
+    font-family: "Inter", sans-serif;
+    padding-right: 45px;
+}
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    top: 38px;
+    cursor: pointer;
+    font-size: 1rem;
+    background: none;
+    border: none;
+    color: #94a3b8;
+}
+.login-submit-btn {
+    width: 100%;
+    padding: 0.9rem;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 1.2rem;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    margin-top: 0.5rem;
+}
+.login-submit-btn:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+}
+.login-modal-footer {
+    border-top: 1px solid #eef2ff;
+    padding: 1rem;
+    text-align: center;
+    font-size: 0.65rem;
+    color: #94a3b8;
+    background: #fafcff;
+}
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+.toast-msg {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #1e293b;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 40px;
+    z-index: 9999;
+    font-size: 0.8rem;
+}
+
+.page-header {
+    background: linear-gradient(135deg, #0f2b3a 0%, #1e4a6e 100%);
+    color: white;
+    padding: 2.5rem 0;
+    margin-bottom: 2rem;
+    border-radius: 0 0 2rem 2rem;
+    text-align: center;
+}
+.btn-primary {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 40px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.btn-primary:hover {
+    background: #1e3a8a;
+    transform: translateY(-1px);
+}
+.btn-outline {
+    background: white;
+    border: 1px solid #cbd5e1;
+    padding: 10px 20px;
+    border-radius: 40px;
+    font-weight: 500;
+    cursor: pointer;
+}
+.btn-danger {
+    background: #dc2626;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 40px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.btn-danger:hover {
+    background: #b91c1c;
+    transform: translateY(-1px);
+}
+.search-filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    background: white;
+    padding: 20px 24px;
+    border-radius: 28px;
+    margin-bottom: 28px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    align-items: flex-end;
+    border: 1px solid #eef2ff;
+}
+.search-group {
+    flex: 2;
+    min-width: 200px;
+}
+.filter-group {
+    flex: 1;
+    min-width: 180px;
+}
+.search-group label,
+.filter-group label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #2563eb;
+    display: block;
+    margin-bottom: 6px;
+}
+.search-group input,
+.filter-group select {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 60px;
+    font-family: "Inter", sans-serif;
+}
+.lgu-list-container {
+    background: white;
+    border-radius: 28px;
+    padding: 24px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.06);
+    max-height: 600px;
+    overflow-y: auto;
+    border: 1px solid #eef2ff;
+}
+.lgu-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.lgu-card-item {
+    background: #f8fafc;
+    border-radius: 20px;
+    padding: 18px 24px;
+    border: 1px solid #eef2ff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    transition: 0.2s;
+}
+.lgu-card-item:hover {
+    background: #f1f5f9;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+.lgu-info-summary h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+.lgu-info-summary p {
+    font-size: 0.8rem;
+    color: #475569;
+    margin-top: 4px;
+}
+.lgu-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+.view-btn {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 40px;
+    cursor: pointer;
+    font-weight: 500;
+}
+.view-btn:hover {
+    background: #1e3a8a;
+}
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+.modal-content {
+    background: white;
+    border-radius: 32px;
+    max-width: 800px;
+    width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 28px 32px;
+    position: relative;
+}
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eef2ff;
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+}
+.modal-header h2 {
+    font-size: 1.5rem;
+}
+.close-modal {
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    color: #94a3b8;
+}
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 18px;
+    margin-bottom: 24px;
+}
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 14px;
+    font-family: "Inter", sans-serif;
+}
+.form-group label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+    display: block;
+    color: #475569;
+}
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 24px;
+}
+.info-row {
+    display: flex;
+    padding: 8px 0;
+    border-bottom: 1px solid #eef2ff;
+}
+.info-label {
+    width: 170px;
+    font-weight: 600;
+    color: #1e293b;
+}
+.info-value {
+    flex: 1;
+    color: #334155;
+}
+.stats-badge {
+    background: #eef2ff;
+    border-radius: 40px;
+    padding: 6px 14px;
+    font-size: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+}
+.action-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+footer {
+    background: #0f2b3a;
+    color: #cbd5e1;
+    padding: 2rem 0 1.5rem;
+    margin-top: 3rem;
+}
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+.copyright {
+    margin-top: 2rem;
+    text-align: center;
+    border-top: 1px solid #2d3a4a;
+    padding-top: 1.5rem;
+    font-size: 0.8rem;
+}
+.loading-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+/* ADD THIS - Dropdown arrow indicator */
+.dropbtn::after {
+    content: " ▾";
+    font-size: 0.7rem;
+    opacity: 0.6;
+}
+.dropdown:hover .dropbtn::after {
+    content: " ▾";
+    opacity: 1;
+}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container" style="max-width: 1400px; margin: 0 auto; padding: 0 24px;">
+      <div class="top-bar">
+        <div class="logo-area-header">
+          <div class="header-logo-img">
+            <img src="DHSUD_LOGO.png" alt="DHSUD Logo">
+            <span>DHSUD VI - ELUPDD Integrated Database and Information System</span>
+          </div>
+        </div>
+        <div class="nav-right" id="userMenuContainer"></div>
+      </div>
+    </div>
+    <div class="nav-bottom">
+      <div class="container" style="max-width: 1400px; margin: 0 auto; padding: 0 24px;">
+        <div class="main-nav-links" id="mainNavContainer"></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="page-header">
+    <div class="container">
+      <h1>LGU Information Management</h1>
+      <p>Comprehensive database of Local Government Units in Western Visayas</p>
+    </div>
+  </div>
+
+  <main class="container">
+    <div class="action-bar">
+      <div><button class="btn-primary" onclick="showLGURegModal()">➕ Register New LGU</button></div>
+      <div class="stats-badge" id="totalCountStat">📊 Total LGUs: 0</div>
+    </div>
+    
+    <div class="search-filter-row">
+      <div class="search-group"><label>🔍 SEARCH</label><input type="text" id="globalSearch" placeholder="Municipality, Mayor, MPDC, Email..."></div>
+      <div class="filter-group"><label>🏞️ FILTER BY PROVINCE</label><select id="provinceFilter"><option value="">All Provinces</option></select></div>
+      <div><button class="btn-primary" id="applyFilterBtn" style="padding:12px 28px;">Apply Filter</button></div>
+    </div>
+    
+    <div class="lgu-list-container" id="lguListContainer">
+      <div id="lguGrid" class="lgu-grid"></div>
+    </div>
+  </main>
+
+  <div id="lguModal" class="modal"><div class="modal-content"><div class="modal-header"><h2>🏛️ Register New LGU</h2><button class="close-modal" onclick="closeModal('lguModal')">✕</button></div>
+  <form id="lguRegForm"><div class="form-grid"><div class="form-group"><label>Province *</label><select id="regProvince" required><option value="">-- Select Province --</option></select></div>
+  <div class="form-group"><label>Municipality/City *</label><select id="regMunicipality" required><option value="">-- Select Municipality/City --</option></select></div>
+  <div class="form-group"><label>Region</label><input type="text" id="regRegion" value="WESTERN VISAYAS"></div>
+  <div class="form-group"><label>Income Class</label><select id="regIncomeClass"><option>1ST</option><option>2ND</option><option>3RD</option><option>4TH</option><option>5TH</option><option>6TH</option></select></div>
+  <div class="form-group"><label>Mayor</label><input type="text" id="regMayor"></div>
+  <div class="form-group"><label>Vice Mayor</label><input type="text" id="regViceMayor"></div>
+  <div class="form-group"><label>LGU Landline</label><input type="text" id="regLandline"></div>
+  <div class="form-group"><label>LGU Email</label><input type="email" id="regEmail"></div>
+  <div class="form-group"><label>MPDC Name</label><input type="text" id="regMpdc"></div>
+  <div class="form-group"><label>MPDC Email</label><input type="email" id="regMpdcEmail"></div>
+  <div class="form-group"><label>MPDC Mobile</label><input type="text" id="regMpdcMobile"></div></div>
+  <div class="modal-actions"><button type="submit" class="btn-primary" id="saveLGUBtn">💾 Save LGU</button><button type="button" class="btn-outline" onclick="closeModal('lguModal')">Cancel</button></div></form></div></div>
+
+  <div id="viewModal" class="modal"><div class="modal-content" style="max-width:750px;"><div class="modal-header"><h2>🏛️ LGU Full Details</h2><button class="close-modal" onclick="closeModal('viewModal')">✕</button></div><div id="viewContent"></div><div class="modal-actions"><button class="btn-primary" id="inlineEditBtn" onclick="enableInlineEditForCurrentLGU()">✏️ Edit LGU Information</button><button class="btn-outline" onclick="closeModal('viewModal')">Close</button></div><div id="inlineEditPanel" style="display:none;" class="inline-edit-panel"></div></div></div>
+
+  <div id="loginModal" class="login-modal"><div class="login-modal-content"><div class="login-modal-header"><div class="seal-icon">🏛️</div><h3>DHSUD Region VI</h3><p style="font-size:0.8rem; opacity:0.9;">Sign in to access your account</p></div><div class="login-modal-body"><form id="modalLoginForm" onsubmit="return handleModalLogin(event)"><div class="input-group"><label>📧 Email Address</label><input type="email" id="modalLoginEmail" placeholder="name@dhsud.gov.ph" required></div><div class="input-group"><label>🔒 Password</label><input type="password" id="modalLoginPassword" placeholder="Enter your password" required><button type="button" class="toggle-password" onclick="toggleModalPassword()">👁️</button></div><button type="submit" class="login-submit-btn">→ Sign In</button></form></div><div class="login-modal-footer">🔐 Role-Based Access: Admin | Staff/Officer</div></div></div>
+
+  <script>
+    // ==================== CONFIGURATION ====================
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyg1cMhvQZuMai-fvGKWa4hldlPKt93QCea1JCJZgrEHE-2Qq5Z53P6GYBAlFVhcpEu/exec";
+    
+    // ==================== GLOBAL VARIABLES ====================
+    let lguDatabase = [];
+    let currentUser = null;
+    let currentViewLGU = null;
+    let isSaving = false;
+
+    // ==================== UTILITY FUNCTIONS ====================
+    function escapeHtml(s) { if(!s) return ""; return String(s).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
+    
+    function showToastMessage(msg, type="info") { 
+      let t = document.querySelector(".toast-msg"); 
+      if(t) t.remove(); 
+      let toast = document.createElement("div"); 
+      toast.className = "toast-msg"; 
+      toast.style.background = type === "error" ? "#b91c1c" : "#166534"; 
+      toast.innerText = msg; 
+      document.body.appendChild(toast); 
+      setTimeout(() => toast.remove(), 4000); 
+    }
+    
+    function encodePassword(p) { return btoa(p); }
+
+    // ==================== SESSION MANAGEMENT ====================
+    function checkSession() { 
+      const raw = localStorage.getItem("dhsud_session"); 
+      if (raw) { 
+        try { 
+          const s = JSON.parse(raw); 
+          const diff = (new Date() - new Date(s.loggedInAt)) / (1000 * 60 * 60); 
+          if (diff < 12 && s.email) { 
+            currentUser = s; 
+            return true; 
+          } else localStorage.removeItem("dhsud_session"); 
+        } catch(e) { localStorage.removeItem("dhsud_session"); } 
+      } 
+      currentUser = null; 
+      return false; 
+    }
+
+    function getUserInitials(n) { if(!n) return "U"; let p = n.split(" "); if(p.length>=2) return (p[0][0]+p[1][0]).toUpperCase(); return n.substring(0,2).toUpperCase(); }
+    function getRoleLabel(r) { if(r==="admin") return "👑 Admin"; if(r==="encoder"||r==="staff") return "📋 Staff/Officer"; return "👁️ Viewer"; }
+    function getRoleClass(r) { if(r==="admin") return "admin"; if(r==="encoder"||r==="staff") return "staff"; return "viewer"; }
+
+    // ==================== NAVIGATION RENDERING ====================
+    function renderMainNavigation() {
+    const container = document.getElementById("mainNavContainer");
+    if (!container) return;
+    let navHtml = `<a href="index.html">Home</a>`;
+    if (currentUser) {
+        navHtml += `<div class="dropdown" id="certDropdown"><button class="dropbtn">Certification</button><div class="dropdown-content"><a href="lc.html">Locational Clearance</a><a href="SZC.html">Site Zoning Clarification</a></div></div>
+          <div class="dropdown" id="landUseDropdown"><button class="dropbtn">Land Use Plans</button><div class="dropdown-content"><div class="dropdown-submenu" id="clupSubmenu"><button class="submenu-trigger">CLUP & ZO <span class="arrow-right">▸</span></button><div class="submenu-content"><a href="inventory.html">Inventory</a><a href="status.html">Status</a></div></div><a href="status.html">PDPFP</a></div></div>
+          <a href="lgu-info.html">LGU Information</a><a href="report.html">Reports</a><a href="calendar.html">Calendar of Activities</a><a href="issuance.html">Issuances</a><a href="#about">About</a><a href="#contact">Contact</a>`;
+    } else { navHtml += `<a href="#about">About</a><a href="#contact">Contact</a>`; }
+    container.innerHTML = navHtml;
+    // Keep click functionality for submenu items if needed
+    setTimeout(() => {
+        document.querySelectorAll(".dropdown-submenu .submenu-trigger").forEach((trigger) => {
+            trigger.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const submenu = trigger.closest(".dropdown-submenu");
+                if (submenu) submenu.classList.toggle("open");
+            });
+        });
+        document.addEventListener("click", function (e) {
+            if (!e.target.closest(".dropdown-submenu")) {
+                document.querySelectorAll(".dropdown-submenu.open").forEach((s) => s.classList.remove("open"));
+            }
+        });
+    }, 10);
+}
+
+    function renderUserMenu() {
+      const container = document.getElementById("userMenuContainer"); if(!container) return;
+      if (currentUser) {
+        const initials = getUserInitials(currentUser.fullName);
+        const firstName = currentUser.fullName?.split(" ")[0] || "User";
+        const isAdmin = currentUser.role === "admin";
+        const roleLabel = getRoleLabel(currentUser.role);
+        const roleClass = getRoleClass(currentUser.role);
+        container.innerHTML = `<div class="user-menu" id="userMenuDropdown"><div class="user-avatar">${initials}</div><span class="user-name">${escapeHtml(firstName)}</span><span class="role-badge-header ${roleClass}" style="font-size:0.65rem;">${roleLabel}</span><span style="font-size:0.7rem;">▼</span><div class="user-dropdown-menu"><div class="user-dropdown-item">👤 ${escapeHtml(currentUser.email)}</div><div class="user-dropdown-item">🏢 ${escapeHtml(currentUser.office||"ELUPDD")}</div>${isAdmin ? `<div class="user-dropdown-item" id="adminConsoleLink">⚙️ Manage Users (Admin Panel)</div>` : ""}<div class="user-dropdown-item" id="logoutDropdownBtn" style="color:#dc2626;">🚪 Sign Out</div></div></div>`;
+        const userDiv = document.getElementById("userMenuDropdown");
+        if (userDiv) { userDiv.addEventListener("click", (e) => { e.stopPropagation(); const menu = userDiv.querySelector(".user-dropdown-menu"); if(menu) menu.style.display = menu.style.display === "block" ? "none" : "block"; }); document.addEventListener("click", () => { const menu = userDiv.querySelector(".user-dropdown-menu"); if(menu) menu.style.display = "none"; }); }
+        if (isAdmin) { const adminBtn = document.getElementById("adminConsoleLink"); if(adminBtn) adminBtn.addEventListener("click", () => window.location.href = "admin.html"); }
+        const logoutBtn = document.getElementById("logoutDropdownBtn");
+        if(logoutBtn) logoutBtn.addEventListener("click", () => { 
+          localStorage.removeItem("dhsud_session"); 
+          showToastMessage("Logged out successfully.", "info"); 
+          setTimeout(() => window.location.href = "login.html", 700); 
+        });
+      } else {
+        container.innerHTML = `<div class="login-prompt" onclick="openLoginModal()">🔐 Sign In</div>`;
+      }
+    }
+
+    // ==================== LOGIN FUNCTIONS ====================
+    function openLoginModal() { document.getElementById("loginModal").classList.add("active"); }
+    function toggleModalPassword() { let pwd = document.getElementById("modalLoginPassword"); pwd.type = pwd.type === "password" ? "text" : "password"; }
+    
+    async function handleModalLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById("modalLoginEmail").value.trim().toLowerCase();
+      const password = document.getElementById("modalLoginPassword").value;
+      const btn = e.submitter; const originalText = btn.innerHTML;
+      btn.innerHTML = "⏳ Authenticating..."; btn.disabled = true;
+      try {
+        const resp = await fetch(`${GOOGLE_SCRIPT_URL}?action=get&data_type=users&_=${Date.now()}`);
+        const users = await resp.json();
+        const user = users.find(u => u.email?.toLowerCase() === email);
+        if (!user) { showToastMessage("Account not found.", "error"); btn.innerHTML = originalText; btn.disabled = false; return false; }
+        const encodedPassword = encodePassword(password);
+        if (user.password === encodedPassword) {
+          const session = { userId: user.id, email: user.email, fullName: user.fullName, office: user.office || "ELUPDD", role: user.role, loggedInAt: new Date().toISOString() };
+          localStorage.setItem("dhsud_session", JSON.stringify(session));
+          showToastMessage(`Welcome ${user.fullName?.split(" ")[0] || ""}!`, "success");
+          document.getElementById("loginModal").classList.remove("active");
+          setTimeout(() => window.location.reload(), 1000);
+        } else { showToastMessage("Invalid password.", "error"); }
+      } catch(error) { showToastMessage("Connection error. Please try again.", "error"); }
+      finally { btn.innerHTML = originalText; btn.disabled = false; }
+      return false;
+    }
+
+    // ==================== GOOGLE SHEETS API FUNCTIONS ====================
+    async function fetchLGUsFromSheet() {
+      try {
+        const url = `${GOOGLE_SCRIPT_URL}?action=get&data_type=clup&_=${Date.now()}`;
+        const response = await fetch(url);
+        const result = await response.json();
+        
+        console.log("Fetch result:", result);
+        
+        if (result.success && result.data && result.data.length > 0) {
+          const lgus = result.data.map(record => ({
+            id: record["Record ID"] || Date.now() + Math.random() * 1000,
+            municipality: record["LGU Name"] || "",
+            province: record["Province"] || "",
+            region: record["Region"] || "WESTERN VISAYAS",
+            incomeClass: record["Income Class"] || "4TH",
+            mayor: record["Mayor"] || "",
+            viceMayor: record["Vice Mayor"] || "",
+            landline: record["LGU Landline"] || "",
+            email: record["LGU Email"] || "",
+            mpdc: record["MPDC Name"] || "",
+            mpdcEmail: record["MPDC Email"] || "",
+            mpdcMobile: record["MPDC Mobile"] || "",
+            clupStatus: record["CLUP Status"] || "",
+            raCode: record["RA Code"] || "",
+            preparatoryPhaseStatus: record["Preparatory Phase Status"] || "",
+            phase1Status: record["Phase 1 Status"] || "",
+            phase2Status: record["Phase 2 Status"] || "",
+            phase3Status: record["Phase 3 Status"] || "",
+            phase4Status: record["Phase 4 Status"] || "",
+            phase5Status: record["Phase 5 Status"] || "",
+            lastUpdated: record["Last Updated"] || ""
+          }));
+          console.log("Mapped LGUs:", lgus);
+          return lgus;
+        }
+        return [];
+      } catch (error) {
+        console.error("Error fetching LGUs from sheet:", error);
+        return [];
+      }
+    }
+
+    async function saveLGUToSheet(lguData) {
+      try {
+        const record = {
+          "Record ID": lguData.id || Date.now().toString(),
+          "Timestamp": new Date().toISOString(),
+          "LGU Name": lguData.municipality || "",
+          "Province": lguData.province || "",
+          "Region": lguData.region || "WESTERN VISAYAS",
+          "LGU Type": "Municipality",
+          "Income Class": lguData.incomeClass || "4TH",
+          "Mayor": lguData.mayor || "",
+          "Vice Mayor": lguData.viceMayor || "",
+          "LGU Landline": lguData.landline || "",
+          "LGU Email": lguData.email || "",
+          "MPDC Name": lguData.mpdc || "",
+          "MPDC Email": lguData.mpdcEmail || "",
+          "MPDC Mobile": lguData.mpdcMobile || "",
+          "CLUP Status": "For updating",
+          "RA Code": "",
+          "Preparatory Phase Status": "Not Started",
+          "Preparatory Phase Remarks": "",
+          "Phase 1 Status": "Not Started",
+          "Phase 1 Remarks": "",
+          "Phase 2 Status": "Not Started",
+          "Phase 2 Remarks": "",
+          "Phase 3 Status": "Not Started",
+          "Phase 3 Remarks": "",
+          "Phase 4 Status": "Not Started",
+          "Phase 4 Remarks": "",
+          "Phase 5 Status": "Not Started",
+          "Phase 5 Remarks": "",
+          "Preparatory Phase File": "",
+          "Phase 1 File": "",
+          "Phase 2 File": "",
+          "Phase 3 File": "",
+          "Phase 4 File": "",
+          "Phase 5 File": "",
+          "TPAP Summary": "",
+          "Remarks Summary": "",
+          "Last Updated": new Date().toISOString()
+        };
+
+        console.log("Saving record:", record);
+
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: `action=add&data_type=clup&data=${encodeURIComponent(JSON.stringify(record))}`
+        });
+
+        const result = await response.json();
+        console.log("Save result:", result);
+        return result;
+      } catch (error) {
+        console.error("Error saving LGU to sheet:", error);
+        return { success: false, error: error.toString() };
+      }
+    }
+
+    async function updateLGUInSheet(lguData) {
+      try {
+        const record = {
+          "Record ID": lguData.id.toString(),
+          "Timestamp": new Date().toISOString(),
+          "LGU Name": lguData.municipality || "",
+          "Province": lguData.province || "",
+          "Region": lguData.region || "WESTERN VISAYAS",
+          "LGU Type": "Municipality",
+          "Income Class": lguData.incomeClass || "4TH",
+          "Mayor": lguData.mayor || "",
+          "Vice Mayor": lguData.viceMayor || "",
+          "LGU Landline": lguData.landline || "",
+          "LGU Email": lguData.email || "",
+          "MPDC Name": lguData.mpdc || "",
+          "MPDC Email": lguData.mpdcEmail || "",
+          "MPDC Mobile": lguData.mpdcMobile || "",
+          "CLUP Status": lguData.clupStatus || "For updating",
+          "RA Code": "",
+          "Preparatory Phase Status": lguData.preparatoryPhaseStatus || "Not Started",
+          "Preparatory Phase Remarks": "",
+          "Phase 1 Status": lguData.phase1Status || "Not Started",
+          "Phase 1 Remarks": "",
+          "Phase 2 Status": lguData.phase2Status || "Not Started",
+          "Phase 2 Remarks": "",
+          "Phase 3 Status": lguData.phase3Status || "Not Started",
+          "Phase 3 Remarks": "",
+          "Phase 4 Status": lguData.phase4Status || "Not Started",
+          "Phase 4 Remarks": "",
+          "Phase 5 Status": lguData.phase5Status || "Not Started",
+          "Phase 5 Remarks": "",
+          "Preparatory Phase File": "",
+          "Phase 1 File": "",
+          "Phase 2 File": "",
+          "Phase 3 File": "",
+          "Phase 4 File": "",
+          "Phase 5 File": "",
+          "TPAP Summary": "",
+          "Remarks Summary": "",
+          "Last Updated": new Date().toISOString()
+        };
+
+        console.log("Updating record:", record);
+
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: `action=update&data_type=clup&data=${encodeURIComponent(JSON.stringify(record))}`
+        });
+
+        const result = await response.json();
+        console.log("Update result:", result);
+        return result;
+      } catch (error) {
+        console.error("Error updating LGU in sheet:", error);
+        return { success: false, error: error.toString() };
+      }
+    }
+
+    async function deleteLGUFromSheet(recordId) {
+      try {
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: `action=delete&data_type=clup&id=${encodeURIComponent(recordId)}`
+        });
+
+        const result = await response.json();
+        return result;
+      } catch (error) {
+        console.error("Error deleting LGU from sheet:", error);
+        return { success: false, error: error.toString() };
+      }
+    }
+
+    // ==================== LGU DATA FUNCTIONS ====================
+    const provinceList = ["AKLAN","ANTIQUE","CAPIZ","GUIMARAS","ILOILO","NEGROS OCCIDENTAL"];
+    const municipalityByProvince = {
+      AKLAN: ["ALTAVAS","BALETE","BANGA","BATAN","BURUANGA","IBAJAY","KALIBO","LEZO","LIBACAO","MADALAG","MAKATO","MALAY","MALINAO","NABAS","NEW WASHINGTON","NUMANCIA","TANGALAN"],
+      ANTIQUE: ["ANINI-Y","BARBAZA","BELISON","BUGASONG","CALUYA","CULASI","HAMTIC","LAUA-AN","LIBERTAD","PANDAN","PATNONGON","SAN JOSE","SAN REMIGIO","SEBASTE","SIBALOM","TIBIAO","TOBIAS FORNIER","VALDERRAMA"],
+      CAPIZ: ["CUARTERO","DAO","DUMALAG","DUMARAO","IVISAN","JAMINDAN","MA-AYON","MAMBUSAO","PANAY","PANITAN","PILAR","PONTEVEDRA","PRESIDENT ROXAS","ROXAS CITY","SAPIAN","SIGMA","TAPAZ"],
+      GUIMARAS: ["BUENAVISTA","JORDAN","NUEVA VALENCIA","SAN LORENZO","SIBUNAG"],
+      ILOILO: ["AJUY","ALIMODIAN","ANILAO","BADIANGAN","BALASAN","BANATE","BAROTAC NUEVO","BAROTAC VIEJO","BATAD","BINGAWAN","CABATUAN","CALINOG","CARLES","CONCEPCION","DINGLE","DUEÑAS","DUMANGAS","ESTANCIA","GUIMBAL","IGBARAS","ILOILO CITY","JANIUAY","LAMBUNAO","LEGANES","LEMERY","LEON","MAASIN","MIAGAO","MINA","NEW LUCENA","OTON","PAVIA","POTOTAN","SAN DIONISIO","SAN ENRIQUE","SAN JOAQUIN","SAN MIGUEL","SAN RAFAEL","SANTA BARBARA","SARA","TIGBAUAN","TUBUNGAN","ZARRAGA"],
+      "NEGROS OCCIDENTAL": ["BACOLOD CITY","BAGO CITY","BINALBAGAN","CADIZ CITY","CALATRAVA","CANDONI","CAUAYAN","ENRIQUE B. MAGALONA","ESCALANTE CITY","HIMAMAYLAN CITY","HINIGARAN","HINOBA-AN","ILOG","ISABELA","KABANKALAN CITY","LA CARLOTA CITY","LA CASTELLANA","MANAPLA","MOISES PADILLA","MURCIA","PONTEVEDRA","PULUPANDAN","SAGAY CITY","SAN CARLOS CITY","SAN ENRIQUE","SILAY CITY","SIPALAY CITY","TALISAY CITY","TOBOSO","VALLADOLID","VICTORIAS CITY"]
+    };
+
+    function seedExampleLGUs() {
+      const ex = [{ 
+        id: 200, 
+        municipality: "ALTAVAS", 
+        province: "AKLAN", 
+        region: "WESTERN VISAYAS", 
+        incomeClass: "4TH", 
+        mayor: "DENNY B. REFOL, SR.", 
+        viceMayor: "JOSEPH JECON L. FLORES", 
+        landline: "(036)5284030", 
+        email: "lgu.altavas@gmail.com", 
+        mpdc: "ENGR. ROGELIO C. DELA CRUZ, JR.", 
+        mpdcEmail: "mpdc.lgualtavas@gmail.com", 
+        mpdcMobile: "09096048634",
+        clupStatus: "Updated",
+        preparatoryPhaseStatus: "Completed",
+        phase1Status: "Completed",
+        phase2Status: "Completed",
+        phase3Status: "Completed",
+        phase4Status: "Completed",
+        phase5Status: "Completed"
+      }];
+      lguDatabase = ex;
+    }
+
+    async function loadData() {
+      document.getElementById("lguGrid").innerHTML = '<div style="text-align:center;padding:40px;">⏳ Loading LGUs from database...</div>';
+      
+      try {
+        // ALWAYS try to fetch from Google Sheets first
+        const lgusFromSheet = await fetchLGUsFromSheet();
+        
+        if (lgusFromSheet && lgusFromSheet.length > 0) {
+          lguDatabase = lgusFromSheet;
+          // Update localStorage with fresh data
+          localStorage.setItem("lgu_master_db_v3", JSON.stringify(lguDatabase));
+          showToastMessage(`Loaded ${lgusFromSheet.length} LGUs from Google Sheets`, "info");
+        } else {
+          // If no data from sheet, try localStorage
+          const l = localStorage.getItem("lgu_master_db_v3");
+          if (l) {
+            lguDatabase = JSON.parse(l);
+            showToastMessage(`Loaded ${lguDatabase.length} LGUs from local storage`, "info");
+          } else {
+            // If no data anywhere, seed with example
+            seedExampleLGUs();
+            localStorage.setItem("lgu_master_db_v3", JSON.stringify(lguDatabase));
+            showToastMessage("Seeded example LGUs", "info");
+          }
+        }
+        
+        updateProvinceFilter();
+        renderLGUList();
+        updateTotalStats();
+        populateDropdowns();
+      } catch (error) {
+        console.error("Error loading data:", error);
+        // Fallback to localStorage
+        const l = localStorage.getItem("lgu_master_db_v3");
+        if (l) {
+          lguDatabase = JSON.parse(l);
+        } else {
+          seedExampleLGUs();
+          localStorage.setItem("lgu_master_db_v3", JSON.stringify(lguDatabase));
+        }
+        updateProvinceFilter();
+        renderLGUList();
+        updateTotalStats();
+        populateDropdowns();
+        showToastMessage("Using local data. Please check connection to Google Sheets.", "error");
+      }
+    }
+
+    function populateDropdowns() {
+      const provSelect = document.getElementById("regProvince");
+      provSelect.innerHTML = '<option value="">-- Select Province --</option>' + provinceList.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join("");
+      provSelect.addEventListener("change", function() {
+        const munSelect = document.getElementById("regMunicipality");
+        const selected = this.value;
+        if(!selected || !municipalityByProvince[selected]) { 
+          munSelect.innerHTML = '<option value="">-- Select Municipality/City --</option>'; 
+          return; 
+        }
+        const municipalities = municipalityByProvince[selected];
+        munSelect.innerHTML = '<option value="">-- Select Municipality/City --</option>' + municipalities.map(m => `<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join("");
+      });
+    }
+
+    function updateProvinceFilter() {
+      const provinces = [...new Set(lguDatabase.map(l => l.province))].sort();
+      const f = document.getElementById("provinceFilter");
+      f.innerHTML = '<option value="">All Provinces</option>' + provinces.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join("");
+    }
+
+    function renderLGUList() {
+      const searchTerm = document.getElementById("globalSearch").value.toLowerCase();
+      const provinceVal = document.getElementById("provinceFilter").value;
+      let filtered = lguDatabase.filter(l => {
+        const matchProvince = provinceVal ? l.province === provinceVal : true;
+        const matchSearch = searchTerm === "" || 
+          (l.municipality && l.municipality.toLowerCase().includes(searchTerm)) || 
+          (l.mayor && l.mayor.toLowerCase().includes(searchTerm)) || 
+          (l.mpdc && l.mpdc.toLowerCase().includes(searchTerm)) ||
+          (l.email && l.email.toLowerCase().includes(searchTerm));
+        return matchProvince && matchSearch;
+      });
+      
+      const container = document.getElementById("lguGrid");
+      if(filtered.length === 0) { 
+        container.innerHTML = '<div class="no-data" style="text-align:center;padding:40px;">No LGU records found.</div>'; 
+        document.getElementById("totalCountStat").innerHTML = `📊 Total LGUs: ${lguDatabase.length} | Showing: 0`; 
+        return; 
+      }
+      
+      container.innerHTML = filtered.map(l => `
+        <div class="lgu-card-item">
+          <div class="lgu-info-summary">
+            <h3>🏛️ ${escapeHtml(l.municipality)}, ${escapeHtml(l.province)}</h3>
+            <p>Mayor: ${escapeHtml(l.mayor || '—')} | MPDC: ${escapeHtml(l.mpdc || '—')}</p>
+          </div>
+          <div class="lgu-actions">
+            <button class="view-btn" onclick="viewLGUPopup(${l.id})">View Details</button>
+            <button class="btn-danger" onclick="deleteLGU(${l.id})">🗑️ Delete</button>
+          </div>
+        </div>
+      `).join("");
+      document.getElementById("totalCountStat").innerHTML = `📊 Total LGUs: ${lguDatabase.length} | Showing: ${filtered.length}`;
+    }
+
+    async function deleteLGU(lguId) {
+      if (!confirm("Are you sure you want to delete this LGU? This action cannot be undone.")) {
+        return;
+      }
+      
+      const l = lguDatabase.find(l => l.id === lguId);
+      if (!l) return;
+      
+      try {
+        // Delete from Google Sheets
+        const result = await deleteLGUFromSheet(lguId);
+        
+        if (result.success) {
+          // Remove from local database
+          lguDatabase = lguDatabase.filter(l => l.id !== lguId);
+          localStorage.setItem("lgu_master_db_v3", JSON.stringify(lguDatabase));
+          
+          updateProvinceFilter();
+          renderLGUList();
+          showToastMessage(`✅ LGU ${l.municipality}, ${l.province} deleted from Google Sheets!`);
+        } else {
+          showToastMessage(`❌ Error deleting from Google Sheets: ${result.error || "Unknown error"}`, "error");
+          // Still remove from local
+          lguDatabase = lguDatabase.filter(l => l.id !== lguId);
+          localStorage.setItem("lgu_master_db_v3", JSON.stringify(lguDatabase));
+          updateProvinceFilter();
+          renderLGUList();
+          showToastMessage(`⚠️ LGU ${l.municipality}, ${l.province} removed locally only.`, "info");
+        }
+      } catch (error) {
+        showToastMessage(`❌ Error: ${error.message}`, "error");
+        // Still remove from local
+        lguDatabase = lguDatabase.filter(l => l.id !== lguId);
+        localStorage.setItem("lgu_master_db_v3", JSON.stringify(lguDatabase));
+        updateProvinceFilter();
+        renderLGUList();
+      }
+    }
+
+    function viewLGUPopup(lguId) {
+      const l = lguDatabase.find(l => l.id === lguId);
+      if(!l) return;
+      currentViewLGU = l;
+      const viewContent = `
+        <div class="info-section">
+          <strong>🏛️ ${escapeHtml(l.municipality)}</strong> (${escapeHtml(l.province)}) - ${escapeHtml(l.incomeClass)} class<br>
+          Region: ${escapeHtml(l.region)}
+        </div>
+        <hr>
+        <div class="info-row"><div class="info-label">Mayor:</div><div class="info-value">${escapeHtml(l.mayor || '—')}</div></div>
+        <div class="info-row"><div class="info-label">Vice Mayor:</div><div class="info-value">${escapeHtml(l.viceMayor || '—')}</div></div>
+        <div class="info-row"><div class="info-label">LGU Contact:</div><div class="info-value">${escapeHtml(l.landline || '—')} | ${escapeHtml(l.email || '—')}</div></div>
+        <div class="info-row"><div class="info-label">MPDC:</div><div class="info-value">${escapeHtml(l.mpdc || '—')}</div></div>
+        <div class="info-row"><div class="info-label">MPDC Contact:</div><div class="info-value">${escapeHtml(l.mpdcEmail || '—')} | ${escapeHtml(l.mpdcMobile || '—')}</div></div>
+        ${l.clupStatus ? `<div class="info-row"><div class="info-label">CLUP Status:</div><div class="info-value">${escapeHtml(l.clupStatus)}</div></div>` : ''}
+      `;
+      document.getElementById("viewContent").innerHTML = viewContent;
+      document.getElementById("viewModal").style.display = "flex";
+      document.getElementById("inlineEditPanel").style.display = "none";
+    }
+
+    function enableInlineEditForCurrentLGU() {
+      if(!currentViewLGU) return;
+      const panel = document.getElementById("inlineEditPanel");
+      panel.style.display = "block";
+      panel.innerHTML = `
+        <h4>✏️ Edit LGU Information</h4>
+        <div class="form-grid">
+          <div class="form-group"><label>Municipality</label><input id="editMun" value="${escapeHtml(currentViewLGU.municipality)}"></div>
+          <div class="form-group"><label>Province</label><input id="editProv" value="${escapeHtml(currentViewLGU.province)}"></div>
+          <div class="form-group"><label>Region</label><input id="editReg" value="${escapeHtml(currentViewLGU.region)}"></div>
+          <div class="form-group"><label>Income Class</label><select id="editIncome">${["1ST","2ND","3RD","4TH","5TH","6TH"].map(c => `<option ${currentViewLGU.incomeClass === c ? "selected" : ""}>${c}</option>`).join("")}</select></div>
+          <div class="form-group"><label>Mayor</label><input id="editMayor" value="${escapeHtml(currentViewLGU.mayor || '')}"></div>
+          <div class="form-group"><label>Vice Mayor</label><input id="editVice" value="${escapeHtml(currentViewLGU.viceMayor || '')}"></div>
+          <div class="form-group"><label>Landline</label><input id="editLand" value="${escapeHtml(currentViewLGU.landline || '')}"></div>
+          <div class="form-group"><label>Email</label><input id="editEmail" value="${escapeHtml(currentViewLGU.email || '')}"></div>
+          <div class="form-group"><label>MPDC Name</label><input id="editMpdc" value="${escapeHtml(currentViewLGU.mpdc || '')}"></div>
+          <div class="form-group"><label>MPDC Email</label><input id="editMpdcEmail" value="${escapeHtml(currentViewLGU.mpdcEmail || '')}"></div>
+          <div class="form-group"><label>MPDC Mobile</label><input id="editMpdcMobile" value="${escapeHtml(currentViewLGU.mpdcMobile || '')}"></div>
+        </div>
+        <div style="display:flex;gap:12px;margin-top:16px;">
+          <button class="btn-primary" onclick="saveInlineEdit(${currentViewLGU.id})">Save Changes</button>
+          <button class="btn-outline" onclick="document.getElementById('inlineEditPanel').style.display='none'">Cancel</button>
+        </div>
+      `;
+    }
+
+    async function saveInlineEdit(lguId) {
+      const l = lguDatabase.find(l => l.id === lguId);
+      if(!l) return;
+      
+      const updatedData = {
+        id: l.id,
+        municipality: document.getElementById("editMun").value,
+        province: document.getElementById("editProv").value,
+        region: document.getElementById("editReg").value,
+        incomeClass: document.getElementById("editIncome").value,
+        mayor: document.getElementById("editMayor").value,
+        viceMayor: document.getElementById("editVice").value,
+        landline: document.getElementById("editLand").value,
+        email: document.getElementById("editEmail").value,
+        mpdc: document.getElementById("editMpdc").value,
+        mpdcEmail: document.getElementById("editMpdcEmail").value,
+        mpdcMobile: document.getElementById("editMpdcMobile").value,
+        clupStatus: l.clupStatus || "For updating"
+      };
+      
+      Object.assign(l, updatedData);
+      
+      const result = await updateLGUInSheet(updatedData);
+      
+      if (result.success) {
+        localStorage.setItem("lgu_master_db_v3", JSON.stringify(lguDatabase));
+        updateProvinceFilter();
+        renderLGUList();
+        showToastMessage(`LGU ${l.municipality} updated successfully!`);
+        closeModal("viewModal");
+      } else {
+        showToastMessage(`Error updating LGU: ${result.error || "Unknown error"}`, "error");
+        localStorage.setItem("lgu_master_db_v3", JSON.stringify(lguDatabase));
+        updateProvinceFilter();
+        renderLGUList();
+        closeModal("viewModal");
+      }
+    }
+
+    // ==================== FORM HANDLERS ====================
+    document.getElementById("lguRegForm")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (isSaving) return;
+      
+      const prov = document.getElementById("regProvince").value;
+      const mun = document.getElementById("regMunicipality").value;
+      if(!prov || !mun) { alert("Please select both Province and Municipality/City."); return; }
+      
+      const exists = lguDatabase.some(l => 
+        l.municipality === mun && l.province === prov
+      );
+      if (exists) {
+        showToastMessage(`LGU ${mun}, ${prov} already exists!`, "error");
+        return;
+      }
+      
+      const newLGU = { 
+        id: Date.now(), 
+        municipality: mun, 
+        province: prov, 
+        region: document.getElementById("regRegion").value || "WESTERN VISAYAS", 
+        incomeClass: document.getElementById("regIncomeClass").value || "4TH", 
+        mayor: document.getElementById("regMayor").value || "", 
+        viceMayor: document.getElementById("regViceMayor").value || "", 
+        landline: document.getElementById("regLandline").value || "", 
+        email: document.getElementById("regEmail").value || "", 
+        mpdc: document.getElementById("regMpdc").value || "", 
+        mpdcEmail: document.getElementById("regMpdcEmail").value || "", 
+        mpdcMobile: document.getElementById("regMpdcMobile").value || "",
+        clupStatus: "For updating",
+        preparatoryPhaseStatus: "Not Started",
+        phase1Status: "Not Started",
+        phase2Status: "Not Started",
+        phase3Status: "Not Started",
+        phase4Status: "Not Started",
+        phase5Status: "Not Started"
+      };
+      
+      const btn = document.getElementById("saveLGUBtn");
+      const originalText = btn.innerHTML;
+      btn.innerHTML = "⏳ Saving...";
+      btn.disabled = true;
+      isSaving = true;
+      
+      try {
+        const result = await saveLGUToSheet(newLGU);
+        console.log("Save result:", result);
+        
+        if (result.success) {
+          lguDatabase.push(newLGU);
+          localStorage.setItem("lgu_master_db_v3", JSON.stringify(lguDatabase));
+          
+          updateProvinceFilter();
+          renderLGUList();
+          closeModal("lguModal");
+          document.getElementById("lguRegForm").reset();
+          document.getElementById("regRegion").value = "WESTERN VISAYAS";
+          showToastMessage(`✅ LGU ${mun}, ${prov} registered successfully to Google Sheets!`);
+        } else {
+          showToastMessage(`❌ Error saving to Google Sheets: ${result.error || "Unknown error"}`, "error");
+          lguDatabase.push(newLGU);
+          localStorage.setItem("lgu_master_db_v3", JSON.stringify(lguDatabase));
+          updateProvinceFilter();
+          renderLGUList();
+          closeModal("lguModal");
+          document.getElementById("lguRegForm").reset();
+          document.getElementById("regRegion").value = "WESTERN VISAYAS";
+          showToastMessage(`⚠️ LGU ${mun}, ${prov} saved locally only. Will sync to Google Sheets later.`, "info");
+        }
+      } catch (error) {
+        showToastMessage(`❌ Error: ${error.message}`, "error");
+        lguDatabase.push(newLGU);
+        localStorage.setItem("lgu_master_db_v3", JSON.stringify(lguDatabase));
+        updateProvinceFilter();
+        renderLGUList();
+        closeModal("lguModal");
+      } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        isSaving = false;
+      }
+    });
+
+    // ==================== UI HELPERS ====================
+    document.getElementById("applyFilterBtn")?.addEventListener("click", () => renderLGUList());
+    document.getElementById("globalSearch")?.addEventListener("keyup", () => renderLGUList());
+
+    function showLGURegModal() { document.getElementById("lguModal").style.display = "flex"; }
+    function closeModal(id) { 
+      document.getElementById(id).style.display = "none"; 
+      document.getElementById("inlineEditPanel").style.display = "none"; 
+    }
+    function updateTotalStats() { renderLGUList(); }
+
+    // ==================== AUTO-SYNC FUNCTIONS ====================
+    async function syncLocalToSheet() {
+      try {
+        const localData = JSON.parse(localStorage.getItem("lgu_master_db_v3") || "[]");
+        if (localData.length === 0) return;
+        
+        const sheetData = await fetchLGUsFromSheet();
+        if (sheetData.length >= localData.length) return;
+        
+        showToastMessage("Syncing local data to Google Sheets...", "info");
+        let synced = 0;
+        for (const lgu of localData) {
+          const exists = sheetData.some(s => s.municipality === lgu.municipality && s.province === lgu.province);
+          if (!exists) {
+            const result = await saveLGUToSheet(lgu);
+            if (result.success) synced++;
+          }
+        }
+        if (synced > 0) {
+          showToastMessage(`Synced ${synced} LGUs to Google Sheets.`, "success");
+          await loadData();
+        }
+      } catch (error) {
+        console.error("Sync error:", error);
+      }
+    }
+
+    // ==================== INITIALIZATION ====================
+    checkSession();
+    renderMainNavigation();
+    renderUserMenu();
+    
+    loadData().then(() => {
+      setTimeout(syncLocalToSheet, 3000);
+    });
+    
+    setInterval(() => {
+      if (currentUser) {
+        syncLocalToSheet();
+      }
+    }, 300000);
+    
+    window.onclick = function(e) { 
+      if(e.target.classList.contains("modal")) e.target.style.display = "none"; 
+      const modal = document.getElementById("loginModal"); 
+      if(e.target === modal) modal.classList.remove("active"); 
+    };
+  </script>
+</body>
+</html>

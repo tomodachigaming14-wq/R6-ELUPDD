@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>PRS92 Zone 4 Survey Tool - DMS Tie Point + Working Shapefile Export</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            background: #1a2a32;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .app-container {
+            max-width: 1500px;
+            margin: 0 auto;
+            background: #f0f4f8;
+            border-radius: 32px;
+            box-shadow: 0 25px 40px -12px rgba(0,0,0,0.35);
+            overflow: hidden;
+        }
+        .toolbar-header {
+            background: #0f212e;
+            color: white;
+            padding: 14px 24px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            border-bottom: 1px solid #2c4f64;
+        }
+        .title h1 {
+            font-size: 1.35rem;
+            margin: 0;
+            font-weight: 500;
+        }
+        .title p {
+            font-size: 0.7rem;
+            opacity: 0.8;
+            margin: 4px 0 0;
+        }
+        .badge-prs {
+            background: #e67e22;
+            padding: 4px 10px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .action-buttons button {
+            background: #2c5a6e;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .action-buttons button:hover {
+            background: #ffb347;
+            color: #1e2f3e;
+            transform: scale(0.96);
+        }
+        .map-edit-split {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .map-panel {
+            flex: 2;
+            min-width: 280px;
+            position: relative;
+        }
+        #map {
+            height: 550px;
+            width: 100%;
+            background: #cbd5e1;
+        }
+        .map-controls-overlay {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            z-index: 400;
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(4px);
+            padding: 8px 14px;
+            border-radius: 32px;
+            color: white;
+            font-size: 0.7rem;
+            display: flex;
+            gap: 10px;
+            pointer-events: auto;
+        }
+        .map-controls-overlay button {
+            background: #ffb347;
+            border: none;
+            border-radius: 20px;
+            padding: 4px 12px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .edit-panel {
+            flex: 1.2;
+            min-width: 420px;
+            background: #ffffff;
+            padding: 20px;
+            border-left: 1px solid #cddfe7;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-height: 550px;
+            overflow-y: auto;
+        }
+        .section {
+            background: #f9fbfd;
+            border-radius: 20px;
+            padding: 12px 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .section h3 {
+            margin: 0 0 12px 0;
+            font-size: 0.95rem;
+            border-left: 4px solid #e67e22;
+            padding-left: 10px;
+        }
+        .dms-input-group {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        .dms-field {
+            flex: 1;
+            min-width: 220px;
+            background: #fef5e8;
+            padding: 12px;
+            border-radius: 16px;
+        }
+        .dms-field label {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: bold;
+            color: #2c5a6e;
+            margin-bottom: 8px;
+        }
+        .dms-input-row {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .dms-input-row input {
+            padding: 6px 8px;
+            border: 1px solid #cbd5e6;
+            border-radius: 10px;
+            text-align: center;
+            font-family: monospace;
+        }
+        .dms-input-row select {
+            padding: 6px 8px;
+            border-radius: 10px;
+            border: 1px solid #cbd5e6;
+            background: white;
+        }
+        .prs92-display {
+            background: #eef2ff;
+            padding: 10px;
+            border-radius: 14px;
+            font-family: monospace;
+            font-size: 0.75rem;
+            margin-top: 10px;
+        }
+        .bearing-editor table {
+            width: 100%;
+            font-size: 0.7rem;
+            border-collapse: collapse;
+        }
+        .bearing-editor th, .bearing-editor td {
+            border: 1px solid #cbd5e6;
+            padding: 6px 4px;
+            text-align: center;
+        }
+        .bearing-editor input, .bearing-editor select {
+            padding: 3px;
+            font-size: 0.7rem;
+            text-align: center;
+            border: 1px solid #b9cedb;
+            border-radius: 6px;
+        }
+        .btn-sm {
+            background: #2c5a6e;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: 0.2s;
+        }
+        .btn-sm:hover {
+            background: #e67e22;
+        }
+        .stat-closure {
+            font-family: monospace;
+            font-size: 0.7rem;
+            background: #eef2ff;
+            padding: 10px;
+            border-radius: 14px;
+        }
+        .point-list {
+            font-size: 0.65rem;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        .coord-note {
+            font-size: 0.7rem;
+            background: #fff3e0;
+            padding: 8px;
+            border-radius: 12px;
+            margin-top: 8px;
+        }
+        .footer-note {
+            font-size: 0.65rem;
+            text-align: center;
+            background: #eef2f5;
+            padding: 10px;
+        }
+        .btn-update {
+            background: #e67e22;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .corner-badge {
+            display: inline-block;
+            background: #2c5a6e;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            margin-left: 8px;
+        }
+        .export-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 5px;
+        }
+        .success-msg {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #27ae60;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            z-index: 1000;
+            animation: fadeOut 3s ease-out forwards;
+        }
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            70% { opacity: 1; }
+            100% { opacity: 0; visibility: hidden; }
+        }
+        @media (max-width: 780px) {
+            .map-edit-split { flex-direction: column; }
+            .edit-panel { max-height: 400px; }
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <div class="toolbar-header">
+        <div class="title">
+            <h1>📐 PRS92 Zone 4 Traverse <span class="badge-prs">Philippines</span></h1>
+            <p>Corner 1 in DMS • Quadrant Bearings • Shapefile/GeoJSON Export</p>
+        </div>
+        <div class="action-buttons">
+            <button id="resetTraverseBtn">⟳ Reset All</button>
+            <button id="exportGeoJSONBtn">📄 Export GeoJSON</button>
+            <button id="exportShapefileBtn">🗺️ Export Shapefile (ZIP)</button>
+        </div>
+    </div>
+    <div class="map-edit-split">
+        <div class="map-panel">
+            <div id="map"></div>
+            <div class="map-controls-overlay">
+                <button id="toggleSatelliteBtn">🛰️ Satellite</button>
+                <button id="toggleStreetBtn">🗺️ Street</button>
+                <button id="zoomFitBtn">⛶ Fit Traverse</button>
+            </div>
+        </div>
+        <div class="edit-panel">
+            <div class="section">
+                <h3>📍 Corner 1 (Tie Point) - Degrees Minutes Seconds <span class="corner-badge">Start Point</span></h3>
+                <div class="dms-input-group">
+                    <div class="dms-field">
+                        <label>🌐 Latitude (DMS)</label>
+                        <div class="dms-input-row">
+                            <input type="number" id="latDeg" step="1" value="10" style="width: 60px;" placeholder="Deg">
+                            <span>°</span>
+                            <input type="number" id="latMin" step="1" value="48" style="width: 60px;" placeholder="Min">
+                            <span>'</span>
+                            <input type="number" id="latSec" step="0.001" value="7.4" style="width: 70px;" placeholder="Sec">
+                            <span>"</span>
+                            <select id="latHemisphere" style="width: 60px;">
+                                <option value="N">N</option>
+                                <option value="S">S</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="dms-field">
+                        <label>🌐 Longitude (DMS)</label>
+                        <div class="dms-input-row">
+                            <input type="number" id="lonDeg" step="1" value="123" style="width: 60px;" placeholder="Deg">
+                            <span>°</span>
+                            <input type="number" id="lonMin" step="1" value="25" style="width: 60px;" placeholder="Min">
+                            <span>'</span>
+                            <input type="number" id="lonSec" step="0.001" value="34.1" style="width: 70px;" placeholder="Sec">
+                            <span>"</span>
+                            <select id="lonHemisphere" style="width: 60px;">
+                                <option value="E">E</option>
+                                <option value="W">W</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <button id="updateTieFromDMS" class="btn-sm btn-update">⟳ Update Corner 1 from DMS</button>
+                <div class="prs92-display" id="prs92Display">
+                    📍 PRS92 Zone 4 Coordinates (Corner 1):<br>
+                    Easting: 610,645.297 m<br>
+                    Northing: 1,193,546.82 m
+                </div>
+                <div class="coord-note">
+                    🔷 <strong>First Traverse Leg:</strong> From Corner 1 → Corner 2<br>
+                    Bearing: N55°50' W • Distance: 2658.29 m
+                </div>
+            </div>
+            
+            <div class="section bearing-editor">
+                <h3>📐 Bearing / Distance Table (Corner to Corner)</h3>
+                <div style="overflow-x: auto;">
+                    <table id="editableTable">
+                        <thead>
+                            <tr><th>Leg</th><th>From → To</th><th>Bearing (Quadrant)</th><th>Distance (m)</th><th>ΔE (m)</th><th>ΔN (m)</th><th></th></tr>
+                        </thead>
+                        <tbody id="editTableBody"></tbody>
+                    </table>
+                </div>
+                <button id="addRowBtn" class="btn-sm">+ Add Leg</button>
+                <button id="applyEditsBtn" class="btn-sm" style="background:#e67e22;">⟳ Apply Bearing Changes</button>
+            </div>
+            
+            <div class="section">
+                <h3>📊 Closure Analysis</h3>
+                <div id="closureStats" class="stat-closure">Calculating...</div>
+            </div>
+            
+            <div class="section">
+                <h3>📍 All Corner Points (PRS92)</h3>
+                <div id="pointList" class="point-list"></div>
+            </div>
+        </div>
+    </div>
+    <div class="footer-note">
+        🧭 PRS92 Zone 4 (Philippines) | Corner 1 in DMS → converted to PRS92 meters | Export to Shapefile (SHP + DBF + SHX + PRJ)
+    </div>
+</div>
+
+<script>
+    // ============================================================
+    // ORIGINAL DATA from JSON
+    // Corner 1 (Tie Point) DMS: 10° 48' 7.4" N, 123° 25' 34.1" E
+    // ============================================================
+    const defaultRows = [
+        { from: "Corner 1", to: "Corner 2", direction: "N", degrees: "55", minutes: "50", seconds: "00", quadrant: "W", distance: "2658.29" },
+        { from: "Corner 2", to: "Corner 3", direction: "N", degrees: "74", minutes: "42", seconds: "00", quadrant: "W", distance: "69.75" },
+        { from: "Corner 3", to: "Corner 4", direction: "N", degrees: "17", minutes: "05", seconds: "00", quadrant: "E", distance: "156.80" },
+        { from: "Corner 4", to: "Corner 5", direction: "S", degrees: "74", minutes: "46", seconds: "00", quadrant: "E", distance: "60.04" },
+        { from: "Corner 5", to: "Corner 1", direction: "S", degrees: "13", minutes: "32", seconds: "00", quadrant: "W", distance: "156.87" }
+    ];
+    
+    let currentRows = JSON.parse(JSON.stringify(defaultRows));
+    
+    let corner1DMS = { 
+        latDeg: 10, latMin: 48, latSec: 7.4, latHem: "N", 
+        lonDeg: 123, lonMin: 25, lonSec: 34.1, lonHem: "E" 
+    };
+    
+    let corner1PRS92 = { northing: 1193546.82, easting: 610645.297 };
+    
+    let map;
+    let traverseLayer = null;
+    let currentTileLayer = null;
+    
+    function dmsToDecimal(degrees, minutes, seconds, hemisphere) {
+        let decimal = degrees + minutes / 60.0 + seconds / 3600.0;
+        if (hemisphere === "S" || hemisphere === "W") decimal = -decimal;
+        return decimal;
+    }
+    
+    function bearingDmsToDecimal(degrees, minutes, seconds = 0) {
+        return parseFloat(degrees) + (parseFloat(minutes) / 60.0) + (parseFloat(seconds) / 3600.0);
+    }
+    
+    function computeDeltas(row) {
+        const dist = parseFloat(row.distance);
+        if (isNaN(dist) || dist <= 0) return { deltaE: 0, deltaN: 0 };
+        
+        let angleDeg = bearingDmsToDecimal(row.degrees, row.minutes, row.seconds || 0);
+        let rad = angleDeg * Math.PI / 180;
+        let sinVal = Math.sin(rad);
+        let cosVal = Math.cos(rad);
+        let deltaE = 0, deltaN = 0;
+        const dir = row.direction;
+        const quad = row.quadrant;
+        
+        if (dir === "N" && quad === "E") {
+            deltaN = dist * cosVal;
+            deltaE = dist * sinVal;
+        } else if (dir === "N" && quad === "W") {
+            deltaN = dist * cosVal;
+            deltaE = -dist * sinVal;
+        } else if (dir === "S" && quad === "E") {
+            deltaN = -dist * cosVal;
+            deltaE = dist * sinVal;
+        } else if (dir === "S" && quad === "W") {
+            deltaN = -dist * cosVal;
+            deltaE = -dist * sinVal;
+        }
+        
+        return { deltaE, deltaN };
+    }
+    
+    function computeTraversePoints(rows, corner1Easting, corner1Northing) {
+        let points = [{ 
+            pointNum: 1,
+            name: "Corner 1",
+            easting: corner1Easting, 
+            northing: corner1Northing
+        }];
+        let currentE = 0, currentN = 0;
+        
+        for (let i = 0; i < rows.length; i++) {
+            const { deltaE, deltaN } = computeDeltas(rows[i]);
+            currentE += deltaE;
+            currentN += deltaN;
+            points.push({
+                pointNum: i + 2,
+                name: rows[i].to || `Corner ${i+2}`,
+                easting: corner1Easting + currentE,
+                northing: corner1Northing + currentN
+            });
+        }
+        return points;
+    }
+    
+    function computeClosureStats(rows) {
+        let sumE = 0, sumN = 0, totalDist = 0;
+        for (let r of rows) {
+            const { deltaE, deltaN } = computeDeltas(r);
+            sumE += deltaE;
+            sumN += deltaN;
+            totalDist += parseFloat(r.distance) || 0;
+        }
+        const misclosure = Math.hypot(sumE, sumN);
+        const precision = totalDist > 0 ? totalDist / (misclosure + 1e-8) : 0;
+        const precisionRatio = misclosure > 0 ? `1:${Math.round(precision)}` : "Perfect closure";
+        
+        return { deltaE: sumE, deltaN: sumN, misclosure, precisionRatio, totalDist };
+    }
+    
+    function prs92ToLatLng(easting, northing) {
+        const refLat = dmsToDecimal(corner1DMS.latDeg, corner1DMS.latMin, corner1DMS.latSec, corner1DMS.latHem);
+        const refLng = dmsToDecimal(corner1DMS.lonDeg, corner1DMS.lonMin, corner1DMS.lonSec, corner1DMS.lonHem);
+        const refEasting = corner1PRS92.easting;
+        const refNorthing = corner1PRS92.northing;
+        
+        const metersPerDegLat = 111320;
+        const metersPerDegLng = 111320 * Math.cos(refLat * Math.PI / 180);
+        
+        const deltaE = easting - refEasting;
+        const deltaN = northing - refNorthing;
+        
+        return {
+            lat: refLat + deltaN / metersPerDegLat,
+            lng: refLng + deltaE / metersPerDegLng
+        };
+    }
+    
+    function getAllLatLngPoints() {
+        const points = computeTraversePoints(currentRows, corner1PRS92.easting, corner1PRS92.northing);
+        return points.map(p => prs92ToLatLng(p.easting, p.northing));
+    }
+    
+    function updatePRS92Display() {
+        document.getElementById('prs92Display').innerHTML = `
+            📍 PRS92 Zone 4 Coordinates (Corner 1):<br>
+            Easting: ${corner1PRS92.easting.toFixed(3)} m<br>
+            Northing: ${corner1PRS92.northing.toFixed(3)} m
+        `;
+    }
+    
+    function updateDMSDisplay() {
+        document.getElementById('latDeg').value = corner1DMS.latDeg;
+        document.getElementById('latMin').value = corner1DMS.latMin;
+        document.getElementById('latSec').value = corner1DMS.latSec;
+        document.getElementById('latHemisphere').value = corner1DMS.latHem;
+        document.getElementById('lonDeg').value = corner1DMS.lonDeg;
+        document.getElementById('lonMin').value = corner1DMS.lonMin;
+        document.getElementById('lonSec').value = corner1DMS.lonSec;
+        document.getElementById('lonHemisphere').value = corner1DMS.lonHem;
+    }
+    
+    function updateStatsPanel(rows) {
+        const stats = computeClosureStats(rows);
+        const el = document.getElementById('closureStats');
+        el.innerHTML = `
+            <strong>ΣΔE (misclosure):</strong> ${stats.deltaE.toFixed(4)} m<br>
+            <strong>ΣΔN (misclosure):</strong> ${stats.deltaN.toFixed(4)} m<br>
+            <strong>Linear Misclosure:</strong> ${stats.misclosure.toFixed(4)} m<br>
+            <strong>Relative Precision:</strong> ${stats.precisionRatio}<br>
+            <strong>Total Perimeter:</strong> ${stats.totalDist.toFixed(2)} m
+        `;
+    }
+    
+    function updatePointList(rows) {
+        const points = computeTraversePoints(rows, corner1PRS92.easting, corner1PRS92.northing);
+        const listDiv = document.getElementById('pointList');
+        listDiv.innerHTML = points.map(p => `
+            <div style="padding: 6px 0; border-bottom: 1px solid #e2e8f0;">
+                <strong>📍 ${p.name}:</strong><br>
+                Easting: ${p.easting.toFixed(3)} m<br>
+                Northing: ${p.northing.toFixed(3)} m
+            </div>
+        `).join('');
+    }
+    
+    function renderEditableTable() {
+        const tbody = document.getElementById('editTableBody');
+        tbody.innerHTML = '';
+        
+        currentRows.forEach((row, idx) => {
+            const { deltaE, deltaN } = computeDeltas(row);
+            const fromTo = `${row.from} → ${row.to}`;
+            
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="font-weight:bold;">${idx+1}</td>
+                <td style="font-size:0.65rem;">${fromTo}</td>
+                <td>
+                    <div class="bearing-input-group">
+                        <select class="edit-dir" style="width:45px;">
+                            ${['N','S'].map(d => `<option ${row.direction===d?'selected':''}>${d}</option>`).join('')}
+                        </select>
+                        <input type="number" class="edit-deg" value="${row.degrees}" step="1" min="0" max="90" style="width:50px;">°
+                        <input type="number" class="edit-min" value="${row.minutes}" step="1" min="0" max="59" style="width:48px;">'
+                        <select class="edit-quad" style="width:50px;">
+                            ${['E','W'].map(q => `<option ${row.quadrant===q?'selected':''}>${q}</option>`).join('')}
+                        </select>
+                    </div>
+                </td>
+                <td><input type="number" class="edit-dist" value="${row.distance}" step="any" style="width:85px;"></td>
+                <td style="color:#2c5a6e;">${deltaE.toFixed(2)}</td>
+                <td style="color:#2c5a6e;">${deltaN.toFixed(2)}</td>
+                <td><button class="delete-row-btn" data-idx="${idx}" style="background:#b91c1c; border:none; color:white; border-radius:16px; padding:2px 10px; cursor:pointer;">✖</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+        
+        document.querySelectorAll('.delete-row-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const idx = parseInt(btn.getAttribute('data-idx'));
+                if (!isNaN(idx) && currentRows.length > 1) {
+                    currentRows.splice(idx, 1);
+                    for (let i = idx; i < currentRows.length; i++) {
+                        currentRows[i].from = `Corner ${i+1}`;
+                        currentRows[i].to = `Corner ${i+2}`;
+                    }
+                    renderEditableTable();
+                    applyEditsAndRedraw();
+                } else {
+                    alert("Need at least one traverse leg");
+                }
+            });
+        });
+    }
+    
+    function syncRowsFromTable() {
+        const rowsEl = document.querySelectorAll('#editTableBody tr');
+        let newRows = [];
+        for (let i = 0; i < rowsEl.length; i++) {
+            const rowEl = rowsEl[i];
+            const dir = rowEl.querySelector('.edit-dir')?.value;
+            const deg = rowEl.querySelector('.edit-deg')?.value;
+            const min = rowEl.querySelector('.edit-min')?.value;
+            const quad = rowEl.querySelector('.edit-quad')?.value;
+            const dist = rowEl.querySelector('.edit-dist')?.value;
+            if (dir && deg && min && quad && dist) {
+                newRows.push({
+                    from: `Corner ${i+1}`,
+                    to: `Corner ${i+2}`,
+                    direction: dir,
+                    degrees: deg,
+                    minutes: min,
+                    seconds: "00",
+                    quadrant: quad,
+                    distance: dist
+                });
+            }
+        }
+        if (newRows.length > 0) currentRows = newRows;
+    }
+    
+    function initMap() {
+        const startLat = dmsToDecimal(corner1DMS.latDeg, corner1DMS.latMin, corner1DMS.latSec, corner1DMS.latHem);
+        const startLng = dmsToDecimal(corner1DMS.lonDeg, corner1DMS.lonMin, corner1DMS.lonSec, corner1DMS.lonHem);
+        map = L.map('map').setView([startLat, startLng], 14);
+        
+        currentTileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+    }
+    
+    function updateMapOverlay() {
+        if (traverseLayer) {
+            map.removeLayer(traverseLayer);
+        }
+        
+        const points = computeTraversePoints(currentRows, corner1PRS92.easting, corner1PRS92.northing);
+        if (points.length < 2) return;
+        
+        const latLngPoints = points.map(p => prs92ToLatLng(p.easting, p.northing));
+        const closedPoints = [...latLngPoints, latLngPoints[0]];
+        
+        const polyline = L.polyline(latLngPoints, { color: '#e34d4d', weight: 3, opacity: 0.9 });
+        const polygon = L.polygon(closedPoints, { color: '#e34d4d', weight: 2, fillColor: '#ffb347', fillOpacity: 0.25 });
+        
+        const markers = L.layerGroup();
+        latLngPoints.forEach((coord, idx) => {
+            const marker = L.circleMarker(coord, { 
+                radius: 6, 
+                color: '#2c5f8a', 
+                fillColor: '#2c5f8a', 
+                fillOpacity: 1,
+                weight: 2
+            });
+            marker.bindTooltip(`<b>${points[idx].name}</b><br>E: ${points[idx].easting.toFixed(2)}<br>N: ${points[idx].northing.toFixed(2)}`, { sticky: true });
+            markers.addLayer(marker);
+        });
+        
+        const group = L.layerGroup([polyline, polygon, markers]);
+        traverseLayer = group;
+        group.addTo(map);
+        
+        try {
+            const bounds = L.latLngBounds(latLngPoints);
+            map.fitBounds(bounds.pad(0.15));
+        } catch(e) {}
+    }
+    
+    function refreshAll() {
+        updateStatsPanel(currentRows);
+        updatePointList(currentRows);
+        updateMapOverlay();
+        updatePRS92Display();
+    }
+    
+    function applyEditsAndRedraw() {
+        syncRowsFromTable();
+        refreshAll();
+    }
+    
+    function updateTieFromDMS() {
+        corner1DMS = {
+            latDeg: parseFloat(document.getElementById('latDeg').value),
+            latMin: parseFloat(document.getElementById('latMin').value),
+            latSec: parseFloat(document.getElementById('latSec').value),
+            latHem: document.getElementById('latHemisphere').value,
+            lonDeg: parseFloat(document.getElementById('lonDeg').value),
+            lonMin: parseFloat(document.getElementById('lonMin').value),
+            lonSec: parseFloat(document.getElementById('lonSec').value),
+            lonHem: document.getElementById('lonHemisphere').value
+        };
+        
+        const newLat = dmsToDecimal(corner1DMS.latDeg, corner1DMS.latMin, corner1DMS.latSec, corner1DMS.latHem);
+        const newLng = dmsToDecimal(corner1DMS.lonDeg, corner1DMS.lonMin, corner1DMS.lonSec, corner1DMS.lonHem);
+        map.setView([newLat, newLng], 14);
+        
+        refreshAll();
+    }
+    
+    function resetToOriginal() {
+        currentRows = JSON.parse(JSON.stringify(defaultRows));
+        corner1DMS = { 
+            latDeg: 10, latMin: 48, latSec: 7.4, latHem: "N", 
+            lonDeg: 123, lonMin: 25, lonSec: 34.1, lonHem: "E" 
+        };
+        corner1PRS92 = { northing: 1193546.82, easting: 610645.297 };
+        
+        updateDMSDisplay();
+        renderEditableTable();
+        
+        const centerLat = dmsToDecimal(corner1DMS.latDeg, corner1DMS.latMin, corner1DMS.latSec, corner1DMS.latHem);
+        const centerLng = dmsToDecimal(corner1DMS.lonDeg, corner1DMS.lonMin, corner1DMS.lonSec, corner1DMS.lonHem);
+        map.setView([centerLat, centerLng], 14);
+        
+        refreshAll();
+    }
+    
+    function addNewRow() {
+        currentRows.push({
+            from: `Corner ${currentRows.length + 1}`,
+            to: `Corner ${currentRows.length + 2}`,
+            direction: "N",
+            degrees: "0",
+            minutes: "0",
+            seconds: "00",
+            quadrant: "E",
+            distance: "100.00"
+        });
+        renderEditableTable();
+        applyEditsAndRedraw();
+    }
+    
+    function exportGeoJSON() {
+        const points = computeTraversePoints(currentRows, corner1PRS92.easting, corner1PRS92.northing);
+        const latLngPoints = points.map(p => prs92ToLatLng(p.easting, p.northing));
+        const coordinates = latLngPoints.map(p => [p.lng, p.lat]);
+        coordinates.push(coordinates[0]);
+        
+        const geojson = {
+            type: "FeatureCollection",
+            features: [
+                {
+                    type: "Feature",
+                    properties: {
+                        name: "Survey Traverse",
+                        description: "PRS92 Zone 4 Survey",
+                        corner_count: points.length,
+                        perimeter_m: computeClosureStats(currentRows).totalDist,
+                        export_date: new Date().toISOString()
+                    },
+                    geometry: {
+                        type: "Polygon",
+                        coordinates: [coordinates]
+                    }
+                }
+            ]
+        };
+        
+        const dataStr = JSON.stringify(geojson, null, 2);
+        const blob = new Blob([dataStr], {type: "application/json"});
+        saveAs(blob, `survey_prs92_${new Date().toISOString().slice(0,19)}.geojson`);
+        showSuccess("GeoJSON exported successfully!");
+    }
+    
+    function exportShapefile() {
+        const points = computeTraversePoints(currentRows, corner1PRS92.easting, corner1PRS92.northing);
+        const latLngPoints = points.map(p => prs92ToLatLng(p.easting, p.northing));
+        const coordinates = latLngPoints.map(p => [p.lng, p.lat]);
+        
+        const shpContent = createShapefileBuffer(coordinates);
+        const shxContent = createShxBuffer(coordinates);
+        const dbfContent = createDbfBuffer(points);
+        const prjContent = createPrjContent();
+        
+        const zip = new JSZip();
+        zip.file("survey_polygon.shp", shpContent);
+        zip.file("survey_polygon.shx", shxContent);
+        zip.file("survey_polygon.dbf", dbfContent);
+        zip.file("survey_polygon.prj", prjContent);
+        
+        zip.generateAsync({ type: "blob" }).then(function(content) {
+            saveAs(content, `survey_prs92_${new Date().toISOString().slice(0,19)}.zip`);
+            showSuccess("Shapefile exported successfully!");
+        }).catch(function(err) {
+            console.error("Error creating shapefile:", err);
+            alert("Error creating shapefile. Please try again.");
+        });
+    }
+    
+    function createShapefileBuffer(coords) {
+        const numPoints = coords.length;
+        const numRings = 1;
+        const numParts = 1;
+        
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        coords.forEach(c => {
+            minX = Math.min(minX, c[0]);
+            maxX = Math.max(maxX, c[0]);
+            minY = Math.min(minY, c[1]);
+            maxY = Math.max(maxY, c[1]);
+        });
+        
+        const shpHeader = new ArrayBuffer(100);
+        const headerView = new DataView(shpHeader);
+        
+        headerView.setInt32(0, 9994, false);
+        headerView.setInt32(24, 0, false);
+        headerView.setInt32(28, 1000, false);
+        headerView.setInt32(32, 5, false);
+        headerView.setFloat64(36, minX, false);
+        headerView.setFloat64(44, minY, false);
+        headerView.setFloat64(52, maxX, false);
+        headerView.setFloat64(60, maxY, false);
+        headerView.setFloat64(68, 0, false);
+        headerView.setFloat64(76, 0, false);
+        headerView.setFloat64(84, 0, false);
+        headerView.setFloat64(92, 0, false);
+        
+        const recordLength = 44 + (4 + 4 + 4 + numPoints * 16);
+        const totalLength = 100 + recordLength;
+        headerView.setInt32(24, totalLength / 2, false);
+        
+        const shpContent = new ArrayBuffer(totalLength);
+        const shpView = new DataView(shpContent);
+        new Uint8Array(shpContent).set(new Uint8Array(shpHeader), 0);
+        
+        let pos = 100;
+        shpView.setInt32(pos, 1, false);
+        shpView.setInt32(pos + 4, recordLength / 2, false);
+        pos += 8;
+        
+        shpView.setInt32(pos, 5, false);
+        pos += 4;
+        shpView.setFloat64(pos, minX, false);
+        shpView.setFloat64(pos + 8, minY, false);
+        shpView.setFloat64(pos + 16, maxX, false);
+        shpView.setFloat64(pos + 24, maxY, false);
+        pos += 32;
+        shpView.setInt32(pos, numParts, false);
+        shpView.setInt32(pos + 4, numPoints, false);
+        pos += 8;
+        shpView.setInt32(pos, 0, false);
+        pos += 4;
+        
+        for (let i = 0; i < numPoints; i++) {
+            shpView.setFloat64(pos, coords[i][0], false);
+            shpView.setFloat64(pos + 8, coords[i][1], false);
+            pos += 16;
+        }
+        
+        return shpContent;
+    }
+    
+    function createShxBuffer(coords) {
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        coords.forEach(c => {
+            minX = Math.min(minX, c[0]);
+            maxX = Math.max(maxX, c[0]);
+            minY = Math.min(minY, c[1]);
+            maxY = Math.max(maxY, c[1]);
+        });
+        
+        const shxHeader = new ArrayBuffer(100);
+        const headerView = new DataView(shxHeader);
+        
+        headerView.setInt32(0, 9994, false);
+        headerView.setInt32(24, 54, false);
+        headerView.setInt32(28, 1000, false);
+        headerView.setInt32(32, 5, false);
+        headerView.setFloat64(36, minX, false);
+        headerView.setFloat64(44, minY, false);
+        headerView.setFloat64(52, maxX, false);
+        headerView.setFloat64(60, maxY, false);
+        
+        const shxContent = new ArrayBuffer(108);
+        const shxView = new DataView(shxContent);
+        new Uint8Array(shxContent).set(new Uint8Array(shxHeader), 0);
+        shxView.setInt32(100, 0, false);
+        shxView.setInt32(104, 50, false);
+        
+        return shxContent;
+    }
+    
+    function createDbfBuffer(points) {
+        const numRecords = points.length;
+        const headerLen = 32 + 32 * 4 + 1;
+        const recordLen = 50;
+        const totalLen = headerLen + numRecords * recordLen;
+        
+        const buffer = new ArrayBuffer(totalLen);
+        const bytes = new Uint8Array(buffer);
+        const view = new DataView(buffer);
+        
+        bytes[0] = 0x03;
+        const d = new Date();
+        bytes[1] = d.getFullYear() - 1900;
+        bytes[2] = d.getMonth() + 1;
+        bytes[3] = d.getDate();
+        view.setUint32(4, numRecords, true);
+        view.setUint16(8, headerLen, true);
+        view.setUint16(10, recordLen, true);
+        
+        let pos = 32;
+        const fields = [
+            { name: "ID", type: "N", length: 10 },
+            { name: "NAME", type: "C", length: 20 },
+            { name: "EASTING", type: "N", length: 15, decimals: 3 },
+            { name: "NORTHING", type: "N", length: 15, decimals: 3 }
+        ];
+        
+        for (let i = 0; i < fields.length; i++) {
+            const f = fields[i];
+            for (let j = 0; j < f.name.length; j++) {
+                bytes[pos + j] = f.name.charCodeAt(j);
+            }
+            bytes[pos + 10] = f.type.charCodeAt(0);
+            bytes[pos + 11] = f.length;
+            if (f.decimals) bytes[pos + 12] = f.decimals;
+            pos += 32;
+        }
+        bytes[headerLen - 1] = 0x0D;
+        
+        let recordPos = headerLen;
+        for (let i = 0; i < points.length; i++) {
+            bytes[recordPos] = 0x20;
+            let offset = 1;
+            
+            const idStr = points[i].pointNum.toString().padStart(10, ' ');
+            for (let j = 0; j < 10; j++) bytes[recordPos + offset + j] = idStr.charCodeAt(j);
+            offset += 10;
+            
+            const nameStr = points[i].name.padEnd(20, ' ');
+            for (let j = 0; j < 20; j++) bytes[recordPos + offset + j] = nameStr.charCodeAt(j);
+            offset += 20;
+            
+            const eastStr = points[i].easting.toFixed(3).padStart(15, ' ');
+            for (let j = 0; j < 15; j++) bytes[recordPos + offset + j] = eastStr.charCodeAt(j);
+            offset += 15;
+            
+            const northStr = points[i].northing.toFixed(3).padStart(15, ' ');
+            for (let j = 0; j < 15; j++) bytes[recordPos + offset + j] = northStr.charCodeAt(j);
+            
+            recordPos += recordLen;
+        }
+        
+        return buffer;
+    }
+    
+    function createPrjContent() {
+        return `GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]]`;
+    }
+    
+    function showSuccess(message) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'success-msg';
+        msgDiv.textContent = message;
+        document.body.appendChild(msgDiv);
+        setTimeout(() => msgDiv.remove(), 3000);
+    }
+    
+    window.onload = () => {
+        initMap();
+        renderEditableTable();
+        refreshAll();
+        
+        document.getElementById('updateTieFromDMS').addEventListener('click', () => updateTieFromDMS());
+        document.getElementById('applyEditsBtn').addEventListener('click', () => applyEditsAndRedraw());
+        document.getElementById('resetTraverseBtn').addEventListener('click', () => resetToOriginal());
+        document.getElementById('addRowBtn').addEventListener('click', () => addNewRow());
+        document.getElementById('exportGeoJSONBtn').addEventListener('click', () => exportGeoJSON());
+        document.getElementById('exportShapefileBtn').addEventListener('click', () => exportShapefile());
+        document.getElementById('zoomFitBtn').addEventListener('click', () => {
+            if (traverseLayer) {
+                try {
+                    map.fitBounds(traverseLayer.getBounds());
+                } catch(e) {}
+            }
+        });
+        
+        document.getElementById('toggleSatelliteBtn').addEventListener('click', () => {
+            if (currentTileLayer) map.removeLayer(currentTileLayer);
+            currentTileLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles &copy; Esri'
+            }).addTo(map);
+        });
+        
+        document.getElementById('toggleStreetBtn').addEventListener('click', () => {
+            if (currentTileLayer) map.removeLayer(currentTileLayer);
+            currentTileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap'
+            }).addTo(map);
+        });
+    };
+</script>
+</body>
+</html>

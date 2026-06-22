@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>DHSUD Region VI - Login (Blue)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(145deg, #eef2ff 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+        .login-wrapper {
+            max-width: 480px;
+            width: 100%;
+            background: white;
+            border-radius: 2.5rem;
+            box-shadow: 0 30px 60px -20px rgba(0,0,0,0.35);
+            overflow: hidden;
+        }
+        .brand-section {
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+            padding: 2rem;
+            text-align: center;
+        }
+        .logo-text { font-size: 1.8rem; font-weight: 800; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .tagline { font-size: 0.75rem; color: rgba(255,255,255,0.85); margin-top: 0.5rem; }
+        .form-container { padding: 2rem; }
+        .input-group { margin-bottom: 1.3rem; }
+        .input-label { display: block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: #54708f; margin-bottom: 0.4rem; }
+        .input-field {
+            width: 100%; padding: 0.85rem 1rem; border: 1.5px solid #e2e8f0; border-radius: 1rem;
+            font-size: 0.9rem; font-family: 'Inter', sans-serif; transition: all 0.2s;
+        }
+        .input-field:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+        .submit-btn {
+            width: 100%; padding: 0.9rem; background: #2563eb; color: white; border: none;
+            border-radius: 1.2rem; font-weight: 700; font-size: 0.9rem; cursor: pointer;
+            transition: all 0.2s; margin-top: 0.5rem;
+        }
+        .submit-btn:hover { background: #1d4ed8; transform: translateY(-1px); }
+        .submit-btn:disabled { background: #94a3b8; cursor: not-allowed; }
+        .toast {
+            position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
+            background: #1e293b; color: white; padding: 0.7rem 1.4rem; border-radius: 2rem;
+            font-size: 0.8rem; z-index: 1000;
+        }
+        .toast.success { background: #166534; }
+        .toast.error { background: #b91c1c; }
+        
+        /* Logo styles - large and visible */
+        .logo-wrapper {
+            text-align: center;
+        }
+
+        .brand-logo {
+            width: 180px;
+            height: auto;
+            margin-bottom: 1rem;
+            background: white;
+            border-radius: 20px;
+            padding: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+            display: inline-block;
+        }
+
+        .brand-logo:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+<div class="login-wrapper">
+    <div class="brand-section">
+        <div class="logo-wrapper">
+            <img src="DHSUD_LOGO.png" alt="DHSUD Logo" class="brand-logo">
+            <div class="logo-text">DHSUD Region VI</div>
+            <div class="tagline">ELUPDD </div>
+        </div>
+    </div>
+    <div class="form-container">
+        <form id="loginForm" onsubmit="return handleLogin(event)">
+            <div class="input-group">
+                <label class="input-label">📧 Email Address</label>
+                <input type="email" id="loginEmail" class="input-field" placeholder="name@dhsud.gov.ph" required>
+            </div>
+            <div class="input-group">
+                <label class="input-label">🔒 Password</label>
+                <input type="password" id="loginPassword" class="input-field" placeholder="Enter your password" required>
+            </div>
+            <button type="submit" id="loginBtn" class="submit-btn"> LOG-IN</button>
+        </form>
+    </div>
+</div>
+<script>const GOOGLE_SCRIPT_URL="https://script.google.com/macros/s/AKfycbz1OCTwE_aaIm4bTAWQM3mXJq4m7LMREa3QlCl5FAY_XwZ1P1ohRaGJFzLWKDSVET1Q/exec";function showToast(message,type){const e=document.querySelector(".toast");if(e)e.remove();const t=document.createElement("div");t.className=`toast ${type}`;t.innerHTML=message;document.body.appendChild(t);setTimeout(()=>t.remove(),3000);}function encodePassword(p){return btoa(p);}async function handleLogin(e){e.preventDefault();const email=document.getElementById("loginEmail").value.trim().toLowerCase();const password=document.getElementById("loginPassword").value;const btn=document.getElementById("loginBtn");btn.disabled=true;btn.innerHTML="⏳ Authenticating...";try{const resp=await fetch(`${GOOGLE_SCRIPT_URL}?action=get&data_type=users&_=${Date.now()}`);const users=await resp.json();const user=users.find(u=>u.email?.toLowerCase()===email);if(!user){showToast("Account not found.","error");btn.disabled=false;btn.innerHTML="→ Access Dashboard";return false;}const encoded=encodePassword(password);if(user.password===encoded){const session={userId:user.id,email:user.email,fullName:user.fullName,office:user.office||"ELUPDD",role:user.role||"viewer",loggedInAt:new Date().toISOString()};localStorage.setItem("dhsud_session",JSON.stringify(session));showToast(`Welcome ${user.fullName}!`,"success");setTimeout(()=>{window.location.href="index.html";},1000);}else{showToast("Invalid password.","error");btn.disabled=false;btn.innerHTML="→ Access Dashboard";}}catch(err){showToast("Connection error. Please try again.","error");btn.disabled=false;btn.innerHTML="→ Access Dashboard";}return false;}const session=localStorage.getItem("dhsud_session");if(session){try{const s=JSON.parse(session);const diff=(new Date()-new Date(s.loggedInAt))/(1000*60*60);if(diff<12)window.location.href="index.html";}catch(e){}}window.handleLogin=handleLogin;</script>
+</body>
+</html>

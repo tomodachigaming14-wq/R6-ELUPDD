@@ -1,0 +1,909 @@
+/**
+ * DHSUD CLUP Data Entry System - Backend with Complete LGU Fields and File Upload
+ */
+
+const SHEETS = {
+  CLUP_RECORDS: "CLUP_Records",
+  CLUP_SYNC_LOG: "CLUP_Sync_Log",
+  CLUP_STATS: "CLUP_Statistics"
+};
+
+const CLUP_COLUMNS = [
+  "Record ID",
+  "Timestamp",
+  "LGU Name",
+  "Province",
+  "Region",
+  "LGU Type",
+  "Income Class",
+  "Mayor",
+  "Vice Mayor",
+  "LGU Landline",
+  "LGU Email",
+  "MPDC Name",
+  "MPDC Email",
+  "MPDC Mobile",
+  "CLUP Status",
+  "RA Code",
+  "Preparatory Phase Status",
+  "Preparatory Phase Remarks",
+  "Phase 1 Status",
+  "Phase 1 Remarks",
+  "Phase 2 Status",
+  "Phase 2 Remarks",
+  "Phase 3 Status",
+  "Phase 3 Remarks",
+  "Phase 4 Status",
+  "Phase 4 Remarks",
+  "Phase 5 Status",
+  "Phase 5 Remarks",
+  "Preparatory Phase File",
+  "Phase 1 File",
+  "Phase 2 File",
+  "Phase 3 File",
+  "Phase 4 File",
+  "Phase 5 File",
+  "TPAP Summary",
+  "Remarks Summary",
+  "Last Updated"
+];
+
+// ==================== WEB APP ENTRY POINT ====================
+
+function doGet(e) {
+  // If there's an action parameter, treat it as an API request
+  if (e && e.parameter && e.parameter.action) {
+    return handleApiRequest(e);
+  }
+  
+  // Otherwise, serve the HTML page
+  return HtmlService.createHtmlOutputFromFile('Page')
+    .setTitle('DHSUD - LGU Management Suite')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1')
+    .setSandboxMode(HtmlService.SandboxMode.IFRAME);
+}
+
+// ==================== API HANDLER ====================
+
+function handleApiRequest(e) {
+  try {
+    console.log("API Request:", JSON.stringify(e));
+    
+    const action = e.parameter.action;
+    const dataType = e.parameter.data_type;
+    
+    // Handle Create Folder
+    if (action === "createFolder") {
+      const folderName = e.parameter.folderName;
+      const parentFolderId = e.parameter.parentFolderId;
+      const result = createFolderIfNotExists(folderName, parentFolderId);
+      return ContentService.createTextOutput(JSON.stringify(result))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // Handle CLUP DELETE
+    if (action === "delete" && dataType === "clup") {
+      const idToDelete = e.parameter.id;
+      const lguName = e.parameter.lgu_name;
+      const province = e.parameter.province;
+      
+      if (idToDelete) {
+        const result = deleteCLUPRecord(idToDelete);
+        return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+      } else if (lguName && province) {
+        const result = deleteCLUPRecordByLGU(lguName, province);
+        return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+      }
+      return ContentService.createTextOutput(JSON.stringify({ 
+        success: false, 
+        error: "No ID or LGU+Province provided" 
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // Handle CLUP GET (single or all)
+    if (action === "get" && dataType === "clup") {
+      const lguName = e.parameter.lgu_name;
+      const province = e.parameter.province;
+      const recordId = e.parameter.id;
+      
+      let result;
+      if (recordId) {
+        result = getCLUPRecordById(recordId);
+      } else if (lguName && province) {
+        result = getCLUPRecordByLGU(lguName, province);
+      } else {
+        result = getAllCLUPRecords();
+      }
+      
+      return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // Handle CLUP ADD/UPDATE
+    if ((action === "add" || action === "update") && dataType === "clup" && e.parameter.data) {
+      console.log("Received data:", e.parameter.data);
+      const data = JSON.parse(e.parameter.data);
+      console.log("Parsed data:", JSON.stringify(data));
+      const result = saveCLUPRecord(data);
+      console.log("Save result:", JSON.stringify(result));
+      return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // Handle Statistics
+    if (action === "stats") {
+      const result = getCLUPStatistics();
+      return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // Handle Test Connection
+    if (action === "test") {
+      const result = testConnection();
+      return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    return ContentService.createTextOutput(JSON.stringify({ 
+      success: true, 
+      message: "CLUP API is running. Use action parameter: get, add, update, delete, stats, upload, createFolder" 
+    })).setMimeType(ContentService.MimeType.JSON);
+      
+  } catch (error) {
+    console.error("Error in handleApiRequest:", error);
+    return ContentService.createTextOutput(JSON.stringify({ 
+      success: false, 
+      error: error.toString() 
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// ==================== POST HANDLER ====================
+
+function doPost(e) {
+  console.log("doPost called with:", JSON.stringify(e));
+  
+  try {
+    // Check if this is a file upload (FormData)
+    if (e.parameter && e.parameter.action === 'upload') {
+      return handleFileUpload(e);
+    }
+    
+    // Handle JSON POST requests
+    if (e.postData && e.postData.contents) {
+      try {
+        const data = JSON.parse(e.postData.contents);
+        if (data.action) {
+          return handleApiRequest({ parameter: data });
+        }
+      } catch (parseError) {
+        console.log("Not JSON data, treating as FormData");
+      }
+    }
+    
+    // Default: treat as form data
+    return handleApiRequest(e);
+  } catch (error) {
+    console.error("Error in doPost:", error);
+    return ContentService.createTextOutput(JSON.stringify({
+      success: false,
+      error: error.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// ==================== FILE UPLOAD HANDLER ====================
+
+function handleFileUpload(e) {
+  try {
+    console.log("File upload started");
+    console.log("Parameters:", JSON.stringify(e.parameter));
+    
+    const folderId = e.parameter.folderId;
+    const fileName = e.parameter.fileName;
+    const fileData = e.parameter.fileData;
+    const mimeType = e.parameter.mimeType || 'application/octet-stream';
+    const docType = e.parameter.docType || 'document';
+    const lgu = e.parameter.lgu || 'Unknown';
+    const province = e.parameter.province || 'Unknown';
+    
+    console.log(`Uploading: ${fileName} to folder ID: ${folderId}`);
+    
+    // Validate parameters
+    if (!folderId) {
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: false, error: "Missing folderId parameter" }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    if (!fileData) {
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: false, error: "Missing fileData parameter" }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    if (!fileName) {
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: false, error: "Missing fileName parameter" }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // Get the folder
+    let targetFolder;
+    try {
+      targetFolder = DriveApp.getFolderById(folderId);
+      console.log("Target folder found:", targetFolder.getName());
+    } catch (error) {
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: false, error: "Folder not found: " + error.toString() }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // Decode the base64 data
+    let decodedFile;
+    try {
+      decodedFile = Utilities.base64Decode(fileData);
+      console.log("File decoded, size:", decodedFile.length, "bytes");
+    } catch (error) {
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: false, error: "Failed to decode file data: " + error.toString() }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // Create blob and upload
+    const blob = Utilities.newBlob(decodedFile, mimeType, fileName);
+    const uploadedFile = targetFolder.createFile(blob);
+    
+    console.log("File uploaded successfully:", uploadedFile.getName());
+    console.log("File ID:", uploadedFile.getId());
+    console.log("File URL:", uploadedFile.getUrl());
+    
+    // Log the upload
+    try {
+      logCLUPAction(lgu, province, "UPLOAD", "SUCCESS", 
+        `Uploaded ${fileName} (${docType}) to ${targetFolder.getName()}`);
+    } catch (logError) {
+      console.log("Log error:", logError);
+    }
+    
+    // Return success response
+    const response = {
+      success: true,
+      message: "File uploaded successfully",
+      fileId: uploadedFile.getId(),
+      fileLink: uploadedFile.getUrl(),
+      fileName: uploadedFile.getName(),
+      folderId: targetFolder.getId(),
+      folderName: targetFolder.getName()
+    };
+    
+    console.log("Response:", JSON.stringify(response));
+    
+    return ContentService
+      .createTextOutput(JSON.stringify(response))
+      .setMimeType(ContentService.MimeType.JSON);
+    
+  } catch (error) {
+    console.error("Upload error:", error);
+    return ContentService
+      .createTextOutput(JSON.stringify({ success: false, error: error.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+// ==================== FOLDER CREATION ====================
+
+function createFolderIfNotExists(folderName, parentFolderId) {
+  try {
+    console.log("Creating folder:", folderName);
+    
+    // Use the specific folder ID provided
+    const parentFolder = DriveApp.getFolderById(parentFolderId);
+    
+    // Check if folder already exists inside this parent
+    const folders = parentFolder.getFoldersByName(folderName);
+    if (folders.hasNext()) {
+      const existingFolder = folders.next();
+      const response = { 
+        success: true, 
+        folderId: existingFolder.getId(),
+        folderName: folderName,
+        exists: true
+      };
+      console.log("Folder already exists:", response);
+      return response;
+    }
+    
+    // Create new folder inside the parent
+    const newFolder = parentFolder.createFolder(folderName);
+    const response = {
+      success: true,
+      folderId: newFolder.getId(),
+      folderName: folderName,
+      exists: false
+    };
+    console.log("Folder created:", response);
+    return response;
+    
+  } catch (error) {
+    console.error("Error creating folder:", error);
+    return {
+      success: false,
+      error: "Error accessing folder: " + error.toString()
+    };
+  }
+}
+
+// ==================== CLUP RECORD FUNCTIONS ====================
+
+function getAllCLUPRecords() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let sheet = ss.getSheetByName(SHEETS.CLUP_RECORDS);
+    
+    if (!sheet) {
+      console.log("CLUP_Records sheet not found");
+      return { success: true, data: [], message: "No records found" };
+    }
+    
+    const data = sheet.getDataRange().getValues();
+    if (data.length < 2) {
+      return { success: true, data: [], message: "No records found" };
+    }
+    
+    const headers = data[0];
+    const records = [];
+    
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      let isEmpty = true;
+      
+      for (let j = 0; j < row.length; j++) {
+        if (row[j] && row[j].toString().trim() !== "") {
+          isEmpty = false;
+          break;
+        }
+      }
+      if (isEmpty) continue;
+      
+      const record = {};
+      for (let j = 0; j < headers.length && j < row.length; j++) {
+        if (headers[j]) {
+          let value = row[j];
+          if (typeof value === 'string' && (value.startsWith('{') || value.startsWith('['))) {
+            try {
+              value = JSON.parse(value);
+            } catch(e) {}
+          }
+          record[headers[j]] = value;
+        }
+      }
+      records.push(record);
+    }
+    
+    return { success: true, data: records, count: records.length };
+  } catch (error) {
+    console.error("Error in getAllCLUPRecords:", error);
+    return { success: false, error: error.toString() };
+  }
+}
+
+function getCLUPRecordByLGU(lguName, province) {
+  try {
+    const allRecords = getAllCLUPRecords();
+    if (!allRecords.success) return allRecords;
+    
+    const records = allRecords.data.filter(record => 
+      record["LGU Name"] === lguName && 
+      (!province || record["Province"] === province)
+    );
+    
+    return { 
+      success: true, 
+      data: records,
+      count: records.length,
+      lgu: lguName,
+      province: province
+    };
+  } catch (error) {
+    console.error("Error in getCLUPRecordByLGU:", error);
+    return { success: false, error: error.toString() };
+  }
+}
+
+function getCLUPRecordById(recordId) {
+  try {
+    const allRecords = getAllCLUPRecords();
+    if (!allRecords.success) return allRecords;
+    
+    const record = allRecords.data.find(record => 
+      record["Record ID"] && record["Record ID"].toString() === recordId.toString()
+    );
+    
+    return { 
+      success: true, 
+      data: record || null,
+      found: !!record
+    };
+  } catch (error) {
+    console.error("Error in getCLUPRecordById:", error);
+    return { success: false, error: error.toString() };
+  }
+}
+
+function saveCLUPRecord(record) {
+  try {
+    console.log("saveCLUPRecord called with:", JSON.stringify(record));
+    
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let sheet = ss.getSheetByName(SHEETS.CLUP_RECORDS);
+    
+    if (!sheet) {
+      console.log("Creating CLUP_Records sheet");
+      sheet = ss.insertSheet(SHEETS.CLUP_RECORDS);
+      sheet.getRange(1, 1, 1, CLUP_COLUMNS.length).setValues([CLUP_COLUMNS]);
+      sheet.getRange(1, 1, 1, CLUP_COLUMNS.length).setFontWeight("bold").setBackground("#166953").setFontColor("#ffffff");
+      sheet.setFrozenRows(1);
+      sheet.setColumnWidths(1, CLUP_COLUMNS.length, 150);
+      applyDataValidation(sheet);
+    }
+    
+    const rowData = [];
+    for (let i = 0; i < CLUP_COLUMNS.length; i++) {
+      const column = CLUP_COLUMNS[i];
+      let value = record[column];
+      
+      if (typeof value === 'object' && value !== null) {
+        value = JSON.stringify(value);
+      }
+      
+      if (value === undefined || value === null) {
+        rowData.push("");
+      } else {
+        rowData.push(value.toString());
+      }
+    }
+    
+    const existingData = sheet.getDataRange().getValues();
+    let rowToUpdate = -1;
+    
+    if (existingData.length > 1) {
+      for (let i = 1; i < existingData.length; i++) {
+        const existingId = existingData[i][0];
+        const currentId = record["Record ID"];
+        if (currentId && existingId && existingId.toString() === currentId.toString()) {
+          rowToUpdate = i + 1;
+          break;
+        }
+      }
+    }
+    
+    let action;
+    if (rowToUpdate !== -1) {
+      sheet.getRange(rowToUpdate, 1, 1, rowData.length).setValues([rowData]);
+      action = "UPDATED";
+      console.log("Updated record at row:", rowToUpdate);
+    } else {
+      sheet.appendRow(rowData);
+      action = "INSERTED";
+      rowToUpdate = sheet.getLastRow();
+      console.log("Inserted new record at row:", rowToUpdate);
+    }
+    
+    logCLUPAction(
+      record["LGU Name"] || "Unknown",
+      record["Province"] || "Unknown",
+      action,
+      "SUCCESS",
+      `Record ${action} for ${record["LGU Name"]}`
+    );
+    
+    updateCLUPStatistics();
+    
+    return { 
+      success: true, 
+      message: `Record ${action.toLowerCase()} successfully`,
+      action: action,
+      id: record["Record ID"],
+      row: rowToUpdate
+    };
+    
+  } catch (error) {
+    console.error("Error in saveCLUPRecord:", error);
+    if (record) {
+      logCLUPAction(
+        record["LGU Name"] || "Unknown",
+        record["Province"] || "Unknown",
+        "SAVE_FAILED",
+        "ERROR",
+        error.toString()
+      );
+    }
+    return { success: false, error: error.toString() };
+  }
+}
+
+function deleteCLUPRecord(recordId) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(SHEETS.CLUP_RECORDS);
+    
+    if (!sheet) {
+      return { success: false, error: "Sheet not found" };
+    }
+    
+    const data = sheet.getDataRange().getValues();
+    let rowToDelete = -1;
+    let deletedRecord = null;
+    
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      if (row[0] && row[0].toString() === recordId.toString()) {
+        rowToDelete = i + 1;
+        deletedRecord = {
+          lgu: row[2],
+          province: row[3]
+        };
+        break;
+      }
+    }
+    
+    if (rowToDelete === -1) {
+      return { success: false, error: "Record not found with ID: " + recordId };
+    }
+    
+    sheet.deleteRow(rowToDelete);
+    
+    if (deletedRecord) {
+      logCLUPAction(
+        deletedRecord.lgu || "Unknown",
+        deletedRecord.province || "Unknown",
+        "DELETED",
+        "SUCCESS",
+        `Record ${recordId} deleted`
+      );
+    }
+    
+    updateCLUPStatistics();
+    
+    return { success: true, message: "Record deleted", id: recordId };
+    
+  } catch (error) {
+    console.error("Error in deleteCLUPRecord:", error);
+    return { success: false, error: error.toString() };
+  }
+}
+
+function deleteCLUPRecordByLGU(lguName, province) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(SHEETS.CLUP_RECORDS);
+    
+    if (!sheet) {
+      return { success: false, error: "Sheet not found" };
+    }
+    
+    const data = sheet.getDataRange().getValues();
+    let rowsToDelete = [];
+    
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      const rowLGU = row[2];
+      const rowProvince = row[3];
+      
+      if (rowLGU === lguName && rowProvince === province) {
+        rowsToDelete.push(i + 1);
+      }
+    }
+    
+    if (rowsToDelete.length === 0) {
+      return { success: false, error: "No records found for LGU: " + lguName };
+    }
+    
+    for (let i = rowsToDelete.length - 1; i >= 0; i--) {
+      sheet.deleteRow(rowsToDelete[i]);
+    }
+    
+    logCLUPAction(
+      lguName,
+      province,
+      "DELETED",
+      "SUCCESS",
+      `${rowsToDelete.length} record(s) deleted for ${lguName}`
+    );
+    
+    updateCLUPStatistics();
+    
+    return { success: true, message: `${rowsToDelete.length} record(s) deleted`, count: rowsToDelete.length };
+    
+  } catch (error) {
+    console.error("Error in deleteCLUPRecordByLGU:", error);
+    return { success: false, error: error.toString() };
+  }
+}
+
+// ==================== STATISTICS FUNCTIONS ====================
+
+function getCLUPStatistics() {
+  try {
+    const allRecords = getAllCLUPRecords();
+    if (!allRecords.success || !allRecords.data) {
+      return { success: false, error: "Unable to fetch records" };
+    }
+    
+    const records = allRecords.data;
+    const stats = {
+      totalRecords: records.length,
+      byCLUPStatus: {},
+      byLGUType: {},
+      byProvince: {},
+      byRAStatus: {},
+      phaseProgress: {
+        "Preparatory Phase": 0,
+        "Phase 1": 0,
+        "Phase 2": 0,
+        "Phase 3": 0,
+        "Phase 4": 0,
+        "Phase 5": 0
+      },
+      lastUpdated: new Date().toISOString()
+    };
+    
+    for (let i = 0; i < records.length; i++) {
+      const record = records[i];
+      
+      const clupStatus = record["CLUP Status"];
+      if (clupStatus) {
+        stats.byCLUPStatus[clupStatus] = (stats.byCLUPStatus[clupStatus] || 0) + 1;
+      }
+      
+      const lguType = record["LGU Type"];
+      if (lguType) {
+        stats.byLGUType[lguType] = (stats.byLGUType[lguType] || 0) + 1;
+      }
+      
+      const province = record["Province"];
+      if (province) {
+        stats.byProvince[province] = (stats.byProvince[province] || 0) + 1;
+      }
+      
+      const raStatus = record["RA Code"];
+      if (raStatus) {
+        stats.byRAStatus[raStatus] = (stats.byRAStatus[raStatus] || 0) + 1;
+      }
+      
+      const phases = [
+        { key: "Preparatory Phase Status", name: "Preparatory Phase" },
+        { key: "Phase 1 Status", name: "Phase 1" },
+        { key: "Phase 2 Status", name: "Phase 2" },
+        { key: "Phase 3 Status", name: "Phase 3" },
+        { key: "Phase 4 Status", name: "Phase 4" },
+        { key: "Phase 5 Status", name: "Phase 5" }
+      ];
+      
+      for (let j = 0; j < phases.length; j++) {
+        const status = record[phases[j].key];
+        if (status === "Completed") {
+          stats.phaseProgress[phases[j].name] = (stats.phaseProgress[phases[j].name] || 0) + 1;
+        }
+      }
+    }
+    
+    return { success: true, data: stats };
+    
+  } catch (error) {
+    console.error("Error in getCLUPStatistics:", error);
+    return { success: false, error: error.toString() };
+  }
+}
+
+function updateCLUPStatistics() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let statsSheet = ss.getSheetByName(SHEETS.CLUP_STATS);
+    
+    if (!statsSheet) {
+      statsSheet = ss.insertSheet(SHEETS.CLUP_STATS);
+      statsSheet.getRange(1, 1, 1, 4).setValues([["Metric", "Value", "Last Updated", "Notes"]]);
+      statsSheet.getRange(1, 1, 1, 4).setFontWeight("bold");
+    }
+    
+    const stats = getCLUPStatistics();
+    if (!stats.success) return;
+    
+    const now = new Date().toISOString();
+    const statsData = [
+      ["Total LGUs", stats.data.totalRecords, now, "Total number of LGUs with CLUP records"],
+      ["Updated CLUPs", stats.data.byCLUPStatus["Updated"] || 0, now, "LGUs with updated CLUP"],
+      ["For Updating", stats.data.byCLUPStatus["For updating"] || 0, now, "LGUs needing CLUP update"],
+      ["No CLUP", stats.data.byCLUPStatus["No CLUP"] || 0, now, "LGUs without CLUP"],
+      ["Cities", stats.data.byLGUType["City"] || 0, now, "City LGUs"],
+      ["Municipalities", stats.data.byLGUType["Municipality"] || 0, now, "Municipality LGUs"]
+    ];
+    
+    if (statsSheet.getLastRow() > 1) {
+      statsSheet.getRange(2, 1, statsData.length, 4).setValues(statsData);
+    } else {
+      statsSheet.getRange(2, 1, statsData.length, 4).setValues(statsData);
+    }
+    
+  } catch (error) {
+    console.error("Error updating statistics:", error);
+  }
+}
+
+// ==================== LOGGING FUNCTIONS ====================
+
+function logCLUPAction(lgu, province, action, status, message) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let logSheet = ss.getSheetByName(SHEETS.CLUP_SYNC_LOG);
+    
+    if (!logSheet) {
+      logSheet = ss.insertSheet(SHEETS.CLUP_SYNC_LOG);
+      logSheet.getRange(1, 1, 1, 7).setValues([["Timestamp", "LGU", "Province", "Action", "Status", "Message", "Source"]]);
+      logSheet.getRange(1, 1, 1, 7).setFontWeight("bold").setBackground("#4a5568").setFontColor("#ffffff");
+      logSheet.setFrozenRows(1);
+    }
+    
+    const now = new Date();
+    const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+    
+    logSheet.appendRow([
+      timestamp,
+      lgu,
+      province,
+      action,
+      status,
+      message,
+      "Web App"
+    ]);
+    
+  } catch (error) {
+    console.error("Failed to log action:", error);
+  }
+}
+
+// ==================== DATA VALIDATION ====================
+
+function applyDataValidation(sheet) {
+  try {
+    const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    
+    const clupStatusCol = headers.indexOf("CLUP Status") + 1;
+    const raCodeCol = headers.indexOf("RA Code") + 1;
+    const phaseCols = [
+      "Preparatory Phase Status",
+      "Phase 1 Status",
+      "Phase 2 Status",
+      "Phase 3 Status",
+      "Phase 4 Status",
+      "Phase 5 Status"
+    ];
+    
+    if (clupStatusCol > 0) {
+      const rule = SpreadsheetApp.newDataValidation()
+        .requireValueInList(["Updated", "For updating", "No CLUP"])
+        .setAllowInvalid(false)
+        .build();
+      sheet.getRange(2, clupStatusCol, 1000, 1).setDataValidation(rule);
+    }
+    
+    if (raCodeCol > 0) {
+      const raOptions = [
+        "RA 1 – Transmitted",
+        "RA 2 – Under review",
+        "RA 3 – Under revision",
+        "RA 4 – Returned for final review",
+        "RA 5 – Endorsed for adoption",
+        "RA 6 – Adopted & enacted",
+        "RA 7 – For DHSUD approval"
+      ];
+      const rule = SpreadsheetApp.newDataValidation()
+        .requireValueInList(raOptions)
+        .setAllowInvalid(false)
+        .build();
+      sheet.getRange(2, raCodeCol, 1000, 1).setDataValidation(rule);
+    }
+    
+    for (let i = 0; i < phaseCols.length; i++) {
+      const colIndex = headers.indexOf(phaseCols[i]) + 1;
+      if (colIndex > 0) {
+        const rule = SpreadsheetApp.newDataValidation()
+          .requireValueInList(["Not Started", "Ongoing", "Completed"])
+          .setAllowInvalid(false)
+          .build();
+        sheet.getRange(2, colIndex, 1000, 1).setDataValidation(rule);
+      }
+    }
+    
+  } catch (error) {
+    console.error("Error applying data validation:", error);
+  }
+}
+
+// ==================== SETUP FUNCTION ====================
+
+function setupCLUPSheets() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    
+    let existingSheet = ss.getSheetByName(SHEETS.CLUP_RECORDS);
+    if (existingSheet) {
+      ss.deleteSheet(existingSheet);
+      console.log("Deleted existing CLUP_Records sheet");
+    }
+    
+    let clupSheet = ss.insertSheet(SHEETS.CLUP_RECORDS);
+    clupSheet.getRange(1, 1, 1, CLUP_COLUMNS.length).setValues([CLUP_COLUMNS]);
+    clupSheet.getRange(1, 1, 1, CLUP_COLUMNS.length).setFontWeight("bold").setBackground("#166953").setFontColor("#ffffff");
+    clupSheet.setFrozenRows(1);
+    clupSheet.setColumnWidths(1, CLUP_COLUMNS.length, 150);
+    applyDataValidation(clupSheet);
+    console.log("Created CLUP_Records sheet with all LGU fields");
+    
+    let logSheet = ss.getSheetByName(SHEETS.CLUP_SYNC_LOG);
+    if (!logSheet) {
+      logSheet = ss.insertSheet(SHEETS.CLUP_SYNC_LOG);
+      logSheet.getRange(1, 1, 1, 7).setValues([["Timestamp", "LGU", "Province", "Action", "Status", "Message", "Source"]]);
+      logSheet.getRange(1, 1, 1, 7).setFontWeight("bold").setBackground("#4a5568").setFontColor("#ffffff");
+      logSheet.setFrozenRows(1);
+      console.log("Created CLUP_Sync_Log sheet");
+    }
+    
+    let statsSheet = ss.getSheetByName(SHEETS.CLUP_STATS);
+    if (!statsSheet) {
+      statsSheet = ss.insertSheet(SHEETS.CLUP_STATS);
+      statsSheet.getRange(1, 1, 1, 4).setValues([["Metric", "Value", "Last Updated", "Notes"]]);
+      statsSheet.getRange(1, 1, 1, 4).setFontWeight("bold").setBackground("#0f5a46").setFontColor("#ffffff");
+      statsSheet.setFrozenRows(1);
+      console.log("Created CLUP_Statistics sheet");
+    }
+    
+    updateCLUPStatistics();
+    
+    return { success: true, message: "CLUP sheets setup complete!" };
+    
+  } catch (error) {
+    console.error("Error in setupCLUPSheets:", error);
+    return { success: false, error: error.toString() };
+  }
+}
+
+// ==================== TEST FUNCTION ====================
+
+function testConnection() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const stats = getCLUPStatistics();
+    
+    return {
+      success: true,
+      message: "CLUP API connection successful",
+      spreadsheetId: ss.getId(),
+      spreadsheetName: ss.getName(),
+      sheets: {
+        records: !!ss.getSheetByName(SHEETS.CLUP_RECORDS),
+        logs: !!ss.getSheetByName(SHEETS.CLUP_SYNC_LOG),
+        stats: !!ss.getSheetByName(SHEETS.CLUP_STATS)
+      },
+      totalRecords: stats.success ? stats.data.totalRecords : 0,
+      lastSync: new Date().toISOString()
+    };
+    
+  } catch (error) {
+    console.error("Error in testConnection:", error);
+    return {
+      success: false,
+      message: "Connection failed",
+      error: error.toString()
+    };
+  }
+}
+
+function requestPermissions() {
+  // This simple function will trigger Drive permissions
+  try {
+    DriveApp.getRootFolder();
+    SpreadsheetApp.getActiveSpreadsheet();
+    console.log("Permissions granted successfully!");
+  } catch (error) {
+    console.log("Error:", error);
+  }
+}
