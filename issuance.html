@@ -192,8 +192,19 @@ header {
     border: 1px solid #eef2ff;
     padding: 0.3rem 0;
 }
+
 /* ADD THIS - Show dropdown on hover */
 .dropdown:hover .dropdown-content {
+    display: block;
+}
+
+/* Show submenu on hover */
+.dropdown-submenu:hover .submenu-content {
+    display: block;
+}
+
+/* Show dropdown when open class is added */
+.dropdown.open .dropdown-content {
     display: block;
 }
 .dropdown-content a {
@@ -205,9 +216,6 @@ header {
 }
 .dropdown-content a:hover {
     background: #eff6ff;
-}
-.dropdown.open .dropdown-content {
-    display: block;
 }
 .dropdown-submenu {
     position: relative;
@@ -247,8 +255,8 @@ header {
     z-index: 1001;
     padding: 0.3rem 0;
 }
-/* ADD THIS - Show submenu on hover */
-.dropdown-submenu:hover .submenu-content {
+/* Show submenu when open class is added */
+.dropdown-submenu.open .submenu-content {
     display: block;
 }
 .submenu-content a {
@@ -607,12 +615,18 @@ footer {
         grid-template-columns: 1fr;
     }
 }
-/* ADD THIS - Dropdown arrow indicator */
+/* Dropdown arrow indicator */
 .dropbtn::after {
     content: " ▾";
     font-size: 0.7rem;
     opacity: 0.6;
 }
+.dropbtn::after {
+    content: " ▾";
+    font-size: 0.7rem;
+    opacity: 0.6;
+}
+
 .dropdown:hover .dropbtn::after {
     content: " ▾";
     opacity: 1;
@@ -635,7 +649,35 @@ footer {
     </div>
     <div class="nav-bottom">
       <div class="container" style="max-width: 1400px; margin: 0 auto; padding: 0 24px;">
-        <div class="main-nav-links" id="mainNavContainer"></div>
+        <div class="main-nav-links" id="mainNavContainer">
+          <a href="index.html">Home</a>
+          <div class="dropdown" id="certDropdown">
+            <button class="dropbtn" id="certBtn">Certification</button>
+            <div class="dropdown-content">
+              <a href="lc.html">Locational Clearance</a>
+              <a href="SZC.html">Site Zoning Clarification</a>
+            </div>
+          </div>
+          <div class="dropdown" id="landUseDropdown">
+            <button class="dropbtn" id="landUseBtn">Land Use Plans</button>
+            <div class="dropdown-content">
+              <div class="dropdown-submenu" id="clupSubmenu">
+                <button class="submenu-trigger">CLUP & ZO <span class="arrow-right">▸</span></button>
+                <div class="submenu-content">
+                  <a href="inventory.html">Inventory</a>
+                  <a href="status.html">Status</a>
+                </div>
+              </div>
+              <a href="status.html">PDPFP</a>
+            </div>
+          </div>
+          <a href="lgu-info.html">LGU Information</a>
+          <a href="report.html">Reports</a>
+          <a href="calendar.html">Calendar of Activities</a>
+          <a href="issuance.html" style="color:#000000;">Issuances</a>
+          <a href="#about">About</a>
+          <a href="#contact">Contact</a>
+        </div>
       </div>
     </div>
   </header>
@@ -724,33 +766,6 @@ footer {
     function getRoleLabel(r) { if(r==="admin") return "👑 Admin"; if(r==="encoder"||r==="staff") return "📋 Staff/Officer"; return "👁️ Viewer"; }
     function getRoleClass(r) { if(r==="admin") return "admin"; if(r==="encoder"||r==="staff") return "staff"; return "viewer"; }
     
-    function renderMainNavigation() {
-    const container = document.getElementById("mainNavContainer");
-    if (!container) return;
-    let navHtml = `<a href="index.html">Home</a>`;
-    if (currentUser) {
-        navHtml += `<div class="dropdown" id="certDropdown"><button class="dropbtn">Certification</button><div class="dropdown-content"><a href="lc.html">Locational Clearance</a><a href="SZC.html">Site Zoning Clarification</a></div></div>
-          <div class="dropdown" id="landUseDropdown"><button class="dropbtn">Land Use Plans</button><div class="dropdown-content"><div class="dropdown-submenu" id="clupSubmenu"><button class="submenu-trigger">CLUP & ZO <span class="arrow-right">▸</span></button><div class="submenu-content"><a href="inventory.html">Inventory</a><a href="status.html">Status</a></div></div><a href="status.html">PDPFP</a></div></div>
-          <a href="lgu-info.html">LGU Information</a><a href="report.html">Reports</a><a href="calendar.html">Calendar of Activities</a><a href="issuance.html">Issuances</a><a href="#about">About</a><a href="#contact">Contact</a>`;
-    } else { navHtml += `<a href="#about">About</a><a href="#contact">Contact</a>`; }
-    container.innerHTML = navHtml;
-    // Keep click functionality for submenu items if needed
-    setTimeout(() => {
-        document.querySelectorAll(".dropdown-submenu .submenu-trigger").forEach((trigger) => {
-            trigger.addEventListener("click", (e) => {
-                e.stopPropagation();
-                const submenu = trigger.closest(".dropdown-submenu");
-                if (submenu) submenu.classList.toggle("open");
-            });
-        });
-        document.addEventListener("click", function (e) {
-            if (!e.target.closest(".dropdown-submenu")) {
-                document.querySelectorAll(".dropdown-submenu.open").forEach((s) => s.classList.remove("open"));
-            }
-        });
-    }, 10);
-}
-    
     function renderUserMenu() {
       const container = document.getElementById("userMenuContainer"); if(!container) return;
       if (currentUser) {
@@ -770,7 +785,7 @@ footer {
         if(logoutBtn) logoutBtn.addEventListener("click", () => { 
           localStorage.removeItem("dhsud_session"); 
           showToastMessage("Logged out successfully.", "info"); 
-          setTimeout(() => window.location.href = "login.html", 700); 
+          setTimeout(() => window.location.reload(), 700); 
         });
       } else {
         container.innerHTML = `<div class="login-prompt" onclick="openLoginModal()">🔐 Sign In</div>`;
@@ -804,11 +819,133 @@ footer {
       return false;
     }
     
-    // Documents array (abbreviated for brevity - full array from original)
+    // Function to close all dropdowns (click-based)
+    function closeAllDropdowns() {
+      document.querySelectorAll('.dropdown').forEach(drop => drop.classList.remove('open'));
+      document.querySelectorAll('.dropdown-submenu').forEach(sub => sub.classList.remove('open'));
+    }
+
+    // Initialize click AND hover dropdowns
+function initClickDropdowns() {
+    const certDropdown = document.getElementById('certDropdown');
+    const landUseDropdown = document.getElementById('landUseDropdown');
+    const certBtn = document.getElementById('certBtn');
+    const landUseBtn = document.getElementById('landUseBtn');
+    const clupSubmenu = document.getElementById('clupSubmenu');
+
+    // Click functionality for Certification dropdown
+    if (certBtn && certDropdown) {
+        certBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            // Close other dropdowns
+            if (landUseDropdown) landUseDropdown.classList.remove('open');
+            certDropdown.classList.toggle('open');
+        });
+    }
+
+    // Click functionality for Land Use Plans dropdown
+    if (landUseBtn && landUseDropdown) {
+        landUseBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            // Close other dropdowns
+            if (certDropdown) certDropdown.classList.remove('open');
+            landUseDropdown.classList.toggle('open');
+        });
+    }
+
+    // Click functionality for submenu
+    if (clupSubmenu) {
+        const subTrigger = clupSubmenu.querySelector('.submenu-trigger');
+        if (subTrigger) {
+            subTrigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.querySelectorAll('.dropdown-submenu').forEach(sub => {
+                    if (sub !== clupSubmenu) sub.classList.remove('open');
+                });
+                clupSubmenu.classList.toggle('open');
+            });
+        }
+    }
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.dropdown') && !e.target.closest('.dropdown-submenu')) {
+            document.querySelectorAll('.dropdown').forEach(drop => drop.classList.remove('open'));
+            document.querySelectorAll('.dropdown-submenu').forEach(sub => sub.classList.remove('open'));
+        }
+    });
+}
+
+    // Documents array (full from issuance.html)
     const documents = [
-      { id: 1, title: "Harmonized EP-CDRA Revised Digital Template", category: "Template", sub: "CLUP Template", description: "Digital template for Enhanced Plan - Climate & Disaster Risk Assessment (EP-CDRA) – required for risk-informed land use plans.", refNumber: "v.100125", year: "2025", tags: ["cdra","template"], docUrl: "https://docs.google.com/document/d/1gMW_0EQDapi6KocdoEjPaAaAzgkngrXD/edit?usp=drive_link" },
-      { id: 2, title: "CLUP Digital Template (Full Volume)", category: "Template", sub: "CLUP Template", description: "Standard digital CLUP template with sectoral chapters, land use map integration, and zoning matrix.", refNumber: "CLUP-DT-100625", year: "2025", tags: ["clup","digital"], docUrl: "https://docs.google.com/document/d/113r6EythhDYjF2wV3rfsKE2cO1SJS3Kx/edit?usp=drive_link" },
-      { id: 3, title: "Zoning Ordinance Digital Template", category: "Template", sub: "ZO Template", description: "Model Zoning Ordinance template containing zoning districts, use regulations, and permit processes.", refNumber: "ZO-TMP-031025", year: "2025", tags: ["zoning","ordinance"], docUrl: "https://docs.google.com/document/d/1wgbJgHyy4lKKbBRF09Yx5qoIr78192Md/edit?usp=drive_link" }
+      { id: 1, title: "Harmonized EP-CDRA Revised Digital Template", category: "Template", sub: "CLUP Template", description: "Digital template for Enhanced Plan - Climate & Disaster Risk Assessment (EP-CDRA) – required for risk-informed land use plans.", refNumber: "v.100125", year: "2025", tags: ["cdra","template"], docUrl: "https://docs.google.com/document/d/1gMW_0EQDapi6KocdoEjPaAaAzgkngrXD/edit?usp=drive_link&ouid=113490008011186302290&rtpof=true&sd=true" },
+      { id: 2, title: "CLUP Digital Template (Full Volume)", category: "Template", sub: "CLUP Template", description: "Standard digital CLUP template with sectoral chapters, land use map integration, and zoning matrix.", refNumber: "CLUP-DT-100625", year: "2025", tags: ["clup","digital"], docUrl: "https://docs.google.com/document/d/113r6EythhDYjF2wV3rfsKE2cO1SJS3Kx/edit?usp=drive_link&ouid=113490008011186302290&rtpof=true&sd=true" },
+      { id: 3, title: "Zoning Ordinance Digital Template", category: "Template", sub: "ZO Template", description: "Model Zoning Ordinance template containing zoning districts, use regulations, and permit processes.", refNumber: "ZO-TMP-031025", year: "2025", tags: ["zoning","ordinance"], docUrl: "https://docs.google.com/document/d/1wgbJgHyy4lKKbBRF09Yx5qoIr78192Md/edit?usp=drive_link&ouid=113490008011186302290&rtpof=true&sd=true" },
+      { id: 4, title: "EP-CDRA Data Requirements Checklist", category: "Template", sub: "Data Tool", description: "Excel-based data inventory for CDRA inputs: hazard exposure, vulnerability, and risk assessment.", refNumber: "EPCDRA-DATA", year: "2025", tags: ["cdra","data"], docUrl: "https://docs.google.com/spreadsheets/d/12misVAocQ4HJTIeuwQevCFw4RVh9n5OC/edit?usp=drive_link&ouid=113490008011186302290&rtpof=true&sd=true" },
+      { id: 5, title: "Checklist for CLUP Review", category: "Template", sub: "Checklist", description: "Official review checklist for CLUP compliance (parameters, sections, legal basis alignment).", refNumber: "CLUP-CHK-REV", year: "2022", tags: ["checklist","review"], docUrl: "https://drive.google.com/file/d/1-j2bRTL-2hT3bZ0i-sUnI9LtP28US77v/view?usp=drive_link" },
+      { id: 6, title: "Checklist for CLUP Ratification", category: "Template", sub: "Checklist", description: "Procedural requirements for CLUP ratification by Sanggunian and submission.", refNumber: "RAT-CHECK", year: "2022", tags: ["ratification"], docUrl: "https://drive.google.com/file/d/1ShwMNOgVoK0-4dn1CiSkWJWs7s60uQnK/view?usp=drive_link" },
+      { id: 7, title: "Checklist for CLUP Amendments (Reclassification/Rezoning)", category: "Template", sub: "Checklist", description: "Application requirements for land reclassification and spot zoning amendments.", refNumber: "AMEND-CHECK", year: "2023", tags: ["amendment","reclassification"], docUrl: "https://drive.google.com/file/d/12eFu2Bkl40_pLG6AS-usSxhk0-P4fmR-/view?usp=drive_link" },
+      { id: 8, title: "Checklist for PDPFP Review", category: "Template", sub: "Checklist", description: "Provincial Development & Physical Framework Plan review checklist.", refNumber: "PDPFP-CHECK", year: "2023", tags: ["pdpfp"], docUrl: "https://drive.google.com/file/d/1aWegFnPpdjlQQuLgQKxqXWNsWpWPz0Ru/view?usp=drive_link" },
+      { id: 9, title: "Site Zoning Certification Form", category: "Template", sub: "Form", description: "Official request form for Site Zoning Certification issued by planning office.", refNumber: "SZC-FORM", year: "2021", tags: ["zc","certificate"], docUrl: "https://drive.google.com/file/d/1wBS1HUG9XG5mtIYEpgSSHJ8GsXS1B7u8/view?usp=drive_link" },
+      { id: 10, title: "Locational Clearance - Base Station/Wireless Infrastructure", category: "Template", sub: "Form", description: "Application form for telecommunication tower and wireless facility locational clearance.", refNumber: "LC-WIRELESS", year: "2021", tags: ["telco","clearance"], docUrl: "https://drive.google.com/file/d/18ME_kxyPyFD8kVffw2pyxu4SUuiWRGFw/view?usp=sharing" },
+      { id: 11, title: "HLURB Guidebook Vol. 1: CLUP Planning Process", category: "Guideline", sub: "CLUP Process", description: "Step-by-step process for CLUP preparation, stakeholder engagement, and situational analysis.", refNumber: "HLURB-Vol1", year: "2018", tags: ["process","guidebook"], docUrl: "https://drive.google.com/file/d/1G6pBpzGrS9g2hbOlPFDH51xjlm79sh3B/view" },
+      { id: 12, title: "HLURB Guidebook Vol. 2: Sectoral Analysis & Tools", category: "Guideline", sub: "Sectoral", description: "Sectoral studies (economic, demographic, infra) and special area studies tools.", refNumber: "HLURB-Vol2", year: "2018", tags: ["sectoral","tools"], docUrl: "https://drive.google.com/file/d/1CQ165vb8Y-EvDnZDososyrQVnuATo3ID/view" },
+      { id: 13, title: "HLURB Guidebook Vol. 3: Model Zoning Ordinance", category: "Guideline", sub: "ZO Model", description: "Model zoning ordinance provisions, land use categories, and map integration.", refNumber: "HLURB-Vol3", year: "2018", tags: ["zo","model"], docUrl: "https://drive.google.com/file/d/1r4qigs72q3pYDDW1vgXNKUdTddo7KUJe/view" },
+      { id: 14, title: "Enhanced Housing Subsector Supplemental Guidebook", category: "Guideline", sub: "Housing", description: "Integration of Local Shelter Plan standards into CLUP housing subsector; includes working tables and computation templates.", refNumber: "DC 2024-011", year: "2024", tags: ["housing","shelter"], docUrl: "https://drive.google.com/drive/folders/1mkOZgMUkVBm0AvEDKSTjMbrAbjCm0u4o?usp=drive_link" },
+      { id: 15, title: "Enhanced Climate & Disaster Risk Assessment (CDRA) Workbook", category: "Guideline", sub: "CDRA", description: "Mainstreaming CDRA results into CLUP; zero backlog by 2028 directive. Parameters for risk-informed land use plans.", refNumber: "MC 2025-004", year: "2025", tags: ["cdra","disaster"], docUrl: "https://drive.google.com/drive/folders/1nMJQ6tRctN--h3ZH7FOv9e0g7meuqHMw?usp=drive_link" },
+      { id: 16, title: "Resilient Urban Design & Development Guidelines", category: "Guideline", sub: "Urban Design", description: "Strategies for climate-resilient urban form, inclusive public spaces, design guidelines for special area studies.", refNumber: "DC 2025-005", year: "2025", tags: ["resilience","design"], docUrl: "https://dhsud.gov.ph/wp-content/uploads/Publication/Guidebooks/Resilient%20Urban%20Design%20and%20Development%20Guidelines.pdf" },
+      { id: 17, title: "Guidelines on New Towns & Planned Unit Development (PUD)", category: "Guideline", sub: "PUD", description: "Planning standards for new towns, growth centers, and PUD design integration into CLUP.", refNumber: "DC 2025-015", year: "2025", tags: ["new towns","pud"], docUrl: "https://dhsud.gov.ph/wp-content/uploads/Publication/Guidebooks/Guidelines%20on%20New%20Towns%20and%20Planned%20Unit%20Development.pdf" },
+      { id: 18, title: "Open Space Development Guidelines (Green Green Green Program)", category: "Guideline", sub: "Open Space", description: "Design strategies for open space networks, inventory for CLUP, and LGSF-Green Green Green alignment.", refNumber: "DC 2025-016", year: "2025", tags: ["openspace","green"], docUrl: "https://dhsud.gov.ph/wp-content/uploads/Publication/Guidebooks//Open%20Space%20Development%20Guidelines.pdf" },
+      { id: 19, title: "Urban Planning & Design for Climate Resilience", category: "Guideline", sub: "Climate", description: "Urban planning strategies and design interventions for climate resilience in comprehensive plans.", refNumber: "MC 2021-001", year: "2021", tags: ["resilience","climate"], docUrl: "https://dhsud.gov.ph/wp-content/uploads/Publication/Guidebooks/Reference-Tool-on-Urban-Planning-and-Design-for-Climate-Resilience-for-LGUs-Planning-Actors-in-the-Philippines_readable.pdf" },
+      { id: 20, title: "Interim Guidelines for PDPFP Formulation (JMC 2023-001)", category: "Guideline", sub: "PDPFP", description: "Joint DHSUD-DepDEV-DILG guidelines for Provincial Development and Physical Framework Plans.", refNumber: "JMC 2023-001", year: "2023", tags: ["pdpfp","provincial"], docUrl: "https://drive.google.com/file/d/1DiMF1dJHcerphaksfSsVL4iTUnvG7XGx/view?usp=sharing" },
+      { id: 21, title: "Technical Guidance: CDRA for PDPFPs", category: "Guideline", sub: "PDPFP CDRA", description: "Climate and disaster risk assessment process for formulation/updating of Provincial Development Plans.", refNumber: "DC 2025-007", year: "2025", tags: ["pdpfp","cdra"], docUrl: "https://drive.google.com/file/d/1eSVJmzCwHCfYqyIIdhsT8sFctQWiQ9Sn/view" },
+      { id: 22, title: "CLUP Communication Plan (Mandatory Requirement)", category: "Guideline", sub: "Communication", description: "Prescribing submission of CLUP Communication Plan as approval requirement for CLUP.", refNumber: "DO 2024-002", year: "2024", tags: ["commplan","approval"], docUrl: "https://drive.google.com/file/d/1z7CKYxiBBU2QI-_sdq5KxSpm31zRC2sO/view?usp=drive_link" },
+      { id: 23, title: "RA 7160 - Local Government Code (Sec.20 Land Reclassification)", category: "Law", sub: "LGC", description: "Authority of cities/municipalities to reclassify agricultural lands subject to limits and DAR/DA clearances.", refNumber: "RA 7160", year: "1991", tags: ["lgc","reclassification"], docUrl: "https://www.officialgazette.gov.ph/1991/10/10/republic-act-no-7160/" },
+      { id: 24, title: "EO 72 (1993) - Preparation & Implementation of CLUPs", category: "Law", sub: "Executive Order", description: "Providing for preparation of CLUPs by LGUs pursuant to LGC and HLURB coordination.", refNumber: "EO 72", year: "1993", tags: ["clup","policy"], docUrl: "https://www.officialgazette.gov.ph/1993/02/26/executive-order-no-72-s-1993/" },
+      { id: 25, title: "PD 1096 - National Building Code of the Philippines", category: "Law", sub: "Building Code", description: "Primary building regulations with referral codes (Green Building Code).", refNumber: "PD 1096", year: "1977", tags: ["building","code"], docUrl: "https://dpwh.gov.ph/dpwh/sites/default/files/issuances/PD1096.pdf" },
+      { id: 26, title: "BP 220 - Economic & Socialized Housing Standards", category: "Law", sub: "Housing", description: "Rules and standards for economic and socialized housing projects, subdivision development.", refNumber: "BP 220", year: "1992", tags: ["housing","subdivision"], docUrl: "/docs/BP220_Housing_Standards.pdf" },
+      { id: 27, title: "BP 344 - Accessibility Law", category: "Law", sub: "Accessibility", description: "Mandating facilities for persons with disabilities in buildings, public utilities, and establishments.", refNumber: "BP 344", year: "1983", tags: ["pwd","accessibility"], docUrl: "https://www.ncda.gov.ph/disability-laws/batas-pambansa-bilang-344/" },
+      { id: 28, title: "RA 11201 - DHSUD Act", category: "Law", sub: "DHSUD", description: "Creating Department of Human Settlements and Urban Development, transferring HLURB functions.", refNumber: "RA 11201", year: "2019", tags: ["dhsud","mandate"], docUrl: "https://www.officialgazette.gov.ph/2019/02/14/republic-act-no-11201/" },
+      { id: 29, title: "RA 10121 - Philippine DRRM Act", category: "Law", sub: "DRRM", description: "Integration of disaster risk reduction in land use planning, zoning, and local development.", refNumber: "RA 10121", year: "2010", tags: ["drrm","hazard"], docUrl: "https://www.officialgazette.gov.ph/2010/05/27/republic-act-no-10121/" },
+      { id: 30, title: "RA 12289 - ARROW Act (Right-of-Way)", category: "Law", sub: "ROW", description: "Accelerated and Reformed Right-of-Way Act for infrastructure projects.", refNumber: "RA 12289", year: "2024", tags: ["row","expropriation"], docUrl: "/docs/RA12289_ARROW_Act.pdf" },
+      { id: 31, title: "E-NIPAS (RA 11038) - Protected Areas Management", category: "Law", sub: "Environment", description: "Amending NIPAS Act, declaring protected areas and management framework.", refNumber: "RA 11038", year: "2018", tags: ["nipas","protected"], docUrl: "https://www.officialgazette.gov.ph/2018/06/22/republic-act-no-11038/" },
+      { id: 32, title: "PD 856 - Sanitation Code", category: "Law", sub: "Health", description: "Code on sanitation requirements for establishments, water supply, waste management.", refNumber: "PD 856", year: "1975", tags: ["sanitation","health"], docUrl: "/docs/PD856_Sanitation_Code.pdf" },
+      { id: 33, title: "PD 957 - Subdivision & Condominium Buyers Protective Decree", category: "Law", sub: "Real Estate", description: "Regulating subdivision and condominium development, buyer protection.", refNumber: "PD 957", year: "1976", tags: ["subdivision","condo"], docUrl: "/docs/PD957_Subdivision_Decree.pdf" },
+      { id: 34, title: "MC 54 s.1993 - Agricultural Land Reclassification Guidelines", category: "Memorandum", sub: "Reclassification", description: "Prescribing guidelines for Section 20 of RA 7160, limits and procedure for land conversion.", refNumber: "MC 54 s.1993", year: "1993", tags: ["agri","conversion"], docUrl: "https://drive.google.com/file/d/1sc4Xlm0p2Z-aV7lsqAYzd4eCc2yh0Lun/view?usp=drive_link" },
+      { id: 35, title: "Joint HLRB-DAR-DA-DILG MC (Implementing MC 54)", category: "Memorandum", sub: "Reclassification", description: "Rules implementing the authority of LGUs to reclassify lands within prescribed limits.", refNumber: "JMC 1995", year: "1995", tags: ["reclassification","jmc"], docUrl: "https://drive.google.com/file/d/1Pw5-PzMUxuU9eV7TRuF7ddKgzB14tiHo/view?usp=drive_link" },
+      { id: 36, title: "DA MC 26 s.2022 - DA Certification for Land Reclassification", category: "Memorandum", sub: "Agriculture", description: "Issuance of DA certification pursuant to MC 54 and Joint Memorandum Circular.", refNumber: "DA MC 26-2022", year: "2022", tags: ["da","clearance"], docUrl: "https://drive.google.com/file/d/1lRVA8UIBuBhxEahADQ4OhLernhaMHhIn/view?usp=drive_link" },
+      { id: 37, title: "12-Year CLUP Planning Period (Standardization)", category: "Memorandum", sub: "Planning", description: "Adoption of standardized 12-year planning period for all CLUPs nationwide.", refNumber: "DC 2025-018", year: "2025", tags: ["period","standard"], docUrl: "https://drive.google.com/file/d/1iSbFeUGCNzYxUnZSxzAlmX-UgWm0za82/view?usp=sharing" },
+      { id: 38, title: "DHSUD MC 2021-005 - CLUP/ZO Review & Approval Process", category: "Memorandum", sub: "Approval Process", description: "Revised review timelines, Annexes: timelines for cities/municipalities and HUCs; Parameters for CLUP review.", refNumber: "MC 2021-005", year: "2021", tags: ["review","approval"], docUrl: "/docs/DHSUD_MC2021-005_Review_Approval.pdf" },
+      { id: 39, title: "DHSUD MC 2021-009 - PDPFP Review & Approval Process", category: "Memorandum", sub: "PDPFP", description: "Revised process for Provincial Physical Framework Plans (PDPFPs) of provinces.", refNumber: "MC 2021-009", year: "2021", tags: ["pdpfp","review"], docUrl: "/docs/DHSUD_MC2021-009_PDPFP_Review.pdf" },
+      { id: 40, title: "DO 2020-009 - Locational Guidelines for Telecom Base Stations", category: "Memorandum", sub: "Telecom", description: "Revised locational guidelines for cellular towers, wireless communication infrastructures.", refNumber: "DO 2020-009", year: "2020", tags: ["telco","tower"], docUrl: "https://drive.google.com/drive/folders/1GVcZusHnARFCKtb0VUbHAXayr4Ala3LG?usp=drive_link" },
+      { id: 41, title: "HLURB Resolution No. 925 S.2015 - Slaughterhouse/Abattoir Guidelines", category: "Memorandum", sub: "Livestock", description: "Amending guidelines for slaughterhouse locational clearance (national/local significance).", refNumber: "Res.925", year: "2015", tags: ["abattoir","slaughter"], docUrl: "https://drive.google.com/file/d/1ZenP7LXP5hwyQqe5JkdHaeo0kw2cEQ2O/view?usp=drive_link" },
+      { id: 42, title: "LTFRB MC 2017-030 - Off-Street Terminal Operations", category: "Memorandum", sub: "Transport", description: "Guidelines for transport terminals, off-street parking and terminal standards.", refNumber: "MC 2017-030", year: "2017", tags: ["terminal","transport"], docUrl: "https://drive.google.com/file/d/17ECfbpzFPHw7pWs7pRpkqFbbJ-0UKc2u/view?usp=drive_link" },
+      { id: 43, title: "DENR DAO 2021-07 - Legal Easements Along Seas, Rivers, Lakes, Esteros", category: "Development Control", sub: "Easement", description: "Establishment of legal easements, buffer zones along water bodies.", refNumber: "DAO 2021-07", year: "2021", tags: ["easement","buffer"], docUrl: "https://drive.google.com/drive/u/3/folders/1LcN9vY2ifGyxoNCi_bjenW6thZBcb40x" },
+      { id: 44, title: "EMB MC 2014-005 - EIS System Coverage & Requirements", category: "Development Control", sub: "EIA", description: "Screening and standardized requirements under Philippine Environmental Impact Statement System.", refNumber: "MC 2014-005", year: "2014", tags: ["eia","environment"], docUrl: "https://drive.google.com/file/d/1063AuhXTJ3DNomr553Axs6m1r58XulWZ/view?usp=drive_link" },
+      { id: 45, title: "BAI AO 04 s.2004 - Distance Between Poultry/Livestock Farms", category: "Development Control", sub: "Agriculture", description: "Regulating minimum distance between livestock and poultry farms.", refNumber: "BAI AO 04", year: "2004", tags: ["livestock","distance"], docUrl: "https://drive.google.com/drive/folders/1AwdYveEgZrrxfTxLmgePGqsgQmp_X7t4?usp=drive_link" },
+      { id: 46, title: "DENR AO 2004-59 - Special Uses of Forestlands", category: "Development Control", sub: "Forestry", description: "Rules governing special land use permits within forestlands.", refNumber: "DAO 2004-59", year: "2004", tags: ["forest","special use"], docUrl: "https://drive.google.com/file/d/18kbKBodt9n0InmDe3cV4YqOTw6zZBEDF/view?usp=drive_link" },
+      { id: 47, title: "DOE DC 2017-11-0011 - Liquid Fuels Retailing (TSRO)", category: "Development Control", sub: "Energy", description: "Rules for liquid fuels retail outlets, TSRO requirements.", refNumber: "DC 2017-11-0011", year: "2017", tags: ["fuel","retail"], docUrl: "/docs/DOE_DC2017-11-0011_Fuel_Retail.pdf" },
+      { id: 48, title: "DHSUD DC 2025-021 - Locational Clearance for Liquid Fuels & Auto-LPG Stations", category: "Development Control", sub: "Energy", description: "Processing of locational clearance for fuel stations and LPG dispensing.", refNumber: "DC 2025-021", year: "2025", tags: ["lpg","clearance"], docUrl: "https://drive.google.com/drive/folders/189FECA5RJyaywBEky09oMaRQ7ES8CDED?usp=drive_link" },
+      { id: 49, title: "CAAP Manual of Standards for Aerodromes", category: "Development Control", sub: "Aviation", description: "Design and safety standards for aerodromes, airport protection zones.", refNumber: "CAAP", year: "2020", tags: ["aerodrome","airport"], docUrl: "https://drive.google.com/file/d/15hMOechJb_lTKhf8dUEJSWC_StrvCBi_/view?usp=sharing" },
+      { id: 50, title: "Areas for Priority Development (APD) - Blighted/Vacant Lands", category: "Development Control", sub: "Urban Renewal", description: "Land use planning guidelines for APD: blighted areas, idle lands redevelopment.", refNumber: "APD Guidelines", year: "2015", tags: ["apd","blighted"], docUrl: "https://drive.google.com/drive/folders/1txzbmWozfctcTHux1pwvigU3SJkLpSKE?usp=drive_link" },
+      { id: 51, title: "Cockpit Design Standards & Guidelines", category: "Development Control", sub: "Recreation", description: "Locational and structural design standards for cockpits/arenas.", refNumber: "Cockpit", year: "2018", tags: ["cockpit","arena"], docUrl: "https://drive.google.com/drive/folders/1HPT4kPtMItbNEzHA_3YEGS0mCZ2hR7G5?usp=drive_link" },
+      { id: 52, title: "Columbarium Projects - Rules & Regulations", category: "Development Control", sub: "Cemetery", description: "Governs columbarium development, setbacks, and locational criteria.", refNumber: "Columbarium", year: "2019", tags: ["columbarium"], docUrl: "https://drive.google.com/drive/folders/19I0KiH0DFTqBFeHdvSVwI1S6XPrO_sDP?usp=drive_link" },
+      { id: 53, title: "Funeral Establishments - Locational Clearance & Design Standards", category: "Development Control", sub: "Public Services", description: "Application and design standards for funeral homes and chapels.", refNumber: "Funeral Est", year: "2017", tags: ["funeral"], docUrl: "https://drive.google.com/drive/folders/1WAewcs356W-pbUFCx0DU6wziCWUdiBCu?usp=drive_link" },
+      { id: 54, title: "Memorial Parks & Cemeteries (Amended AO 13)", category: "Development Control", sub: "Cemetery", description: "Rules and regulations for memorial park development, setbacks, landscaping.", refNumber: "AO 13", year: "2016", tags: ["cemetery"], docUrl: "https://drive.google.com/drive/folders/1uyXLpdp1lz-3HR9ulSymDQL5xSMOJFCQ?usp=drive_link" },
+      { id: 55, title: "Land Terminals - Design Standards (DPWH/LTFRB)", category: "Development Control", sub: "Transport", description: "Design standards and guidelines for land transport terminals and garages.", refNumber: "Terminal Std", year: "2018", tags: ["terminal","garage"], docUrl: "https://drive.google.com/drive/folders/1A4fyDiPMGLqqViyrNZvULjjF2iUqGIBR?usp=drive_link" },
+      { id: 56, title: "Manufacturing Industries - Locational Guidelines", category: "Development Control", sub: "Industry", description: "Locational standards and buffer zones for manufacturing plants.", refNumber: "Ind'l Guide", year: "2012", tags: ["manufacturing","industry"], docUrl: "https://drive.google.com/drive/folders/11xn0WKmhBk4x_KEBvUA9pY2zhfgc9AgK?usp=drive_link" },
+      { id: 57, title: "BJMP Manual on Habitat, Water, Sanitation in Jails", category: "Development Control", sub: "Correctional", description: "Design and sanitation standards for jail facilities (ICRC-BJMP).", refNumber: "BJMP Manual", year: "2019", tags: ["jail","detention"], docUrl: "https://drive.google.com/file/d/1dm80RlVM9LLwFfLOuRGR62OClUTpddXu/view?usp=sharing" },
+      { id: 58, title: "Green Building Code (Referral Code of PD 1096)", category: "Development Control", sub: "Sustainability", description: "Energy efficiency, water conservation, and sustainable design provisions.", refNumber: "GB Code", year: "2015", tags: ["green","sustainable"], docUrl: "https://drive.google.com/file/d/17CiMwDMP7V1nhebCCQYIXBwU7F7JeTjK/view?usp=drive_link" },
+      { id: 59, title: "Farmlot Subdivisions - Design Standards", category: "Development Control", sub: "Agri", description: "AO and design standards for agricultural farmlot subdivisions.", refNumber: "Farmlot", year: "2010", tags: ["farmlot","agri"], docUrl: "https://drive.google.com/drive/folders/18reqmTvlVSe7UvkWwGjKa6LG46OJX3x7?usp=drive_link" },
+      { id: 60, title: "Industrial Estate - Design & Locational Guidelines", category: "Development Control", sub: "Industrial", description: "Standards for industrial estate development, utilities, and buffer.", refNumber: "Ind'l Estate", year: "2014", tags: ["industrial estate"], docUrl: "https://drive.google.com/drive/folders/1t9xZhHH81znc_a4pI5HtKjRMHgfVKVBR?usp=drive_link" },
+      { id: 61, title: "DENR MC 2009-14 - 50m Buffer Zone for Banana Plantations", category: "Development Control", sub: "Agriculture", description: "Strict implementation of 50m buffer from residential areas/water bodies to banana plantations.", refNumber: "MC 2009-14", year: "2009", tags: ["buffer","banana"], docUrl: "https://drive.google.com/file/d/1DMvjehS0_cA2uMsY5tXYOvbyrb9i6NMJ/view?usp=sharing" },
+      { id: 62, title: "DepED Educational Facilities Manual (DRR Integration)", category: "Development Control", sub: "Education", description: "Handbook on educational facilities integrating disaster risk reduction in school construction.", refNumber: "DepED Manual", year: "2010", tags: ["school","drr"], docUrl: "https://drive.google.com/file/d/1TzUu4oB1-wpAjF0rfLkxWFuX4R6p3X_c/view?usp=sharing" },
+      { id: 63, title: "DOH Hospital Planning & Design Guidelines", category: "Development Control", sub: "Health", description: "Standards for hospital location, bed capacity, and facility design.", refNumber: "DOH Hosp", year: "2014", tags: ["hospital","health"], docUrl: "https://drive.google.com/drive/folders/1HpqvDLEjHxxceglkeyaLPG7wh3K6YXDF?usp=drive_link" },
+      { id: 64, title: "WHO District Hospitals: Guidelines for Development", category: "Development Control", sub: "Health", description: "International standards for district hospital planning and catchment area.", refNumber: "WHO", year: "2018", tags: ["who","hospital"], docUrl: "https://drive.google.com/file/d/1EyFeAKlEnXX2mK6D2c_XJF2aT_4s_h4W/view?usp=sharing" },
+      { id: 65, title: "DPWH Design Guidelines Vol.6 - Public Buildings", category: "Development Control", sub: "Infra", description: "Criteria and standards for public buildings, government facilities.", refNumber: "DPWH Vol6", year: "2019", tags: ["public bldg"], docUrl: "https://drive.google.com/file/d/1dCpO2I_1jiNLLJ3KoXYfYDkVycP6peY4/view?usp=drive_link" },
+      { id: 66, title: "Heritage Conservation Issuances", category: "Development Control", sub: "Heritage", description: "Guidelines for conservation districts, heritage zones, and protected structures.", refNumber: "Heritage", year: "2010", tags: ["heritage","conservation"], docUrl: "https://drive.google.com/drive/folders/1V_8wT7s_eLiG4xzgQ32ckRs84b-8q9K8?usp=drive_link" },
+      { id: 67, title: "RA 7076 & RA 7942 - Small Scale Mining & Philippine Mining Act IRR", category: "Development Control", sub: "Mining", description: "Implementing rules for people's small-scale mining and large-scale mining permits.", refNumber: "Mining Act", year: "1995", tags: ["mining","small scale"], docUrl: "https://drive.google.com/drive/folders/1FpLOeRCnL4aNYTbACD_oC_ChB5gommee?usp=drive_link" },
+      { id: 68, title: "Gaming Site Regulatory Manual (Distance Requirements)", category: "Development Control", sub: "Gaming", description: "Site location distance requirements for casinos, bingo parlors, gaming establishments.", refNumber: "Gaming", year: "2018", tags: ["gaming","casino"], docUrl: "https://drive.google.com/file/d/1ZZ0U-bYVgkT-eD2UKVRSy4fJmjJKnCA8/view?usp=sharing" }
     ];
     
     function renderCards(docArray, containerId) {
@@ -863,13 +1000,13 @@ footer {
     
     document.addEventListener("DOMContentLoaded", () => {
       checkSession();
-      renderMainNavigation();
       renderUserMenu();
       filterAndRender();
       document.querySelectorAll(".tab-btn").forEach(btn => btn.addEventListener("click", (e) => { switchTab(btn.getAttribute("data-tab")); }));
       document.getElementById("globalSearch").addEventListener("input", (e) => { globalSearch = e.target.value.toLowerCase(); filterAndRender(); });
       document.getElementById("categoryFilter").addEventListener("change", (e) => { categoryFilter = e.target.value; filterAndRender(); });
       document.getElementById("clearFiltersBtn").addEventListener("click", () => { document.getElementById("globalSearch").value = ""; document.getElementById("categoryFilter").value = "all"; globalSearch = ""; categoryFilter = "all"; filterAndRender(); showToastMessage("Filters cleared"); });
+      initClickDropdowns();
       window.onclick = function(e) { const modal = document.getElementById("loginModal"); if(e.target === modal) modal.classList.remove("active"); };
     });
   </script>
