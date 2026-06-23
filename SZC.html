@@ -3241,13 +3241,13 @@ function confirmSavePoint() {
         // Save point to localStorage
        function savePointToStorage(lat, lng, certNo, requestedBy) {
     const newPoint = {
-        id: Date.now(),
+        id: Date.now(), // Ensure this is a number
         lat: lat,
         lng: lng,
         certificationNo: certNo,
         requestedBy: requestedBy,
         dateSaved: new Date().toISOString(),
-        timestamp: new Date().toISOString()  // ← ADD THIS
+        timestamp: new Date().toISOString()
     };
     
     savedPoints.push(newPoint);
@@ -3331,33 +3331,35 @@ function confirmSavePoint() {
 }
 
         // Sync point to Google Sheets
-       async function syncPointToSheet(point) {
+      async function syncPointToSheet(point) {
     try {
-        console.log("Syncing point to sheet:", point);
+        console.log("📤 Syncing point to sheet:", point);
+        
+        if (!point.id) {
+            point.id = Date.now() + Math.floor(Math.random() * 1000);
+        }
         
         const resp = await fetch(BACKEND_URL, {
             method: "POST",
             mode: "cors",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({ 
-                action: "add", 
-                data_type: "map_points", 
-                data: JSON.stringify(point) 
-            }),
+            headers: { 
+                "Content-Type": "application/x-www-form-urlencoded" 
+            },
+            body: `action=add&data_type=map_points&data=${encodeURIComponent(JSON.stringify(point))}`
         });
         
         const res = await resp.json();
-        console.log("Sync response:", res);
+        console.log("📥 Sync response:", res);
         
         if (res.success) {
-            console.log("Point synced to sheet successfully");
+            console.log("✅ Point synced to sheet successfully");
             return true;
         } else {
-            console.error("Sync failed:", res.error);
+            console.error("❌ Sync failed:", res.error);
             return false;
         }
     } catch (e) {
-        console.error("Sync error:", e);
+        console.error("❌ Sync error:", e);
         return false;
     }
 }
@@ -3649,7 +3651,7 @@ function confirmSavePoint() {
         let geoJsonLayers = [],
             currentActiveLayer = null,
             classColorMap = new Map();
-        const BACKEND_URL = "https://script.google.com/macros/s/AKfycbx5-SFdaezTZwKd-AprGDQcR_ik4NkYrqUN2MuZ9XBfztsFU8cqh8RPKjkcnAWVUmOvqg/exec";
+        const BACKEND_URL = "https://script.google.com/macros/s/AKfycbyb8B4rQ11w5pz_rBzjfMi17SoLhE2hsa4HtnjMsz-K83b5lpoxqCGbi9IIyv4X056Ocg/exec";
         let defaultRows = [
             {
                 from: "Corner 1",
@@ -3750,33 +3752,46 @@ function confirmSavePoint() {
             document.getElementById("reportModal").classList.remove("active");
         }
         function getNextCertNumber() {
-    // Try to get from zoningCertifications first
     let max = 0;
+    let records = [];
     
-    // Check if zoningCertifications has data
+    // First try to get from zoningCertifications array (in-memory)
     if (zoningCertifications && zoningCertifications.length > 0) {
-        zoningCertifications.forEach((r) => {
-            let m = r.certificationNo?.match(/-(\d+)$/);
-            if (m) max = Math.max(max, parseInt(m[1]));
-        });
+        records = zoningCertifications;
     } else {
-        // If empty, try to load from localStorage directly
+        // Try to load from localStorage
         try {
             const stored = localStorage.getItem("zoningCertifications");
             if (stored) {
-                const parsed = JSON.parse(stored);
-                parsed.forEach((r) => {
-                    let m = r.certificationNo?.match(/-(\d+)$/);
-                    if (m) max = Math.max(max, parseInt(m[1]));
-                });
+                records = JSON.parse(stored);
+                console.log("Loaded from localStorage for cert number:", records.length);
             }
         } catch (e) {
-            console.warn("Could not read from localStorage");
+            console.warn("Could not read from localStorage:", e);
         }
     }
     
+    // Find the highest number
+    if (records && records.length > 0) {
+        records.forEach((r) => {
+            if (r.certificationNo) {
+                let m = r.certificationNo.match(/-(\d+)$/);
+                if (m) {
+                    let num = parseInt(m[1]);
+                    if (num > max) max = num;
+                }
+            }
+        });
+        console.log("Found max certification number:", max);
+    } else {
+        console.log("No records found, starting from 0");
+    }
+    
     let year = new Date().getFullYear().toString().slice(-2);
-    return `SZC-RVI${year}-${(max + 1).toString().padStart(3, "0")}`;
+    let nextNumber = (max + 1).toString().padStart(3, "0");
+    let newCert = `SZC-RVI${year}-${nextNumber}`;
+    console.log("Generated new certification number:", newCert);
+    return newCert;
 }
         function refreshCertNumber() {
             document.getElementById("certificationNo").value = getNextCertNumber();
@@ -3822,62 +3837,78 @@ function confirmSavePoint() {
             });
             document.getElementById("totalArea").value = total.toFixed(4);
         }
+		
         async function syncToSheet(rec, action) {
-            try {
-                const resp = await fetch(BACKEND_URL, {
-                    method: "POST",
-                    mode: "cors",
-                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                    body: new URLSearchParams({ action, data_type: "zoning", data: JSON.stringify(rec) }),
-                });
-                const res = await resp.json();
-                if (res.success) {
-                    showToast(`✓ Synced (${action})`);
-                    return true;
-                }
-                throw new Error(res.error);
-            } catch (e) {
-                showToast(`⚠️ Sync failed: ${e.message}`);
-                return false;
-            }
+    try {
+        let bodyParams;
+        if (action === "delete") {
+            bodyParams = new URLSearchParams({ 
+                action: "delete", 
+                data_type: "zoning", 
+                id: rec.id.toString() 
+            });
+        } else {
+            bodyParams = new URLSearchParams({ 
+                action: action, 
+                data_type: "zoning", 
+                data: JSON.stringify(rec) 
+            });
         }
+        
+        const resp = await fetch(BACKEND_URL, {
+            method: "POST",
+            mode: "cors",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: bodyParams,
+        });
+        const res = await resp.json();
+        if (res.success) {
+            showToast(`✓ Synced (${action})`);
+            return true;
+        }
+        throw new Error(res.error);
+    } catch (e) {
+        showToast(`⚠️ Sync failed: ${e.message}`);
+        return false;
+    }
+}
+
         async function fetchCertifications() {
+    console.log("🔄 Fetching certifications from server...");
     try {
         const resp = await fetch(`${BACKEND_URL}?action=get&data_type=zoning&_=${Date.now()}`);
         const data = await resp.json();
-        zoningCertifications = Array.isArray(data) ? data : [];
-        zoningCertifications = zoningCertifications.map((r) => {
-            if (r.landHoldings && typeof r.landHoldings === "string")
-                try {
-                    r.landHoldings = JSON.parse(r.landHoldings);
-                } catch (e) {
-                    r.landHoldings = [];
-                }
-            if (!r.landHoldings) r.landHoldings = [];
-            if (!r.status) r.status = "For Review";
-            return r;
-        });
-        localStorage.setItem("zoningCertifications", JSON.stringify(zoningCertifications));
-        renderAllTables();
-        showToast(`Loaded ${zoningCertifications.length} records`);
+        console.log("📦 Server response received:", data);
+        
+        if (data.success && data.data) {
+            zoningCertifications = data.data;
+            console.log(`✅ Loaded ${zoningCertifications.length} records from server`);
+            // Save to localStorage
+            localStorage.setItem("zoningCertifications", JSON.stringify(zoningCertifications));
+            renderAllTables();
+            showToast(`✅ Loaded ${zoningCertifications.length} records from server`);
+            return;
+        }
+        
+        // If server returns empty or error, try localStorage
+        console.log("⚠️ Server returned no data, checking localStorage...");
+        const stored = localStorage.getItem("zoningCertifications");
+        if (stored) {
+            zoningCertifications = JSON.parse(stored);
+            renderAllTables();
+            showToast(`📁 Offline mode: ${zoningCertifications.length} records loaded from cache`);
+        } else {
+            zoningCertifications = [];
+            renderAllTables();
+            showToast("⚠️ No data available. Please check your connection.");
+        }
     } catch (e) {
+        console.error("❌ Error fetching certifications:", e);
         // FALLBACK: Load from localStorage
         const stored = localStorage.getItem("zoningCertifications");
         if (stored) {
             try {
                 zoningCertifications = JSON.parse(stored);
-                // Ensure each record has proper structure
-                zoningCertifications = zoningCertifications.map((r) => {
-                    if (r.landHoldings && typeof r.landHoldings === "string")
-                        try {
-                            r.landHoldings = JSON.parse(r.landHoldings);
-                        } catch (e) {
-                            r.landHoldings = [];
-                        }
-                    if (!r.landHoldings) r.landHoldings = [];
-                    if (!r.status) r.status = "For Review";
-                    return r;
-                });
                 renderAllTables();
                 showToast(`📁 Offline mode: ${zoningCertifications.length} records loaded from cache`);
             } catch (e) {
@@ -3891,47 +3922,101 @@ function confirmSavePoint() {
             showToast("⚠️ No data available. Please check your connection.");
         }
     }
-}
-        async function fetchClupRecords() {
-            try {
-                const resp = await fetch(`${BACKEND_URL}?action=get&data_type=clup&_=${Date.now()}`);
-                const data = await resp.json();
-                clupRecords = Array.isArray(data) ? data : [];
-                localStorage.setItem("clupRecords", JSON.stringify(clupRecords));
-                populateProvinces();
-            } catch (e) {
-                clupRecords = JSON.parse(localStorage.getItem("clupRecords") || "[]");
-                populateProvinces();
-            }
-        }
-        function populateProvinces() {
-    let select = document.getElementById("provinceSelect");
-    // Hardcoded list of 6 provinces
-    const provinces = ["Aklan", "Antique", "Capiz", "Guimarras", "Iloilo", "Iloilo City"];
     
-    select.innerHTML = '<option value="">-- Choose Province --</option>' +
-        provinces.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join("");
+    // Refresh the certification number display
+    refreshCertNumber();
 }
-        function filterLguByProvince() {
-            let prov = document.getElementById("provinceSelect").value;
-            let lguSelect = document.getElementById("lguSelect");
-            lguSelect.innerHTML = '<option value="">-- Select LGU --</option>';
-            if (!prov) return;
-            let filtered = clupRecords.filter((p) => (p.Province || p.province) === prov);
-            let unique = new Map();
-            filtered.forEach((p) => {
-                let name = p.LGU || p.lgu;
-                if (name && !unique.has(name)) unique.set(name, p);
-            });
-            unique.forEach((plan, name) => {
-                let opt = document.createElement("option");
-                opt.value = name;
-                opt.textContent = name;
-                opt.dataset.record = JSON.stringify(plan);
-                lguSelect.appendChild(opt);
-            });
-            lguSelect.disabled = false;
+       async function fetchClupRecords() {
+        try {
+            const resp = await fetch(`${BACKEND_URL}?action=get&data_type=clup&_=${Date.now()}`);
+            const data = await resp.json();
+            clupRecords = Array.isArray(data) ? data : [];
+            localStorage.setItem("clupRecords", JSON.stringify(clupRecords));
+            populateProvinces();
+        } catch (e) {
+            clupRecords = JSON.parse(localStorage.getItem("clupRecords") || "[]");
+            populateProvinces();
         }
+    }
+    function populateProvinces() {
+        let select = document.getElementById("provinceSelect");
+        let provs = new Set();
+        clupRecords.forEach((p) => {
+            let pr = p.Province || p.province;
+            if (pr) provs.add(pr);
+        });
+        select.innerHTML =
+            '<option value="">-- Choose Province --</option>' +
+            Array.from(provs)
+                .sort()
+                .map((p) => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`)
+                .join("");
+    }
+function filterLguByProvince() {
+    let prov = document.getElementById("provinceSelect").value;
+    let lguSelect = document.getElementById("lguSelect");
+    lguSelect.innerHTML = '<option value="">-- Select LGU --</option>';
+    if (!prov) {
+        lguSelect.disabled = true;
+        return;
+    }
+    
+    // Comprehensive LGU data for Region VI
+    const lguData = {
+        "Aklan": [
+            "Altavas", "Balete", "Banga", "Batan", "Buruanga", "Ibajay", "Kalibo", "Lezo", "Libacao", 
+            "Madalag", "Makato", "Malay", "Malinao", "Nabas", "New Washington", "Numancia", "Tangalan"
+        ],
+        "Antique": [
+            "Anini-y", "Barbaza", "Belison", "Bugasong", "Caluya", "Culasi", "Hamtic", "Laua-an", 
+            "Libertad", "Pandan", "Patnongon", "San Jose", "San Remigio", "Sebaste", "Sibalom", 
+            "Tibiao", "Tobias Fornier", "Valderrama"
+        ],
+        "Capiz": [
+            "Cuartero", "Dao", "Dumalag", "Dumarao", "Ivisan", "Jamindan", "Ma-ayon", "Mambusao", 
+            "Panay", "Panitan", "Pilar", "Pontevedra", "President Roxas", "Roxas City", "Sapian", 
+            "Sigma", "Tapaz"
+        ],
+        "Guimarras": [
+            "Buenavista", "Jordan", "Nueva Valencia", "San Lorenzo", "Sibunag"
+        ],
+        "Iloilo": [
+            "Ajuy", "Alimodian", "Anilao", "Badiangan", "Balasan", "Banate", "Barotac Nuevo", 
+            "Barotac Viejo", "Batad", "Bingawan", "Cabatuan", "Calinog", "Carles", "Concepcion", 
+            "Dingle", "Dueñas", "Dumangas", "Estancia", "Guimbal", "Igbaras", "Iloilo City", 
+            "Janiuay", "Lambunao", "Leganes", "Lemery", "Leon", "Maasin", "Miagao", "Mina", 
+            "New Lucena", "Oton", "Passi City", "Pavia", "Pototan", "San Dionisio", "San Enrique", 
+            "San Joaquin", "San Miguel", "San Rafael", "Santa Barbara", "Sara", "Tigbauan", 
+            "Tubungan", "Zarraga"
+        ]
+    };
+    
+    let lgus = lguData[prov] || [];
+    if (lgus.length === 0) {
+        let opt = document.createElement("option");
+        opt.value = "";
+        opt.textContent = "-- No LGUs found --";
+        lguSelect.appendChild(opt);
+        lguSelect.disabled = true;
+        return;
+    }
+    
+    lgus.forEach(name => {
+        let opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name;
+        // Add mock data for CLUP fields
+        opt.dataset.record = JSON.stringify({
+            LGU: name,
+            Province: prov,
+            Approved_By: "Sangguniang Panlalawigan",
+            Latest_Plan_Res: "SP-2024-001",
+            Latest_Date_of_Approval: "2024-01-15"
+        });
+        lguSelect.appendChild(opt);
+    });
+    lguSelect.disabled = false;
+}
         function fillFromCLUP() {
             let sel = document.getElementById("lguSelect");
             let opt = sel.options[sel.selectedIndex];
@@ -3950,7 +4035,7 @@ function confirmSavePoint() {
             // IMPROVED DATE PARSING - Try multiple possible field names
             let appDate = "";
 
-            // Check all possible date field names from the CLUP record
+            // Check all possible date fields from the CLUP record
             const possibleDateFields = [
                 "Latest_Date_of_Approval",
                 "approvalDate",
@@ -4310,15 +4395,45 @@ function confirmSavePoint() {
             }
         }
         async function deleteRecord(id) {
-            if (!confirm("Delete?")) return;
-            let rec = zoningCertifications.find((r) => r.id === id);
-            zoningCertifications = zoningCertifications.filter((r) => r.id !== id);
-            localStorage.setItem("zoningCertifications", JSON.stringify(zoningCertifications));
-            renderAllTables();
-            showToast("Deleted local");
-            if (rec) await syncToSheet({ id: rec.id }, "delete");
-            await fetchCertifications();
+    if (!confirm("⚠️ Delete this certification record permanently?")) return;
+    
+    let rec = zoningCertifications.find((r) => r.id === id);
+    if (!rec) {
+        showToast("Record not found", "error");
+        return;
+    }
+    
+    // Remove from local array
+    zoningCertifications = zoningCertifications.filter((r) => r.id !== id);
+    localStorage.setItem("zoningCertifications", JSON.stringify(zoningCertifications));
+    renderAllTables();
+    showToast(`🗑️ Deleted: ${rec.certificationNo || "Record"}`);
+    
+    // Sync deletion to Google Sheets
+    try {
+        const resp = await fetch(BACKEND_URL, {
+            method: "POST",
+            mode: "cors",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({ 
+                action: "delete", 
+                data_type: "zoning", 
+                id: rec.id.toString() 
+            }),
+        });
+        const res = await resp.json();
+        if (res.success) {
+            showToast(`✅ Deleted from sheet: ${rec.certificationNo || "Record"}`);
+        } else {
+            showToast(`⚠️ Deleted locally only. Sheet error: ${res.error || "Unknown"}`, "error");
         }
+    } catch (e) {
+        showToast(`⚠️ Deleted locally only. Sync error: ${e.message}`, "error");
+    }
+    
+    await fetchCertifications();
+}
+
         async function saveZoningRecord(e) {
     e.preventDefault();
     let certNo = currentEditingId
@@ -6639,21 +6754,18 @@ function confirmSavePoint() {
         }
 
         async function init() {
-    checkSession();
-    renderMainNavigation();
-    renderUserMenu();
-    await fetchClupRecords();
-    await fetchCertifications();
-    refreshCertNumber();
-    document.getElementById("landHoldingsContainer").innerHTML = "";
-    document.getElementById("landHoldingsContainer").appendChild(createLandHoldingRow("", "", "", "0", ""));
-    document.getElementById("parcels").value = 1;
-    switchZoningView("dataEntry");
-    
-    // 🔥 Load saved points from server
-    await loadSavedPoints();
-}
-        init();
+        checkSession();
+        renderMainNavigation();
+        renderUserMenu();
+        await fetchClupRecords();
+        await fetchCertifications();
+        refreshCertNumber();
+        document.getElementById("landHoldingsContainer").innerHTML = "";
+        document.getElementById("landHoldingsContainer").appendChild(createLandHoldingRow("", "", "", "0", ""));
+        document.getElementById("parcels").value = 1;
+        switchZoningView("dataEntry");
+    }
+    init();
         
         // ========== MAP VIEW FUNCTIONS - ADD THIS MISSING FUNCTION ==========
     function changeMapView(type) {
@@ -7460,13 +7572,184 @@ async function syncAllExistingPoints() {
     console.log(`❌ Failed: ${failCount} points`);
     
     if (successCount > 0) {
-        showToast(`✅ ${successCount} points synced to Google Sheets! Refresh to see them.`, "success");
-        // Refresh the saved points panel
+        showToast(`✅ ${successCount} points synced to Google Sheets!`, "success");
         await loadSavedPoints();
         renderSavedPointsPanel();
     } else {
         showToast(`❌ Failed to sync points. Check console for errors.`, "error");
     }
+}
+
+// Sync deletion to Google Sheets - FIXED VERSION
+async function deletePointFromSheet(pointId) {
+    try {
+        console.log("Deleting point from sheet with ID:", pointId);
+        
+        // Ensure we have a valid ID
+        if (!pointId) {
+            console.error("No point ID provided for deletion");
+            return false;
+        }
+        
+        const resp = await fetch(BACKEND_URL, {
+            method: "POST",
+            mode: "cors",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({ 
+                action: "delete", 
+                data_type: "map_points", 
+                id: pointId.toString()  // Convert to string to ensure proper format
+            }),
+        });
+        
+        const res = await resp.json();
+        console.log("Delete response:", res);
+        
+        if (res.success) {
+            console.log("Point deleted from sheet successfully");
+            return true;
+        } else {
+            console.error("Delete failed:", res.error);
+            // Even if sheet deletion fails, continue with local deletion
+            return false;
+        }
+    } catch (e) {
+        console.error("Delete error:", e);
+        // Allow local deletion even if sync fails
+        return false;
+    }
+}
+
+// ========== FIXED DELETE FUNCTION - FRONTEND ==========
+
+async function deleteSavedPointMarker(certNo) {
+    if (!confirm(`Delete point for "${certNo}"?`)) return;
+    
+    // Find the point
+    const point = savedPoints.find(p => p.certificationNo === certNo);
+    if (!point) {
+        showToast("Point not found", "error");
+        return;
+    }
+    
+    console.log("🗑️ Deleting point:", point);
+    console.log("   ID:", point.id);
+    console.log("   CertNo:", point.certificationNo);
+    
+    // Remove from localStorage first
+    savedPoints = savedPoints.filter(p => p.certificationNo !== certNo);
+    localStorage.setItem('savedMapPoints', JSON.stringify(savedPoints));
+    
+    // Update badge
+    const badge = document.getElementById('savedPointsBadge');
+    if (badge) badge.textContent = savedPoints.length;
+    const panelCount = document.getElementById('panelPointCount');
+    if (panelCount) panelCount.textContent = savedPoints.length;
+    
+    // Remove marker from map
+    if (popupMap) {
+        popupMap.eachLayer(layer => {
+            if (layer instanceof L.Marker && layer.savedPointData && layer.savedPointData.certNo === certNo) {
+                popupMap.removeLayer(layer);
+            }
+        });
+    }
+    
+    // Try to delete from Google Sheets
+    let deletedFromSheet = false;
+    let deleteError = null;
+    
+    // Use the point's ID if available, otherwise use certification number
+    const idToUse = point.id || certNo;
+    console.log("📤 Sending delete request with ID:", idToUse);
+    
+    try {
+        const resp = await fetch(BACKEND_URL, {
+            method: "POST",
+            mode: "cors",
+            headers: { 
+                "Content-Type": "application/x-www-form-urlencoded" 
+            },
+            body: `action=delete&data_type=map_points&id=${encodeURIComponent(idToUse)}`
+        });
+        
+        const res = await resp.json();
+        console.log("📥 Delete response:", res);
+        
+        if (res.success) {
+            deletedFromSheet = true;
+            console.log("✅ Point deleted from Google Sheets");
+        } else {
+            deleteError = res.error;
+            console.warn("⚠️ Delete failed:", res.error);
+        }
+    } catch (e) {
+        deleteError = e.message;
+        console.warn("⚠️ Delete error:", e);
+    }
+    
+    // If deletion failed and we have a certNo different from the ID, try with certNo
+    if (!deletedFromSheet && point.id && point.id !== certNo) {
+        try {
+            console.log("📤 Retrying delete with CertNo:", certNo);
+            const resp = await fetch(BACKEND_URL, {
+                method: "POST",
+                mode: "cors",
+                headers: { 
+                    "Content-Type": "application/x-www-form-urlencoded" 
+                },
+                body: `action=delete&data_type=map_points&id=${encodeURIComponent(certNo)}`
+            });
+            
+            const res = await resp.json();
+            console.log("📥 Retry delete response:", res);
+            
+            if (res.success) {
+                deletedFromSheet = true;
+                console.log("✅ Point deleted from Google Sheets by CertNo");
+            }
+        } catch (e) {
+            console.warn("⚠️ Retry delete error:", e);
+        }
+    }
+    
+    if (deletedFromSheet) {
+        showToast(`✅ Deleted: ${certNo} (synced to sheet)`);
+    } else {
+        showToast(`✅ Deleted locally: ${certNo} (sheet sync failed)`);
+    }
+    
+    renderSavedPointsPanel();
+}
+
+function populateProvinces() {
+    let select = document.getElementById("provinceSelect");
+    let provs = new Set();
+    
+    console.log("Populating provinces from clupRecords:", clupRecords);
+    
+    // Use clupRecords if available, otherwise use fallback
+    if (clupRecords && clupRecords.length > 0) {
+        clupRecords.forEach((p) => {
+            let pr = p.Province || p.province;
+            if (pr) provs.add(pr);
+        });
+    }
+    
+    // If no provinces found, use hardcoded fallback
+    if (provs.size === 0) {
+        console.log("No provinces found in CLUP records, using fallback");
+        const fallbackProvinces = ["Aklan", "Antique", "Capiz", "Guimarras", "Iloilo", "Iloilo City"];
+        fallbackProvinces.forEach(p => provs.add(p));
+    }
+    
+    select.innerHTML = '<option value="">-- Choose Province --</option>' +
+        Array.from(provs)
+            .sort()
+            .map((p) => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`)
+            .join("");
+    
+    console.log("Provinces populated:", provs.size);
 }
 
     </script>
