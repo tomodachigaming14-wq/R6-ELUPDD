@@ -1055,7 +1055,7 @@
     </div>
     <div class="google-drive-link" id="googleDriveLink" style="display:none;">
         <p>📁 <strong>Access Full Google Drive Folder:</strong></p>
-        <a href="https://drive.google.com/drive/folders/1fwibwzbjUs8gD_pk-5HAbpSkYUuj_nGm?usp=sharing" target="_blank" class="btn-drive" id="driveFolderLink">🔗 Open CLUP/ZO Google Drive Folder</a>
+        <a href="https://drive.google.com/drive/folders/1arGRhomtDIU7seiDZajAO77L8noAQigV?usp=sharing" target="_blank" class="btn-drive" id="driveFolderLink">🔗 Open CLUP/ZO Google Drive Folder</a>
     </div>
 </div>
         <div id="requestFormContainer" style="display:none;">
@@ -1112,8 +1112,8 @@
 
   <script>
     // ===== UPDATE THIS WITH YOUR WEB APP URL =====
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxrvRqH9Hy2Hx-XtiUKHmjSozha7G4dmB_s6DCRTR2fkhbqeDzcpEQlZ0FvEApG15DGSA/exec";
-    const DRIVE_FOLDER_ID = "1fwibwzbjUs8gD_pk-5HAbpSkYUuj_nGm";
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby_lOzWFWk8HF6cu72r8ggWhJ8hweaDEJ4WyVjnRSj7-O1msN14SU6Mb3UMwJvWDw/exec";
+    const DRIVE_FOLDER_ID = "1arGRhomtDIU7seiDZajAO77L8noAQigV";
     let currentUser = null;
 
     // ===== STORAGE FOR UPLOADED FILES =====
@@ -1440,7 +1440,7 @@
     const driveFolderLink = document.getElementById("driveFolderLink");
     const googleDriveLinkDiv = document.getElementById("googleDriveLink");
     const folderUrl = provinceData[p]?.driveFolder || "#";
-    driveFolderLink.href = "https://drive.google.com/drive/folders/1fwibwzbjUs8gD_pk-5HAbpSkYUuj_nGm?usp=sharing";
+    driveFolderLink.href = "https://drive.google.com/drive/folders/1arGRhomtDIU7seiDZajAO77L8noAQigV?usp=sharing";
     googleDriveLinkDiv.style.display = "block";
     
     // Reset uploaded files storage for the current view
