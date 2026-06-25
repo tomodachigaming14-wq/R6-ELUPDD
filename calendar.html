@@ -1012,7 +1012,7 @@ footer {
  
 
 <script>
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby_lOzWFWk8HF6cu72r8ggWhJ8hweaDEJ4WyVjnRSj7-O1msN14SU6Mb3UMwJvWDw/exec";
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxdT3IPRtHQsPqH29uA_vqCNseOcIUm16ejD1xmytrtgneL1__MgEtmtPEoTGI5Xts/exec";
     let activities = [], currentEditId = null, currentDisplayDate = new Date();
     let currentUser = null;
 
@@ -1026,7 +1026,7 @@ footer {
     try {
         console.log("Saving to Google Sheets:", activity);
         
-        // Use GET method with parameters (bypasses CORS issues)
+        // Use GET method with URL parameters (more reliable)
         const params = new URLSearchParams({
             action: "add",
             data_type: "calendar",
@@ -1038,15 +1038,29 @@ footer {
         
         const response = await fetch(url, {
             method: "GET",
-            mode: "no-cors"
+            headers: {
+                "Accept": "application/json"
+            }
         });
         
-        showToastMessage("Activity saved to Google Sheets!", "success");
-        return true;
+        // Check if response is OK
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         
+        const result = await response.json();
+        console.log("Save result:", result);
+        
+        if (result.success) {
+            showToastMessage("✅ Activity saved to Google Sheets!", "success");
+            return true;
+        } else {
+            showToastMessage("❌ Failed to save: " + (result.error || "Unknown error"), "error");
+            return false;
+        }
     } catch (error) {
         console.error("Error saving:", error);
-        showToastMessage("Failed to save: " + error.message, "error");
+        showToastMessage("❌ Failed to save: " + error.message, "error");
         return false;
     }
 }
@@ -1107,62 +1121,67 @@ footer {
     
     // Test function to verify connection
     async function testGoogleSheetsConnection() {
-    showToastMessage("Testing connection...", "info");
-    
-    const testActivity = {
-        id: Date.now(),
-        name: "TEST CONNECTION " + new Date().toLocaleTimeString(),
-        type: "Meeting",
-        startDateTime: new Date().toISOString().slice(0, 16),
-        endDateTime: new Date(Date.now() + 3600000).toISOString().slice(0, 16),
-        purpose: "This is a test to verify Google Sheets connection",
-        location: "Test Location",
-        meetingLink: "",
-        status: "upcoming",
-        attendees: ["Test User"]
-    };
+    showToastMessage("🔍 Testing connection...", "info");
     
     try {
-        // ADD THIS LINE TO CHECK IF URL IS SET
-        if (GOOGLE_SCRIPT_URL === "YOUR_DEPLOYMENT_URL_HERE") {
-            showToastMessage("❌ Please update the GOOGLE_SCRIPT_URL in the code first!", "error");
-            console.error("GOOGLE_SCRIPT_URL not configured!");
+        // Test basic connection
+        const testResponse = await fetch(`${GOOGLE_SCRIPT_URL}?action=test&_=${Date.now()}`);
+        const testResult = await testResponse.json();
+        console.log("Test result:", testResult);
+        
+        if (!testResult.success) {
+            showToastMessage("❌ Connection failed: " + (testResult.error || "Unknown error"), "error");
             return;
         }
         
-        console.log("Testing URL:", GOOGLE_SCRIPT_URL);
+        showToastMessage("✅ Connection successful! API is working.", "success");
         
-        const response = await fetch(GOOGLE_SCRIPT_URL, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            mode: "cors",  // Explicitly set CORS mode
-            body: JSON.stringify({
-                action: "add",
-                data_type: "calendar",
-                data: testActivity
-            })
+        // Try to get activities
+        const getResponse = await fetch(`${GOOGLE_SCRIPT_URL}?action=get&data_type=calendar&_=${Date.now()}`);
+        const getResult = await getResponse.json();
+        console.log("Get result:", getResult);
+        
+        if (getResult && Array.isArray(getResult)) {
+            showToastMessage(`✅ Found ${getResult.length} activities in Google Sheet`, "success");
+        } else {
+            showToastMessage("ℹ️ No activities found in Google Sheet", "info");
+        }
+        
+        // Try to add a test activity
+        const testActivity = {
+            id: Date.now() + 1000000,
+            name: "🧪 TEST: " + new Date().toLocaleTimeString(),
+            type: "Meeting",
+            startDateTime: new Date().toISOString().slice(0, 16),
+            endDateTime: new Date(Date.now() + 3600000).toISOString().slice(0, 16),
+            purpose: "This is a test from the connection tester",
+            location: "Test Location",
+            meetingLink: "",
+            status: "upcoming",
+            attendees: ["Test User"],
+            timestamp: new Date().toISOString()
+        };
+        
+        const params = new URLSearchParams({
+            action: "add",
+            data_type: "calendar",
+            data: JSON.stringify(testActivity)
         });
         
-        console.log("Response status:", response.status);
+        const addResponse = await fetch(`${GOOGLE_SCRIPT_URL}?${params.toString()}`);
+        const addResult = await addResponse.json();
+        console.log("Add result:", addResult);
         
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const result = await response.json();
-        console.log("Test result:", result);
-        
-        if (result.success) {
-            showToastMessage("✅ Connection successful! Check your Google Sheet!", "success");
+        if (addResult.success) {
+            showToastMessage("✅ Test activity added successfully! Check your Google Sheet!", "success");
             await loadActivitiesFromBackend();
         } else {
-            showToastMessage("❌ Connection failed: " + (result.error || "Unknown error"), "error");
+            showToastMessage("❌ Failed to add test activity: " + (addResult.error || "Unknown error"), "error");
         }
+        
     } catch (error) {
         console.error("Test failed:", error);
-        showToastMessage("❌ Connection failed: " + error.message, "error");
+        showToastMessage("❌ Test failed: " + error.message, "error");
     }
 }
 
@@ -1192,12 +1211,19 @@ footer {
         localStorage.setItem("calendarActivities",JSON.stringify(activities)); 
     }
     
-    async function loadActivitiesFromBackend() {
+   async function loadActivitiesFromBackend() {
     try {
+        console.log("Loading from Google Sheets...");
         const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=get&data_type=calendar&_=${Date.now()}`);
-        const result = await response.json();
         
-        // Check if result has data property or is directly the array
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        console.log("Load result:", result);
+        
+        // Check if result is an array or has data property
         let data = result;
         if (result && result.data && Array.isArray(result.data)) {
             data = result.data;
@@ -1212,8 +1238,9 @@ footer {
             }));
             activities.forEach(a => a.status = updateActivityStatus(a));
             saveToLocalStorage();
-            showToastMessage(`Loaded ${activities.length} activities from Google Sheets`, "success");
+            showToastMessage(`✅ Loaded ${activities.length} activities from Google Sheets`, "success");
         } else {
+            console.log("No data from Google Sheets, loading from localStorage");
             loadFromLocalStorage();
         }
         renderCalendar();
@@ -1221,6 +1248,7 @@ footer {
         updateStats();
     } catch (error) {
         console.error("Error loading from backend:", error);
+        showToastMessage("⚠️ Could not load from Google Sheets, using local data", "error");
         loadFromLocalStorage();
     }
 }
@@ -1561,7 +1589,6 @@ if(logoutBtn) logoutBtn.addEventListener("click", () => {
     try {
         console.log("Deleting from Google Sheets:", activity);
         
-        // Use GET method with parameters to bypass CORS
         const params = new URLSearchParams({
             action: "delete",
             data_type: "calendar",
@@ -1573,72 +1600,18 @@ if(logoutBtn) logoutBtn.addEventListener("click", () => {
         
         const response = await fetch(url, {
             method: "GET",
-            mode: "no-cors"
+            headers: {
+                "Accept": "application/json"
+            }
         });
         
-        // Since no-cors mode doesn't give us the response body,
-        // we need to assume success and then verify by fetching again
-        showToastMessage("Checking if delete was successful...", "info");
-        
-        // Verify deletion by fetching fresh data
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        const verifyResponse = await fetch(`${GOOGLE_SCRIPT_URL}?action=get&data_type=calendar&_=${Date.now()}`);
-        const verifyText = await verifyResponse.text();
-        
-        let verifyData;
-        try {
-            verifyData = JSON.parse(verifyText);
-            if (verifyData && verifyData.data) {
-                verifyData = verifyData.data;
-            }
-        } catch(e) {
-            verifyData = verifyText;
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
         
-        // Check if the activity still exists
-        let stillExists = false;
-        if (Array.isArray(verifyData)) {
-            stillExists = verifyData.some(item => item.id == activity.id);
-        }
-        
-        if (stillExists) {
-            // Try POST method as fallback
-            console.log("GET delete didn't work, trying POST...");
-            const postResponse = await fetch(GOOGLE_SCRIPT_URL, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                mode: "no-cors",
-                body: JSON.stringify({
-                    action: "delete",
-                    data_type: "calendar",
-                    data: { id: activity.id }
-                })
-            });
-            
-            // Wait a bit and check again
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            const verifyResponse2 = await fetch(`${GOOGLE_SCRIPT_URL}?action=get&data_type=calendar&_=${Date.now()}`);
-            const verifyText2 = await verifyResponse2.text();
-            let verifyData2;
-            try {
-                verifyData2 = JSON.parse(verifyText2);
-                if (verifyData2 && verifyData2.data) {
-                    verifyData2 = verifyData2.data;
-                }
-            } catch(e) {
-                verifyData2 = verifyText2;
-            }
-            
-            if (Array.isArray(verifyData2)) {
-                stillExists = verifyData2.some(item => item.id == activity.id);
-            }
-        }
-        
-        return { success: !stillExists };
+        const result = await response.json();
+        console.log("Delete result:", result);
+        return result;
         
     } catch (error) {
         console.error("Error deleting from Google Sheets:", error);
