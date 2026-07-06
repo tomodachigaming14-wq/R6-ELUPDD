@@ -2547,43 +2547,44 @@ th:hover .sort-icon {
                                         ><input type="date" id="approvalDate" class="form-control" readonly />
                                     </div>
                                 </div>
-                                <div id="iloiloConditionalFields" style="display: none; margin-top: 1rem">
-    <div class="form-group">
-        <label>Purpose</label>
-        <select id="purpose" class="form-control" onchange="purposeChanged()">
-            <option value="">-- Select --</option>
-            <option value="Conversion">Conversion</option>
-            <option value="DAR Exemption">DAR Exemption</option>
-            <option value="Other">Other</option>
-        </select>
-    </div>
-    <div id="purposeOtherGroup" style="display: none; margin-top: 0.5rem;">
-        <div class="form-group">
-            <label>Other Purpose</label>
-            <input type="text" id="purposeOther" class="form-control" placeholder="Please specify purpose">
-        </div>
-    </div>
-    <div id="landClassGroup" style="display: none; margin-top: 0.5rem;">
-        <div class="form-group">
-            <label>Land Class</label>
-            <select id="landClass" class="form-control" onchange="landClassChanged()">
-                <option value="">-- Select --</option>
-                <option value="Agricultural">Agricultural</option>
-                <option value="Commercial">Commercial</option>
-                <option value="Residential">Residential</option>
-                <option value="Industrial">Industrial</option>
-                <option value="Institutional">Institutional</option>
-                <option value="Other">Other</option>
-            </select>
-        </div>
-        <div id="landClassOtherGroup" style="display: none; margin-top: 0.5rem;">
-            <div class="form-group">
-                <label>Other Land Class</label>
-                <input type="text" id="landClassOther" class="form-control" placeholder="Please specify land class">
-            </div>
-        </div>
-    </div>
-</div>
+                                <!-- PURPOSE AND LAND CLASS FIELDS - NOW ALWAYS VISIBLE -->
+                                <div id="iloiloConditionalFields" style="display: block; margin-top: 1rem">
+                                    <div class="form-group">
+                                        <label>Purpose</label>
+                                        <select id="purpose" class="form-control" onchange="purposeChanged()">
+                                            <option value="">-- Select --</option>
+                                            <option value="Conversion">Conversion</option>
+                                            <option value="DAR Exemption">DAR Exemption</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div id="purposeOtherGroup" style="display: none; margin-top: 0.5rem;">
+                                        <div class="form-group">
+                                            <label>Other Purpose</label>
+                                            <input type="text" id="purposeOther" class="form-control" placeholder="Please specify purpose">
+                                        </div>
+                                    </div>
+                                    <div id="landClassGroup" style="display: none; margin-top: 0.5rem;">
+                                        <div class="form-group">
+                                            <label>Land Class</label>
+                                            <select id="landClass" class="form-control" onchange="landClassChanged()">
+                                                <option value="">-- Select --</option>
+                                                <option value="Agricultural">Agricultural</option>
+                                                <option value="Commercial">Commercial</option>
+                                                <option value="Residential">Residential</option>
+                                                <option value="Industrial">Industrial</option>
+                                                <option value="Institutional">Institutional</option>
+                                                <option value="Other">Other</option>
+                                            </select>
+                                        </div>
+                                        <div id="landClassOtherGroup" style="display: none; margin-top: 0.5rem;">
+                                            <div class="form-group">
+                                                <label>Other Land Class</label>
+                                                <input type="text" id="landClassOther" class="form-control" placeholder="Please specify land class">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <div style="display: flex; gap: 1rem; margin-top: 2rem; justify-content: center">
                                 <button type="submit" class="btn btn-success">💾 Save Certification</button
@@ -4627,40 +4628,37 @@ function filterLguByProvince() {
 
     checkIloiloCityConditional();
 }
-        function checkIloiloCityConditional() {
-    let city = document.getElementById("city").value.toLowerCase();
-    let isIloiloCity = city === "iloilo city" || city.includes("iloilo city");
-    let conditionalDiv = document.getElementById("iloiloConditionalFields");
-    
-    if (isIloiloCity) {
+function checkIloiloCityConditional() {
+    // Always show the Purpose and Land Class fields
+    var conditionalDiv = document.getElementById("iloiloConditionalFields");
+    if (conditionalDiv) {
         conditionalDiv.style.display = "block";
-        // Reset purpose and land class when showing
-        document.getElementById("purpose").value = "";
-        document.getElementById("landClass").value = "";
-        document.getElementById("landClassGroup").style.display = "none";
-        document.getElementById("purposeOtherGroup").style.display = "none";
-        document.getElementById("landClassOtherGroup").style.display = "none";
-    } else {
-        conditionalDiv.style.display = "none";
-        // Reset values when hiding
-        document.getElementById("purpose").value = "";
-        document.getElementById("landClass").value = "";
-        document.getElementById("landClassGroup").style.display = "none";
-        document.getElementById("purposeOtherGroup").style.display = "none";
-        document.getElementById("landClassOtherGroup").style.display = "none";
     }
+    
+    // Reset purpose and land class when showing
+    document.getElementById("purpose").value = "";
+    document.getElementById("landClass").value = "";
+    document.getElementById("landClassGroup").style.display = "none";
+    document.getElementById("purposeOtherGroup").style.display = "none";
+    document.getElementById("landClassOtherGroup").style.display = "none";
 }
-       function purposeChanged() {
+
+     function purposeChanged() {
     var purpose = document.getElementById("purpose").value;
     var landClassGroup = document.getElementById("landClassGroup");
     var purposeOtherGroup = document.getElementById("purposeOtherGroup");
     
-    // Reset land class group - HIDE by default
-    landClassGroup.style.display = "none";
-    
-    // Show Land Class ONLY for DAR Exemption
-    if (purpose === "DAR Exemption") {
+    // Hide Land Class when "Conversion" OR "Other" is selected
+    if (purpose === "Conversion" || purpose === "Other") {
+        landClassGroup.style.display = "none";
+        // Reset land class value
+        document.getElementById("landClass").value = "";
+        document.getElementById("landClassOtherGroup").style.display = "none";
+    } else if (purpose && purpose !== "") {
+        // Show Land Class for other purposes (DAR Exemption, etc.)
         landClassGroup.style.display = "block";
+    } else {
+        landClassGroup.style.display = "none";
     }
     
     // Show Purpose Other input ONLY when "Other" is selected
@@ -4672,9 +4670,7 @@ function filterLguByProvince() {
     
     // Reset land class other group when purpose changes
     document.getElementById("landClassOtherGroup").style.display = "none";
-    document.getElementById("landClass").value = "";
 }
-
         function renderAllTables() {
             renderStatusTable();
             renderAccomplishmentTable();
