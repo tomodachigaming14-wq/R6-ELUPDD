@@ -2359,7 +2359,7 @@ th:hover .sort-icon {
                         <form id="zoningForm" onsubmit="return saveZoningRecord(event)" novalidate>
                             <div class="form-grid">
                                 
-								<!-- Certification Number Editor -->
+                                <!-- Certification Number Editor -->
 <div class="form-group full-width">
     <div class="number-editor-panel">
         <div class="number-editor-group" style="flex: 2;">
@@ -2379,8 +2379,8 @@ th:hover .sort-icon {
         </div>
     </div>
 </div>
-								
-								
+                                
+                                
                                 <div class="form-group">
                                     <label>🏷️ Certification Issued</label
                                     ><select id="certificationIssued" class="form-control" required>
@@ -2501,7 +2501,7 @@ th:hover .sort-icon {
                             <div id="clupCascadeDiv">
                                 <div class="form-grid">
                                     <div class="form-group">
-                                        <label>🏞️ Province</label
+                                        <label>🏞️ Province/HUC</label
                                         ><select
                                             id="provinceSelect"
                                             class="form-control"
@@ -2511,7 +2511,7 @@ th:hover .sort-icon {
                                         </select>
                                     </div>
                                     <div class="form-group">
-                                        <label>🏙️ LGU</label
+                                        <label>🏙️ LGU/District</label
                                         ><select id="lguSelect" class="form-control" onchange="fillFromCLUP()" disabled>
                                             <option value="">-- Select province first --</option>
                                         </select>
@@ -2992,7 +2992,7 @@ th:hover .sort-icon {
     <input type="text" id="mapSearchInput" class="map-search-input" placeholder="Search address, place, or saved point..." autocomplete="off">
     <button class="search-btn" onclick="searchMapLocation()">🔍 Search</button>
     <button class="saved-points-btn" onclick="toggleSavedPointsPanel()">📌 My Saved Points <span class="badge-count" id="savedPointsBadge">0</span></button>
-	<button class="tool-btn primary" onclick="syncAllExistingPoints()" style="background: #059669;">🔄 Sync to Sheet</button>
+    <button class="tool-btn primary" onclick="syncAllExistingPoints()" style="background: #059669;">🔄 Sync to Sheet</button>
     <div id="searchResultsDropdown" class="search-results-dropdown"></div>
 </div>
             </div>
@@ -3858,7 +3858,7 @@ function confirmSavePoint() {
         let geoJsonLayers = [],
             currentActiveLayer = null,
             classColorMap = new Map();
-        const BACKEND_URL = "https://script.google.com/macros/s/AKfycbyjJ9NZjiK1RqPEnA6T03a2yJNx-vM45JlYX3zefFwlboYe_rTBBFuS5s2-2unSB5o/exec";
+        const BACKEND_URL = "https://script.google.com/macros/s/AKfycbxE_WDgXi1zeujLJUYRe1zVHPGslFJMGKAYQv2y7Jq0yA-4pAUktByn0_sFM_5CJ-s/exec";
         let defaultRows = [
             {
                 from: "Corner 1",
@@ -4044,7 +4044,7 @@ function confirmSavePoint() {
             });
             document.getElementById("totalArea").value = total.toFixed(4);
         }
-		
+        
        async function syncToSheet(rec, action) {
     try {
         console.log(`📤 Syncing ${action} for record:`, rec.id);
@@ -4145,73 +4145,369 @@ function confirmSavePoint() {
     // Refresh the certification number display
     refreshCertNumber();
 }
-       async function fetchClupRecords() {
-        try {
-            const resp = await fetch(`${BACKEND_URL}?action=get&data_type=clup&_=${Date.now()}`);
-            const data = await resp.json();
-            clupRecords = Array.isArray(data) ? data : [];
-            localStorage.setItem("clupRecords", JSON.stringify(clupRecords));
-            populateProvinces();
-        } catch (e) {
-            clupRecords = JSON.parse(localStorage.getItem("clupRecords") || "[]");
-            populateProvinces();
+
+async function fetchClupRecords() {
+    try {
+        console.log("🔄 Fetching CLUP records from server...");
+        const resp = await fetch(`${BACKEND_URL}?action=get&data_type=clup&_=${Date.now()}`);
+        
+        console.log("📡 Response status:", resp.status);
+        
+        if (!resp.ok) {
+            throw new Error(`HTTP error! status: ${resp.status}`);
         }
+        
+        const data = await resp.json();
+        console.log("📦 CLUP records received:", data);
+        console.log("📦 Data type:", typeof data);
+        console.log("📦 Is array:", Array.isArray(data));
+        console.log("📦 Length:", data.length);
+        
+        // Check if data is an array or has a data property
+        let records = [];
+        if (Array.isArray(data)) {
+            records = data;
+        } else if (data && data.data && Array.isArray(data.data)) {
+            records = data.data;
+        } else if (data && data.success && Array.isArray(data.data)) {
+            records = data.data;
+        }
+        
+        if (records.length > 0) {
+            clupRecords = records;
+            console.log(`✅ Loaded ${clupRecords.length} CLUP records from server`);
+            console.log("📋 First record:", clupRecords[0]);
+        } else {
+            console.log("⚠️ No CLUP records from server, checking localStorage...");
+            const stored = localStorage.getItem("clupRecords");
+            if (stored) {
+                clupRecords = JSON.parse(stored);
+                console.log(`📁 Loaded ${clupRecords.length} CLUP records from cache`);
+            } else {
+                // Use fallback data with corrected Guimarras records
+                console.log("📭 No CLUP records found anywhere, using fallback");
+                clupRecords = [
+                    // Aklan records
+                    { Province: "Aklan", LGU: "Altavas", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2021-1544", Latest_Date_of_Approval: "2021-12-13" },
+                    { Province: "Aklan", LGU: "Balete", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 05-118", Latest_Date_of_Approval: "2005-04-13" },
+                    { Province: "Aklan", LGU: "Banga", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2018-886", Latest_Date_of_Approval: "2018-06-25" },
+                    { Province: "Aklan", LGU: "Batan", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2017-302", Latest_Date_of_Approval: "2017-04-10" },
+                    { Province: "Aklan", LGU: "Buruanga", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 107 s 2013", Latest_Date_of_Approval: "2013-10-09" },
+                    { Province: "Aklan", LGU: "Ibajay", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "HLURB Resolution 85", Latest_Date_of_Approval: "1982-09-01" },
+                    { Province: "Aklan", LGU: "Kalibo", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2021-1001", Latest_Date_of_Approval: "2021-01-11" },
+                    { Province: "Aklan", LGU: "Lezo", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "HLURB Resolution 490", Latest_Date_of_Approval: "1991-09-17" },
+                    { Province: "Aklan", LGU: "Libacao", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2021-1517", Latest_Date_of_Approval: "2021-11-29" },
+                    { Province: "Aklan", LGU: "Madalag", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "HLURB Resolution 383", Latest_Date_of_Approval: "1987-06-17" },
+                    { Province: "Aklan", LGU: "Makato", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "HLURB Resolution 11", Latest_Date_of_Approval: "1981-07-08" },
+                    { Province: "Aklan", LGU: "Malay", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 226 s 2015", Latest_Date_of_Approval: "2015-08-19" },
+                    { Province: "Aklan", LGU: "Malinao", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2018-1044", Latest_Date_of_Approval: "2018-10-08" },
+                    { Province: "Aklan", LGU: "Nabas", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 01-035", Latest_Date_of_Approval: "2001-01-24" },
+                    { Province: "Aklan", LGU: "New Washington", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2022-1643", Latest_Date_of_Approval: "2022-01-31" },
+                    { Province: "Aklan", LGU: "Numancia", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "HLURB Resolution 41-3", Latest_Date_of_Approval: "1980-12-04" },
+                    { Province: "Aklan", LGU: "Tangalan", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 018 s 2013", Latest_Date_of_Approval: "2013-07-13" },
+                    // Antique records
+                    { Province: "Antique", LGU: "Anini-y", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 197-2009", Latest_Date_of_Approval: "2009-08-13" },
+                    { Province: "Antique", LGU: "Barbaza", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 066-2013", Latest_Date_of_Approval: "2013-10-17" },
+                    { Province: "Antique", LGU: "Belison", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 631-2020", Latest_Date_of_Approval: "2020-10-22" },
+                    { Province: "Antique", LGU: "Bugasong", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 243-2008", Latest_Date_of_Approval: "2008-10-15" },
+                    { Province: "Antique", LGU: "Caluya", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 117-2016", Latest_Date_of_Approval: "2016-09-08" },
+                    { Province: "Antique", LGU: "Culasi", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 022-2019", Latest_Date_of_Approval: "2019-07-18" },
+                    { Province: "Antique", LGU: "Tobias Fornier", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 162-2005", Latest_Date_of_Approval: "2005-01-20" },
+                    { Province: "Antique", LGU: "Hamtic", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "Resolution No. 149-2003", Latest_Date_of_Approval: "2003-05-13" },
+                    { Province: "Antique", LGU: "Laua-an", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 116-2018", Latest_Date_of_Approval: "2018-04-19" },
+                    { Province: "Antique", LGU: "Libertad", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 487-2002", Latest_Date_of_Approval: "2002-11-07" },
+                    { Province: "Antique", LGU: "Pandan", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 086-2016", Latest_Date_of_Approval: "2016-08-18" },
+                    { Province: "Antique", LGU: "Patnongon", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 126-2015", Latest_Date_of_Approval: "2015-05-28" },
+                    { Province: "Antique", LGU: "San Jose", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 176-2011", Latest_Date_of_Approval: "2011-05-20" },
+                    { Province: "Antique", LGU: "San Remigio", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 409-2022", Latest_Date_of_Approval: "2022-05-26" },
+                    { Province: "Antique", LGU: "Sebaste", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 518-2002", Latest_Date_of_Approval: "2002-12-12" },
+                    { Province: "Antique", LGU: "Sibalom", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 171-2012", Latest_Date_of_Approval: "2012-07-13" },
+                    { Province: "Antique", LGU: "Tibiao", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 072-2004", Latest_Date_of_Approval: "2004-03-04" },
+                    { Province: "Antique", LGU: "Valderrama", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 107-2006", Latest_Date_of_Approval: "2006-06-15" },
+                    // Capiz records
+                    { Province: "Capiz", LGU: "Cuartero", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 163", Latest_Date_of_Approval: "2005-08-12" },
+                    { Province: "Capiz", LGU: "Dao", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 197", Latest_Date_of_Approval: "2005-10-12" },
+                    { Province: "Capiz", LGU: "Dumalag", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 217", Latest_Date_of_Approval: "2003-12-18" },
+                    { Province: "Capiz", LGU: "Dumarao", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 650 s 2021", Latest_Date_of_Approval: "2021-09-07" },
+                    { Province: "Capiz", LGU: "Ivisan", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 4", Latest_Date_of_Approval: "2000-01-07" },
+                    { Province: "Capiz", LGU: "Jamindan", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 001", Latest_Date_of_Approval: "2004-01-09" },
+                    { Province: "Capiz", LGU: "Ma-ayon", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 008", Latest_Date_of_Approval: "2006-05-26" },
+                    { Province: "Capiz", LGU: "Mambusao", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 046", Latest_Date_of_Approval: "2007-03-16" },
+                    { Province: "Capiz", LGU: "Panay", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 063 s 2014", Latest_Date_of_Approval: "2014-04-10" },
+                    { Province: "Capiz", LGU: "Panitan", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 185", Latest_Date_of_Approval: "2000-09-08" },
+                    { Province: "Capiz", LGU: "Pilar", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 083", Latest_Date_of_Approval: "2002-04-19" },
+                    { Province: "Capiz", LGU: "Pontevedra", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 313", Latest_Date_of_Approval: "2000-12-15" },
+                    { Province: "Capiz", LGU: "President Roxas", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 162", Latest_Date_of_Approval: "2002-08-02" },
+                    { Province: "Capiz", LGU: "Roxas City", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 005", Latest_Date_of_Approval: "2008-01-10" },
+                    { Province: "Capiz", LGU: "Sapi-an", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 135", Latest_Date_of_Approval: "2014-08-13" },
+                    { Province: "Capiz", LGU: "Sigma", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "HLURB Resolution 088", Latest_Date_of_Approval: "2003-06-06" },
+                    { Province: "Capiz", LGU: "Tapaz", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 715 s 2022", Latest_Date_of_Approval: "2022-04-19" },
+                    // Guimarras records - UPDATED WITH CORRECT RESOLUTION NUMBERS
+                    { Province: "Guimarras", LGU: "Buenavista", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "Resolution No. 687", Latest_Date_of_Approval: "2025-12-04" },
+                    { Province: "Guimarras", LGU: "Jordan", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "Resolution No. R-592", Latest_Date_of_Approval: "2025-10-02" },
+                    { Province: "Guimarras", LGU: "Nueva Valencia", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 36", Latest_Date_of_Approval: "2000-06-30" },
+                    { Province: "Guimarras", LGU: "San Lorenzo", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 37", Latest_Date_of_Approval: "2000-06-30" },
+                    { Province: "Guimarras", LGU: "Sibunag", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 204", Latest_Date_of_Approval: "2012-09-19" },
+                    // Iloilo records (sample - you have many more in your data)
+                    { Province: "Iloilo", LGU: "Ajuy", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2005-081", Latest_Date_of_Approval: "2005-05-17" },
+                    { Province: "Iloilo", LGU: "Alimodian", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2022-532", Latest_Date_of_Approval: "2022-09-20" },
+                    { Province: "Iloilo", LGU: "Anilao", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2019-625", Latest_Date_of_Approval: "2019-12-10" },
+                    { Province: "Iloilo", LGU: "Badiangan", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "HLURB Resolution 376", Latest_Date_of_Approval: "1987-03-17" },
+                    { Province: "Iloilo", LGU: "Balasan", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2004-204", Latest_Date_of_Approval: "2004-12-17" },
+                    { Province: "Iloilo", LGU: "Banate", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2017-398", Latest_Date_of_Approval: "2017-06-27" },
+                    { Province: "Iloilo", LGU: "Barotac Nuevo", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2022-236", Latest_Date_of_Approval: "2022-05-24" },
+                    { Province: "Iloilo", LGU: "Barotac Viejo", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2004-007", Latest_Date_of_Approval: "2004-01-27" },
+                    { Province: "Iloilo", LGU: "Batad", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2004-021", Latest_Date_of_Approval: "2004-02-12" },
+                    { Province: "Iloilo", LGU: "Bingawan", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2017-192", Latest_Date_of_Approval: "2017-04-04" },
+                    { Province: "Iloilo", LGU: "Cabatuan", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2007-021", Latest_Date_of_Approval: "2007-02-20" },
+                    { Province: "Iloilo", LGU: "Calinog", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2017-294", Latest_Date_of_Approval: "2017-05-16" },
+                    { Province: "Iloilo", LGU: "Carles", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2013-109", Latest_Date_of_Approval: "2013-03-27" },
+                    { Province: "Iloilo", LGU: "Concepcion", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2002-162", Latest_Date_of_Approval: "2002-11-12" },
+                    { Province: "Iloilo", LGU: "Dingle", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2018-463", Latest_Date_of_Approval: "2018-07-10" },
+                    { Province: "Iloilo", LGU: "Dueñas", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2014-258", Latest_Date_of_Approval: "2014-07-22" },
+                    { Province: "Iloilo", LGU: "Dumangas", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 97-023", Latest_Date_of_Approval: "1997-02-05" },
+                    { Province: "Iloilo", LGU: "Estancia", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "HLURB Resolution 138", Latest_Date_of_Approval: "1983-09-07" },
+                    { Province: "Iloilo", LGU: "Guimbal", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2005-107", Latest_Date_of_Approval: "2005-07-05" },
+                    { Province: "Iloilo", LGU: "Igbaras", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2018-419", Latest_Date_of_Approval: "2018-06-11" },
+                    { Province: "Iloilo", LGU: "Iloilo City", Approved_By: "DHSUD", Latest_Plan_Res: "DHSUD DC No. 2022-002", Latest_Date_of_Approval: "2022-05-12" },
+                    { Province: "Iloilo", LGU: "Janiuay", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2017-474", Latest_Date_of_Approval: "2017-07-18" },
+                    { Province: "Iloilo", LGU: "Lambunao", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2018-418", Latest_Date_of_Approval: "2018-06-11" },
+                    { Province: "Iloilo", LGU: "Leganes", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2022-320", Latest_Date_of_Approval: "2022-06-21" },
+                    { Province: "Iloilo", LGU: "Lemery", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2003-060", Latest_Date_of_Approval: "2003-05-27" },
+                    { Province: "Iloilo", LGU: "Leon", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2002-135", Latest_Date_of_Approval: "2002-09-10" },
+                    { Province: "Iloilo", LGU: "Maasin", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2014-112", Latest_Date_of_Approval: "2014-04-01" },
+                    { Province: "Iloilo", LGU: "Miag-ao", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2018-743", Latest_Date_of_Approval: "2018-11-27" },
+                    { Province: "Iloilo", LGU: "Mina", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2016-579", Latest_Date_of_Approval: "2016-12-13" },
+                    { Province: "Iloilo", LGU: "New Lucena", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2015-307", Latest_Date_of_Approval: "2015-08-18" },
+                    { Province: "Iloilo", LGU: "Oton", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "Resolution No. R-2025-801", Latest_Date_of_Approval: "2025-12-16" },
+                    { Province: "Iloilo", LGU: "Passi City", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2014-188", Latest_Date_of_Approval: "2014-05-27" },
+                    { Province: "Iloilo", LGU: "Pavia", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2019-510", Latest_Date_of_Approval: "2019-10-29" },
+                    { Province: "Iloilo", LGU: "Pototan", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2013-029", Latest_Date_of_Approval: "2013-01-30" },
+                    { Province: "Iloilo", LGU: "San Dionisio", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2006-160", Latest_Date_of_Approval: "2006-10-30" },
+                    { Province: "Iloilo", LGU: "San Enrique", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2003-034", Latest_Date_of_Approval: "2003-03-11" },
+                    { Province: "Iloilo", LGU: "San Joaquin", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2019-475", Latest_Date_of_Approval: "2019-10-15" },
+                    { Province: "Iloilo", LGU: "San Miguel", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2014-250", Latest_Date_of_Approval: "2014-07-15" },
+                    { Province: "Iloilo", LGU: "San Rafael", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "HLURB Resolution 190", Latest_Date_of_Approval: "1984-05-03" },
+                    { Province: "Iloilo", LGU: "Sta. Barbara", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2013-136", Latest_Date_of_Approval: "2013-05-30" },
+                    { Province: "Iloilo", LGU: "Sara", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "HLURB Resolution 39-4", Latest_Date_of_Approval: "1980-07-31" },
+                    { Province: "Iloilo", LGU: "Tigbauan", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2015-267", Latest_Date_of_Approval: "2015-07-23" },
+                    { Province: "Iloilo", LGU: "Tubungan", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2017-475", Latest_Date_of_Approval: "2017-07-18" },
+                    { Province: "Iloilo", LGU: "Zarraga", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 2015-398", Latest_Date_of_Approval: "2015-11-03" }
+                ];
+                console.log("📋 Using fallback CLUP records with correct Guimarras data:", clupRecords.length);
+            }
+        }
+        
+        // Save to localStorage as backup
+        localStorage.setItem("clupRecords", JSON.stringify(clupRecords));
+        populateProvinces();
+        
+    } catch (e) {
+        console.error("❌ Error fetching CLUP records:", e);
+        // Fallback to localStorage
+        const stored = localStorage.getItem("clupRecords");
+        if (stored) {
+            try {
+                clupRecords = JSON.parse(stored);
+                console.log(`📁 Loaded ${clupRecords.length} CLUP records from cache (fallback)`);
+            } catch (e) {
+                clupRecords = [];
+            }
+        } else {
+            // Use fallback data with correct Guimarras records
+            clupRecords = [
+                { Province: "Guimarras", LGU: "Buenavista", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "Resolution No. 687", Latest_Date_of_Approval: "2025-12-04" },
+                { Province: "Guimarras", LGU: "Jordan", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "Resolution No. R-592", Latest_Date_of_Approval: "2025-10-02" },
+                { Province: "Guimarras", LGU: "Nueva Valencia", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 36", Latest_Date_of_Approval: "2000-06-30" },
+                { Province: "Guimarras", LGU: "San Lorenzo", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 37", Latest_Date_of_Approval: "2000-06-30" },
+                { Province: "Guimarras", LGU: "Sibunag", Approved_By: "Sangguniang Panlalawigan", Latest_Plan_Res: "SP Resolution 204", Latest_Date_of_Approval: "2012-09-19" }
+            ];
+            localStorage.setItem("clupRecords", JSON.stringify(clupRecords));
+        }
+        populateProvinces();
     }
-    function populateProvinces() {
-        let select = document.getElementById("provinceSelect");
-        let provs = new Set();
-        clupRecords.forEach((p) => {
-            let pr = p.Province || p.province;
-            if (pr) provs.add(pr);
-        });
-        select.innerHTML =
-            '<option value="">-- Choose Province --</option>' +
-            Array.from(provs)
-                .sort()
-                .map((p) => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`)
-                .join("");
-    }
+}
+   function populateProvinces() {
+    let select = document.getElementById("provinceSelect");
+    
+    // Hardcoded list of 6 provinces/HUCs
+    const provinceList = ["Aklan", "Antique", "Capiz", "Guimarras", "Iloilo", "Iloilo City"];
+    
+    select.innerHTML = '<option value="">-- Choose Province/HUC --</option>' +
+        provinceList
+            .sort()
+            .map((p) => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`)
+            .join("");
+    
+    console.log("Provinces populated:", provinceList.length);
+}
 function filterLguByProvince() {
     let prov = document.getElementById("provinceSelect").value;
     let lguSelect = document.getElementById("lguSelect");
-    lguSelect.innerHTML = '<option value="">-- Select LGU --</option>';
+    lguSelect.innerHTML = '<option value="">-- Select LGU/District --</option>';
     if (!prov) {
         lguSelect.disabled = true;
         return;
     }
     
-    // Comprehensive LGU data for Region VI
-    const lguData = {
-        "Aklan": [
-            "Altavas", "Balete", "Banga", "Batan", "Buruanga", "Ibajay", "Kalibo", "Lezo", "Libacao", 
-            "Madalag", "Makato", "Malay", "Malinao", "Nabas", "New Washington", "Numancia", "Tangalan"
-        ],
-        "Antique": [
-            "Anini-y", "Barbaza", "Belison", "Bugasong", "Caluya", "Culasi", "Hamtic", "Laua-an", 
-            "Libertad", "Pandan", "Patnongon", "San Jose", "San Remigio", "Sebaste", "Sibalom", 
-            "Tibiao", "Tobias Fornier", "Valderrama"
-        ],
-        "Capiz": [
-            "Cuartero", "Dao", "Dumalag", "Dumarao", "Ivisan", "Jamindan", "Ma-ayon", "Mambusao", 
-            "Panay", "Panitan", "Pilar", "Pontevedra", "President Roxas", "Roxas City", "Sapian", 
-            "Sigma", "Tapaz"
-        ],
-        "Guimarras": [
-            "Buenavista", "Jordan", "Nueva Valencia", "San Lorenzo", "Sibunag"
-        ],
-        "Iloilo": [
-            "Ajuy", "Alimodian", "Anilao", "Badiangan", "Balasan", "Banate", "Barotac Nuevo", 
-            "Barotac Viejo", "Batad", "Bingawan", "Cabatuan", "Calinog", "Carles", "Concepcion", 
-            "Dingle", "Dueñas", "Dumangas", "Estancia", "Guimbal", "Igbaras", "Iloilo City", 
-            "Janiuay", "Lambunao", "Leganes", "Lemery", "Leon", "Maasin", "Miagao", "Mina", 
-            "New Lucena", "Oton", "Passi City", "Pavia", "Pototan", "San Dionisio", "San Enrique", 
-            "San Joaquin", "San Miguel", "San Rafael", "Santa Barbara", "Sara", "Tigbauan", 
-            "Tubungan", "Zarraga"
-        ]
-    };
+    console.log("========================================");
+    console.log("Selected Province/HUC:", prov);
+    console.log("CLUP Records available:", clupRecords.length);
+    console.log("CLUP Records:", clupRecords);
+    console.log("========================================");
     
-    let lgus = lguData[prov] || [];
-    if (lgus.length === 0) {
+    // Check if Iloilo City was selected (HUC)
+    if (prov === "Iloilo City" || prov.toLowerCase() === "iloilo city") {
+        // Iloilo City districts
+        const districts = [
+            "Arevalo District",
+            "City Proper District",
+            "Jaro District",
+            "Lapaz District",
+            "Lapuz District",
+            "Mandurriao District",
+            "Molo District"
+        ];
+        districts.forEach(name => {
+            let opt = document.createElement("option");
+            opt.value = name;
+            opt.textContent = name;
+            // Use DHSUD with DC No. 2022-002 for Iloilo City
+            opt.dataset.record = JSON.stringify({
+                LGU: name,
+                Province: "Iloilo City",
+                Approved_By: "DHSUD",
+                Latest_Plan_Res: "DHSUD DC No. 2022-002",
+                Latest_Date_of_Approval: "2022-05-12"
+            });
+            lguSelect.appendChild(opt);
+        });
+        lguSelect.disabled = false;
+        return;
+    }
+    
+    // Filter CLUP records by province
+    let matchedLGUs = [];
+    
+    if (clupRecords && clupRecords.length > 0) {
+        console.log("🔍 Searching for province:", prov);
+        clupRecords.forEach((record, index) => {
+            let recordProv = record.Province || record.province || "";
+            // Normalize for comparison
+            let normalizedRecordProv = recordProv.trim().toLowerCase();
+            let normalizedSelectedProv = prov.trim().toLowerCase();
+            
+            console.log(`   [${index}] Checking: Province="${recordProv}", LGU="${record.LGU || record.lgu || ""}", Resolution="${record.Latest_Plan_Res || record.latest_plan_res || ""}"`);
+            
+            if (normalizedRecordProv === normalizedSelectedProv) {
+                let lguName = record.LGU || record.lgu || "";
+                // Skip Iloilo City when province is Iloilo
+                if (prov === "Iloilo" && lguName === "Iloilo City") {
+                    console.log(`   ⏭️ Skipping Iloilo City (should be HUC)`);
+                    return;
+                }
+                if (lguName) {
+                    // Check if this LGU is already in the list
+                    let existing = matchedLGUs.find(item => item.name === lguName);
+                    if (!existing) {
+                        matchedLGUs.push({
+                            name: lguName,
+                            record: record
+                        });
+                        console.log(`✅ Found LGU: ${lguName} with Resolution: "${record.Latest_Plan_Res || record.latest_plan_res || ""}"`);
+                    }
+                }
+            }
+        });
+    }
+    
+    console.log("Found LGUs from CLUP records:", matchedLGUs.length);
+    
+    // If no LGUs found from CLUP, use fallback data with hardcoded Guimarras records
+    if (matchedLGUs.length === 0) {
+        console.log("No CLUP records found for province:", prov, "- using fallback data");
+        
+        // Define fallback data with hardcoded Guimarras records that have the correct Resolution No.
+        const fallbackData = {
+            "Aklan": {
+                lgus: ["Altavas", "Balete", "Banga", "Batan", "Buruanga", "Ibajay", "Kalibo", "Lezo", "Libacao", "Madalag", "Makato", "Malay", "Malinao", "Nabas", "New Washington", "Numancia", "Tangalan"],
+                approvedBy: "Sangguniang Panlalawigan"
+            },
+            "Antique": {
+                lgus: ["Anini-y", "Barbaza", "Belison", "Bugasong", "Caluya", "Culasi", "Hamtic", "Laua-an", "Libertad", "Pandan", "Patnongon", "San Jose", "San Remigio", "Sebaste", "Sibalom", "Tibiao", "Tobias Fornier", "Valderrama"],
+                approvedBy: "Sangguniang Panlalawigan"
+            },
+            "Capiz": {
+                lgus: ["Cuartero", "Dao", "Dumalag", "Dumarao", "Ivisan", "Jamindan", "Ma-ayon", "Mambusao", "Panay", "Panitan", "Pilar", "Pontevedra", "President Roxas", "Roxas City", "Sapian", "Sigma", "Tapaz"],
+                approvedBy: "Sangguniang Panlalawigan"
+            },
+            "Guimarras": {
+                lgus: ["Buenavista", "Jordan", "Nueva Valencia", "San Lorenzo", "Sibunag"],
+                approvedBy: "Sangguniang Panlalawigan",
+                // Hardcoded resolution numbers for Guimarras
+                resolutions: {
+                    "Buenavista": "Resolution No. 687",
+                    "Jordan": "Resolution No. R-592",
+                    "Nueva Valencia": "SP Resolution 36",
+                    "San Lorenzo": "SP Resolution 37",
+                    "Sibunag": "SP Resolution 204"
+                },
+                dates: {
+                    "Buenavista": "2025-12-04",
+                    "Jordan": "2025-10-02",
+                    "Nueva Valencia": "2000-06-30",
+                    "San Lorenzo": "2000-06-30",
+                    "Sibunag": "2012-09-19"
+                }
+            },
+            "Iloilo": {
+                // ILOILO CITY IS NOT INCLUDED IN THIS LIST
+                lgus: ["Ajuy", "Alimodian", "Anilao", "Badiangan", "Balasan", "Banate", "Barotac Nuevo", "Barotac Viejo", "Batad", "Bingawan", "Cabatuan", "Calinog", "Carles", "Concepcion", "Dingle", "Dueñas", "Dumangas", "Estancia", "Guimbal", "Igbaras", "Janiuay", "Lambunao", "Leganes", "Lemery", "Leon", "Maasin", "Miagao", "Mina", "New Lucena", "Oton", "Passi City", "Pavia", "Pototan", "San Dionisio", "San Enrique", "San Joaquin", "San Miguel", "San Rafael", "Santa Barbara", "Sara", "Tigbauan", "Tubungan", "Zarraga"],
+                approvedBy: "Sangguniang Panlalawigan"
+            }
+        };
+        
+        let provinceData = fallbackData[prov];
+        if (provinceData) {
+            let lguNames = provinceData.lgus || [];
+            // For Iloilo, remove Iloilo City from the list (just in case)
+            if (prov === "Iloilo") {
+                lguNames = lguNames.filter(name => name !== "Iloilo City");
+            }
+            
+            // Use DHSUD for Iloilo province, Sanggunian for others
+            const useDHSUD = (prov === "Iloilo");
+            
+            lguNames.forEach(name => {
+                let resolutionNo = "SP Resolution";
+                let approvalDate = "";
+                
+                // For Guimarras, use the hardcoded resolution numbers
+                if (prov === "Guimarras" && provinceData.resolutions) {
+                    resolutionNo = provinceData.resolutions[name] || "SP Resolution";
+                    approvalDate = provinceData.dates ? provinceData.dates[name] || "" : "";
+                } else {
+                    resolutionNo = useDHSUD ? "DHSUD Resolution" : "SP Resolution";
+                }
+                
+                matchedLGUs.push({
+                    name: name,
+                    record: {
+                        LGU: name,
+                        Province: prov,
+                        Approved_By: useDHSUD ? "DHSUD" : "Sangguniang Panlalawigan",
+                        Latest_Plan_Res: resolutionNo,
+                        Latest_Date_of_Approval: approvalDate
+                    }
+                });
+            });
+        }
+    }
+    
+    // Sort LGUs alphabetically
+    matchedLGUs.sort((a, b) => a.name.localeCompare(b.name));
+    
+    if (matchedLGUs.length === 0) {
         let opt = document.createElement("option");
         opt.value = "";
         opt.textContent = "-- No LGUs found --";
@@ -4220,104 +4516,117 @@ function filterLguByProvince() {
         return;
     }
     
-    lgus.forEach(name => {
+    // Populate the LGU dropdown with real data
+    matchedLGUs.forEach(item => {
         let opt = document.createElement("option");
-        opt.value = name;
-        opt.textContent = name;
-        // Add mock data for CLUP fields
+        opt.value = item.name;
+        opt.textContent = item.name;
+        
+        // Use the actual record from the sheet
+        let record = item.record;
+        let resolutionNo = record.Latest_Plan_Res || record.latest_plan_res || "";
+        
+        // Log what we're setting for debugging
+        console.log(`📝 Setting ${item.name}: Resolution = "${resolutionNo}"`);
+        
         opt.dataset.record = JSON.stringify({
-            LGU: name,
-            Province: prov,
-            Approved_By: "Sangguniang Panlalawigan",
-            Latest_Plan_Res: "SP-2024-001",
-            Latest_Date_of_Approval: "2024-01-15"
+            LGU: record.LGU || record.lgu || item.name,
+            Province: record.Province || record.province || prov,
+            Approved_By: record.Approved_By || record.approved_by || "Sangguniang Panlalawigan",
+            Latest_Plan_Res: resolutionNo,
+            Latest_Date_of_Approval: record.Latest_Date_of_Approval || record.latest_date_of_approval || ""
         });
         lguSelect.appendChild(opt);
     });
+    
     lguSelect.disabled = false;
 }
-        function fillFromCLUP() {
-            let sel = document.getElementById("lguSelect");
-            let opt = sel.options[sel.selectedIndex];
-            if (!opt?.dataset?.record) return;
-            let plan = JSON.parse(opt.dataset.record);
+       function fillFromCLUP() {
+    let sel = document.getElementById("lguSelect");
+    let opt = sel.options[sel.selectedIndex];
+    if (!opt?.dataset?.record) return;
+    let plan = JSON.parse(opt.dataset.record);
 
-            console.log("Full CLUP Record:", plan);
-            console.log("All keys in plan:", Object.keys(plan));
+    console.log("Full CLUP Record:", plan);
+    console.log("All keys in plan:", Object.keys(plan));
 
-            document.getElementById("city").value = plan.LGU || plan.lgu || "";
-            document.getElementById("province").value = plan.Province || plan.province || "";
-            document.getElementById("approvedBy").value =
-                plan.Approved_By || plan.approved_by || "Sangguniang Panlalawigan";
-            document.getElementById("circularNo").value = plan.Latest_Plan_Res || plan.latest_plan_res || "";
+    // Fill basic fields
+    document.getElementById("city").value = plan.LGU || plan.lgu || "";
+    document.getElementById("province").value = plan.Province || plan.province || "";
+    document.getElementById("approvedBy").value =
+        plan.Approved_By || plan.approved_by || "Sangguniang Panlalawigan";
+    
+    // Use the actual resolution number from the sheet, or fallback to a default
+    let resolutionNo = plan.Latest_Plan_Res || plan.latest_plan_res || "";
+    document.getElementById("circularNo").value = resolutionNo;
 
-            // IMPROVED DATE PARSING - Try multiple possible field names
-            let appDate = "";
+    // IMPROVED DATE PARSING - Try multiple possible field names
+    let appDate = "";
 
-            // Check all possible date fields from the CLUP record
-            const possibleDateFields = [
-                "Latest_Date_of_Approval",
-                "approvalDate",
-                "Approval_Date",
-                "Date_of_Approval",
-                "date_approved",
-                "approved_date",
-                "ApprovalDate",
-                "DateApproved",
-                "latest_date_of_approval",
-            ];
+    // Check all possible date fields from the CLUP record
+    const possibleDateFields = [
+        "Latest_Date_of_Approval",
+        "approvalDate",
+        "Approval_Date",
+        "Date_of_Approval",
+        "date_approved",
+        "approved_date",
+        "ApprovalDate",
+        "DateApproved",
+        "latest_date_of_approval",
+    ];
 
-            for (let field of possibleDateFields) {
-                if (plan[field] && plan[field] !== "") {
-                    appDate = plan[field];
-                    console.log(`Found date in field '${field}': ${appDate}`);
+    for (let field of possibleDateFields) {
+        if (plan[field] && plan[field] !== "") {
+            appDate = plan[field];
+            console.log(`Found date in field '${field}': ${appDate}`);
+            break;
+        }
+    }
+
+    // If still empty, try case-insensitive search
+    if (!appDate) {
+        for (let key in plan) {
+            if (key.toLowerCase().includes("date") && key.toLowerCase().includes("approv")) {
+                if (plan[key] && plan[key] !== "") {
+                    appDate = plan[key];
+                    console.log(`Found date in case-insensitive field '${key}': ${appDate}`);
                     break;
                 }
             }
-
-            // If still empty, try case-insensitive search
-            if (!appDate) {
-                for (let key in plan) {
-                    if (key.toLowerCase().includes("date") && key.toLowerCase().includes("approv")) {
-                        if (plan[key] && plan[key] !== "") {
-                            appDate = plan[key];
-                            console.log(`Found date in case-insensitive field '${key}': ${appDate}`);
-                            break;
-                        }
-                    }
-                }
-            }
-
-            // Format the date if found
-            if (appDate) {
-                // Ensure date is in YYYY-MM-DD format for input[type="date"]
-                let formattedDate = appDate;
-                if (appDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
-                    formattedDate = appDate;
-                } else {
-                    try {
-                        let d = new Date(appDate);
-                        if (!isNaN(d.getTime())) {
-                            let year = d.getFullYear();
-                            let month = String(d.getMonth() + 1).padStart(2, "0");
-                            let day = String(d.getDate()).padStart(2, "0");
-                            formattedDate = `${year}-${month}-${day}`;
-                        }
-                    } catch (e) {
-                        console.warn("Could not parse date:", appDate);
-                    }
-                }
-                document.getElementById("approvalDate").value = formattedDate;
-                console.log("Set approvalDate to:", formattedDate);
-            } else {
-                console.warn("No approval date found in CLUP record");
-                document.getElementById("approvalDate").value = "";
-            }
-
-            console.log("Final approvalDate value:", document.getElementById("approvalDate").value);
-
-            checkIloiloCityConditional();
         }
+    }
+
+    // Format the date if found
+    if (appDate) {
+        // Ensure date is in YYYY-MM-DD format for input[type="date"]
+        let formattedDate = appDate;
+        if (appDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+            formattedDate = appDate;
+        } else {
+            try {
+                let d = new Date(appDate);
+                if (!isNaN(d.getTime())) {
+                    let year = d.getFullYear();
+                    let month = String(d.getMonth() + 1).padStart(2, "0");
+                    let day = String(d.getDate()).padStart(2, "0");
+                    formattedDate = `${year}-${month}-${day}`;
+                }
+            } catch (e) {
+                console.warn("Could not parse date:", appDate);
+            }
+        }
+        document.getElementById("approvalDate").value = formattedDate;
+        console.log("Set approvalDate to:", formattedDate);
+    } else {
+        console.warn("No approval date found in CLUP record");
+        document.getElementById("approvalDate").value = "";
+    }
+
+    console.log("Final approvalDate value:", document.getElementById("approvalDate").value);
+
+    checkIloiloCityConditional();
+}
         function checkIloiloCityConditional() {
     let city = document.getElementById("city").value.toLowerCase();
     let isIloiloCity = city === "iloilo city" || city.includes("iloilo city");
@@ -5428,7 +5737,7 @@ function filterLguByProvince() {
             <p style="margin-left:1.2cm; font-size:12pt; margin-top: 2px; margin-bottom: 2px; line-height:1.5;">[ ] Conforms/is compatible with the approved land use plan and/or Zoning Ordinance.</p>
             <p style="margin-left:1.2cm; font-size:12pt; margin-top: 0; margin-bottom: 15px; line-height:1.5;">[ ] Does not conform/is not compatible with the approved land use plan and/or Zoning Ordinance.</p>
             <p style="margin-left:0.5cm; text-indent:1.5cm; text-align:justify; font-size:12pt; margin-top: 5px; margin-bottom: 0; line-height:1.5;">
-                Per record of this office, the ${lguTerm} of <strong>${escapeHtml(city)}</strong> has a total zoned agricultural land of <strong>__________</strong> hectares of which <strong>__________</strong> hectares have been reclassified since <strong>__________</strong>, as approved by the DHSUD/SP per DHSUD/SP Resolution No. <strong>__________</strong> dated <strong>__________</strong>.
+                Per record of this office, <strong>____________</strong> has a total zoned agricultural land of <strong>__________</strong> hectares of which <strong>__________</strong> hectares have been reclassified since <strong>__________</strong>, as approved by the DHSUD/SP per DHSUD/SP Resolution No. <strong>__________</strong> dated <strong>__________</strong>.
             </p>
         </div>
         
@@ -5966,7 +6275,6 @@ function filterLguByProvince() {
             }
         }
 
-        // Make sure to reset page when filters change
         function clearStatusFilters() {
             document.getElementById("statusSearch").value = "";
             document.getElementById("statusFilter").value = "";
@@ -6744,7 +7052,7 @@ function filterLguByProvince() {
         function encodePassword(p) {
             return btoa(p);
         }
-		
+        
         function checkSession() {
     const raw = localStorage.getItem("dhsud_session");
     if (raw) {
@@ -6792,7 +7100,7 @@ function filterLguByProvince() {
                 <button class="dropbtn">Certification</button>
                 <div class="dropdown-content">
                     <a href="lc.html">Locational Clearance</a>
-                    <a href="SZC.html">Site Zoning Clarification</a>
+                    <a href="SZC.html">Site Zoning Certification</a>
                 </div>
             </div>
             <div class="dropdown" id="landUseDropdown">
@@ -7918,34 +8226,18 @@ async function deleteSavedPointMarker(certNo) {
 
 function populateProvinces() {
     let select = document.getElementById("provinceSelect");
-    let provs = new Set();
     
-    console.log("Populating provinces from clupRecords:", clupRecords);
+    // Hardcoded list of 6 provinces/HUCs
+    const provinceList = ["Aklan", "Antique", "Capiz", "Guimarras", "Iloilo", "Iloilo City"];
     
-    // Use clupRecords if available, otherwise use fallback
-    if (clupRecords && clupRecords.length > 0) {
-        clupRecords.forEach((p) => {
-            let pr = p.Province || p.province;
-            if (pr) provs.add(pr);
-        });
-    }
-    
-    // If no provinces found, use hardcoded fallback
-    if (provs.size === 0) {
-        console.log("No provinces found in CLUP records, using fallback");
-        const fallbackProvinces = ["Aklan", "Antique", "Capiz", "Guimarras", "Iloilo", "Iloilo City"];
-        fallbackProvinces.forEach(p => provs.add(p));
-    }
-    
-    select.innerHTML = '<option value="">-- Choose Province --</option>' +
-        Array.from(provs)
+    select.innerHTML = '<option value="">-- Choose Province/HUC --</option>' +
+        provinceList
             .sort()
             .map((p) => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`)
             .join("");
     
-    console.log("Provinces populated:", provs.size);
+    console.log("Provinces populated:", provinceList.length);
 }
-
 
 // Refresh Certification Number Display
 function refreshCertNumberDisplay() {
