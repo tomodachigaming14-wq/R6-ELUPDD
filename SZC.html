@@ -2300,6 +2300,27 @@ th:hover .sort-icon {
     background: #fef2f2;
 }
 
+/* Ensure Purpose and Land Class fields are visible */
+#iloiloConditionalFields {
+    display: block !important;
+}
+
+#iloiloConditionalFields .form-group {
+    display: block !important;
+}
+
+#purpose {
+    display: block !important;
+}
+
+#landClassGroup {
+    display: none; /* Hidden by default, shown by purposeChanged() */
+}
+
+#purposeOtherGroup {
+    display: none; /* Hidden by default, shown by purposeChanged() */
+}
+
   </style>
 </head>
 <body>
@@ -4641,6 +4662,19 @@ function checkIloiloCityConditional() {
     document.getElementById("landClassGroup").style.display = "none";
     document.getElementById("purposeOtherGroup").style.display = "none";
     document.getElementById("landClassOtherGroup").style.display = "none";
+    
+    // Make sure the Purpose dropdown is visible and enabled
+    var purposeSelect = document.getElementById("purpose");
+    if (purposeSelect) {
+        purposeSelect.style.display = "block";
+        purposeSelect.disabled = false;
+    }
+    
+    // Make sure the Purpose label is visible
+    var purposeLabel = purposeSelect ? purposeSelect.closest('.form-group')?.querySelector('label') : null;
+    if (purposeLabel) {
+        purposeLabel.style.display = "block";
+    }
 }
 
      function purposeChanged() {
@@ -7251,19 +7285,37 @@ function checkIloiloCityConditional() {
             return false;
         }
 
-        async function init() {
-        checkSession();
-        renderMainNavigation();
-        renderUserMenu();
-        await fetchClupRecords();
-        await fetchCertifications();
-        refreshCertNumber();
-        document.getElementById("landHoldingsContainer").innerHTML = "";
-        document.getElementById("landHoldingsContainer").appendChild(createLandHoldingRow("", "", "", "0", ""));
-        document.getElementById("parcels").value = 1;
-        switchZoningView("dataEntry");
-    }
-    init();
+async function init() {
+    checkSession();
+    renderMainNavigation();
+    renderUserMenu();
+    await fetchClupRecords();
+    await fetchCertifications();
+    refreshCertNumber();
+    document.getElementById("landHoldingsContainer").innerHTML = "";
+    document.getElementById("landHoldingsContainer").appendChild(createLandHoldingRow("", "", "", "0", ""));
+    document.getElementById("parcels").value = 1;
+    switchZoningView("dataEntry");
+    
+    // ADD THIS: Ensure Purpose fields are visible after everything loads
+    setTimeout(function() {
+        var iloiloDiv = document.getElementById("iloiloConditionalFields");
+        if (iloiloDiv) {
+            iloiloDiv.style.display = "block";
+        }
+        // Make sure Purpose dropdown is visible
+        var purposeSelect = document.getElementById("purpose");
+        if (purposeSelect) {
+            purposeSelect.style.display = "block";
+            purposeSelect.disabled = false;
+        }
+        // Initialize the purpose change handler
+        purposeChanged();
+    }, 500);
+}
+
+// Call the function ONCE - remove the duplicate call
+init();
         
         // ========== MAP VIEW FUNCTIONS - ADD THIS MISSING FUNCTION ==========
     function changeMapView(type) {
