@@ -2542,15 +2542,16 @@ th:hover .sort-icon {
                             </div>
                             <div id="approvedDetails">
                                 <div class="form-grid">
-                                    <div class="form-group">
-                                        <label>City/Municipality</label
-                                        ><input
-                                            type="text"
-                                            id="city"
-                                            class="form-control"
-                                            onchange="checkIloiloCityConditional()"
-                                        />
-                                    </div>
+                                   <div class="form-group">
+                                      <label>City/Municipality</label>
+									  <input
+                                      type="text"
+                                      id="city"
+                                      class="form-control"
+                                      readonly
+                                      onchange="checkIloiloCityConditional()"
+                                      />
+                                      </div>
                                     <div class="form-group">
                                         <label>Province</label
                                         ><input type="text" id="province" class="form-control" readonly />
@@ -3880,7 +3881,7 @@ function confirmSavePoint() {
         let geoJsonLayers = [],
             currentActiveLayer = null,
             classColorMap = new Map();
-        const BACKEND_URL = "https://script.google.com/macros/s/AKfycbxE_WDgXi1zeujLJUYRe1zVHPGslFJMGKAYQv2y7Jq0yA-4pAUktByn0_sFM_5CJ-s/exec";
+        const BACKEND_URL = "https://script.google.com/macros/s/AKfycbxd2wNFVVTfglAjqQq_r8BKIcUvQfnjHK99pifag_h3MCrTDfso3kuycrEa9gbfdZg/exec";
         let defaultRows = [
             {
                 from: "Corner 1",
@@ -3980,7 +3981,7 @@ function confirmSavePoint() {
         function closeReportModal() {
             document.getElementById("reportModal").classList.remove("active");
         }
-        function getNextCertNumber() {
+      function getNextCertNumber() {
     let max = 0;
     let records = [];
     
@@ -4120,14 +4121,39 @@ function confirmSavePoint() {
         const resp = await fetch(`${BACKEND_URL}?action=get&data_type=zoning&_=${Date.now()}`);
         const data = await resp.json();
         console.log("📦 Server response received:", data);
+        console.log("📦 Response type:", typeof data);
+        console.log("📦 Is array:", Array.isArray(data));
         
-        if (data.success && data.data) {
-            zoningCertifications = data.data;
+        // ===== FIX: Check if data is an array directly =====
+        let records = [];
+        if (Array.isArray(data)) {
+            // Server returned the array directly (this is what your backend does)
+            records = data;
+            console.log(`✅ Server returned array directly with ${records.length} records`);
+        } else if (data && data.success && Array.isArray(data.data)) {
+            // Server returned { success: true, data: [...] }
+            records = data.data;
+            console.log(`✅ Server returned wrapped object with ${records.length} records`);
+        } else if (data && data.data && Array.isArray(data.data)) {
+            // Server returned { data: [...] }
+            records = data.data;
+            console.log(`✅ Server returned data property with ${records.length} records`);
+        } else {
+            console.log("⚠️ Unexpected response format:", data);
+        }
+        
+        if (records.length > 0) {
+            zoningCertifications = records;
             console.log(`✅ Loaded ${zoningCertifications.length} records from server`);
+            // Log the last few records to verify
+            if (records.length > 3) {
+                console.log("📋 Last 3 records:", records.slice(-3));
+            }
             // Save to localStorage
             localStorage.setItem("zoningCertifications", JSON.stringify(zoningCertifications));
             renderAllTables();
             showToast(`✅ Loaded ${zoningCertifications.length} records from server`);
+            refreshCertNumber();
             return;
         }
         
@@ -4135,37 +4161,45 @@ function confirmSavePoint() {
         console.log("⚠️ Server returned no data, checking localStorage...");
         const stored = localStorage.getItem("zoningCertifications");
         if (stored) {
-            zoningCertifications = JSON.parse(stored);
-            renderAllTables();
-            showToast(`📁 Offline mode: ${zoningCertifications.length} records loaded from cache`);
-        } else {
-            zoningCertifications = [];
-            renderAllTables();
-            showToast("⚠️ No data available. Please check your connection.");
+            const parsed = JSON.parse(stored);
+            if (parsed && parsed.length > 0) {
+                zoningCertifications = parsed;
+                renderAllTables();
+                showToast(`📁 Offline mode: ${zoningCertifications.length} records loaded from cache`);
+                refreshCertNumber();
+                return;
+            }
         }
+        
+        // No data found anywhere
+        zoningCertifications = [];
+        renderAllTables();
+        showToast("⚠️ No data available. Please check your connection.");
+        refreshCertNumber();
+        
     } catch (e) {
         console.error("❌ Error fetching certifications:", e);
         // FALLBACK: Load from localStorage
         const stored = localStorage.getItem("zoningCertifications");
         if (stored) {
             try {
-                zoningCertifications = JSON.parse(stored);
-                renderAllTables();
-                showToast(`📁 Offline mode: ${zoningCertifications.length} records loaded from cache`);
+                const parsed = JSON.parse(stored);
+                if (parsed && parsed.length > 0) {
+                    zoningCertifications = parsed;
+                    renderAllTables();
+                    showToast(`📁 Offline mode: ${zoningCertifications.length} records loaded from cache`);
+                    refreshCertNumber();
+                    return;
+                }
             } catch (e) {
-                zoningCertifications = [];
-                renderAllTables();
-                showToast("⚠️ No cached data found. Starting fresh.");
+                console.error("Error parsing localStorage:", e);
             }
-        } else {
-            zoningCertifications = [];
-            renderAllTables();
-            showToast("⚠️ No data available. Please check your connection.");
         }
+        zoningCertifications = [];
+        renderAllTables();
+        showToast("⚠️ No data available. Please check your connection.");
+        refreshCertNumber();
     }
-    
-    // Refresh the certification number display
-    refreshCertNumber();
 }
 
 async function fetchClupRecords() {
@@ -4374,13 +4408,11 @@ function filterLguByProvince() {
     
     console.log("========================================");
     console.log("Selected Province/HUC:", prov);
-    console.log("CLUP Records available:", clupRecords.length);
-    console.log("CLUP Records:", clupRecords);
     console.log("========================================");
     
     // Check if Iloilo City was selected (HUC)
     if (prov === "Iloilo City" || prov.toLowerCase() === "iloilo city") {
-        // Iloilo City districts
+        // Iloilo City districts with CORRECT date format (YYYY-MM-DD)
         const districts = [
             "Arevalo District",
             "City Proper District",
@@ -4395,13 +4427,15 @@ function filterLguByProvince() {
             opt.value = name;
             opt.textContent = name;
             // Use DHSUD with DC No. 2022-002 for Iloilo City
+            // CRITICAL FIX: The date must be "2022-05-12" (YYYY-MM-DD format)
             opt.dataset.record = JSON.stringify({
                 LGU: name,
                 Province: "Iloilo City",
                 Approved_By: "DHSUD",
                 Latest_Plan_Res: "DHSUD DC No. 2022-002",
-                Latest_Date_of_Approval: "2022-05-12"
+                Latest_Date_of_Approval: "2022-05-12"  // <-- CORRECT DATE FORMAT
             });
+            console.log(`Added district: ${name} with date: 2022-05-12`);
             lguSelect.appendChild(opt);
         });
         lguSelect.disabled = false;
@@ -4563,92 +4597,82 @@ function filterLguByProvince() {
     
     lguSelect.disabled = false;
 }
-       function fillFromCLUP() {
+     function fillFromCLUP() {
     let sel = document.getElementById("lguSelect");
     let opt = sel.options[sel.selectedIndex];
     if (!opt?.dataset?.record) return;
     let plan = JSON.parse(opt.dataset.record);
 
     console.log("Full CLUP Record:", plan);
-    console.log("All keys in plan:", Object.keys(plan));
+    console.log("Latest_Date_of_Approval from dataset:", plan.Latest_Date_of_Approval);
 
-    // Fill basic fields
+    // Fill basic fields - city is now readonly
     document.getElementById("city").value = plan.LGU || plan.lgu || "";
     document.getElementById("province").value = plan.Province || plan.province || "";
-    document.getElementById("approvedBy").value =
-        plan.Approved_By || plan.approved_by || "Sangguniang Panlalawigan";
     
-    // Use the actual resolution number from the sheet, or fallback to a default
-    let resolutionNo = plan.Latest_Plan_Res || plan.latest_plan_res || "";
-    document.getElementById("circularNo").value = resolutionNo;
+    // Get the latest data from CLUP records (not from the stored plan)
+    const city = plan.LGU || plan.lgu || "";
+    const province = plan.Province || plan.province || "";
+    const clupData = getClupDataForCity(city, province);
+    
+    // Use CLUP data if found, otherwise use the plan data
+    document.getElementById("approvedBy").value = clupData?.Approved_By || plan.Approved_By || plan.approved_by || "Sangguniang Panlalawigan";
+    document.getElementById("circularNo").value = clupData?.Latest_Plan_Res || plan.Latest_Plan_Res || plan.latest_plan_res || "";
+    
+    // Get the approval date
+    let appDate = clupData?.Latest_Date_of_Approval || plan.Latest_Date_of_Approval || 
+                  plan.approvalDate || plan.approved_date || plan.date_approved || 
+                  plan.Approval_Date || "";
 
-    // IMPROVED DATE PARSING - Try multiple possible field names
-    let appDate = "";
+    console.log("Raw approval date value:", appDate);
 
-    // Check all possible date fields from the CLUP record
-    const possibleDateFields = [
-        "Latest_Date_of_Approval",
-        "approvalDate",
-        "Approval_Date",
-        "Date_of_Approval",
-        "date_approved",
-        "approved_date",
-        "ApprovalDate",
-        "DateApproved",
-        "latest_date_of_approval",
-    ];
-
-    for (let field of possibleDateFields) {
-        if (plan[field] && plan[field] !== "") {
-            appDate = plan[field];
-            console.log(`Found date in field '${field}': ${appDate}`);
-            break;
-        }
-    }
-
-    // If still empty, try case-insensitive search
-    if (!appDate) {
-        for (let key in plan) {
-            if (key.toLowerCase().includes("date") && key.toLowerCase().includes("approv")) {
-                if (plan[key] && plan[key] !== "") {
-                    appDate = plan[key];
-                    console.log(`Found date in case-insensitive field '${key}': ${appDate}`);
-                    break;
-                }
-            }
-        }
-    }
-
-    // Format the date if found
-    if (appDate) {
-        // Ensure date is in YYYY-MM-DD format for input[type="date"]
-        let formattedDate = appDate;
+    // Set the approval date directly - keep it in YYYY-MM-DD format for the form
+    if (appDate && appDate !== "") {
+        // If it's already in YYYY-MM-DD format, use it directly
         if (appDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
-            formattedDate = appDate;
+            document.getElementById("approvalDate").value = appDate;
         } else {
+            // Try to convert to YYYY-MM-DD for the form
             try {
                 let d = new Date(appDate);
                 if (!isNaN(d.getTime())) {
                     let year = d.getFullYear();
-                    let month = String(d.getMonth() + 1).padStart(2, "0");
-                    let day = String(d.getDate()).padStart(2, "0");
-                    formattedDate = `${year}-${month}-${day}`;
+                    let month = String(d.getMonth() + 1).padStart(2, '0');
+                    let day = String(d.getDate()).padStart(2, '0');
+                    document.getElementById("approvalDate").value = `${year}-${month}-${day}`;
+                } else {
+                    // If parsing fails, try to extract from DD-MMM-YY format
+                    const monthMap = {
+                        'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
+                        'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
+                        'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
+                    };
+                    const match = appDate.match(/^(\d{1,2})-([A-Za-z]{3})-(\d{2,4})$/);
+                    if (match) {
+                        let day = match[1].padStart(2, '0');
+                        let month = monthMap[match[2]];
+                        let year = match[3];
+                        if (year.length === 2) {
+                            year = (parseInt(year) >= 50 ? '19' : '20') + year;
+                        }
+                        if (month) {
+                            document.getElementById("approvalDate").value = `${year}-${month}-${day}`;
+                        }
+                    }
                 }
             } catch (e) {
-                console.warn("Could not parse date:", appDate);
+                console.warn("Could not parse date:", appDate, e);
             }
         }
-        document.getElementById("approvalDate").value = formattedDate;
-        console.log("Set approvalDate to:", formattedDate);
+        console.log("✅ Set approvalDate to:", document.getElementById("approvalDate").value);
     } else {
-        console.warn("No approval date found in CLUP record");
+        console.warn("No approval date found in CLUP record for:", plan.LGU);
         document.getElementById("approvalDate").value = "";
     }
 
-    console.log("Final approvalDate value:", document.getElementById("approvalDate").value);
-
     checkIloiloCityConditional();
 }
+
 function checkIloiloCityConditional() {
     // Always show the Purpose and Land Class fields
     var conditionalDiv = document.getElementById("iloiloConditionalFields");
@@ -5094,7 +5118,7 @@ function checkIloiloCityConditional() {
     await fetchCertifications();
 }
 
-       async function saveZoningRecord(e) {
+async function saveZoningRecord(e) {
     e.preventDefault();
     
     // Get the certification number from the input field
@@ -5123,14 +5147,34 @@ function checkIloiloCityConditional() {
     var purposeValue = document.getElementById("purpose")?.value || "";
     var landClassValue = document.getElementById("landClass")?.value || "";
     
-    // If Purpose is "Other", use the custom input value
     if (purposeValue === "Other") {
         purposeValue = document.getElementById("purposeOther")?.value || "Other";
     }
-    
-    // If Land Class is "Other", use the custom input value
     if (landClassValue === "Other") {
         landClassValue = document.getElementById("landClassOther")?.value || "Other";
+    }
+    
+    // Check if we're editing an existing record
+    let isEditing = currentEditingId !== null;
+    let originalRecord = null;
+    
+    // If editing, find the original record to preserve dates
+    if (isEditing) {
+        originalRecord = zoningCertifications.find((r) => r.id === currentEditingId);
+    }
+    
+    // CRITICAL FIX: Get the approval date from the form
+    const approvalDateInput = document.getElementById("approvalDate");
+    let approvalDateValue = approvalDateInput ? approvalDateInput.value : "";
+    console.log("📅 approvalDate from form input:", approvalDateValue);
+    
+    // If approvalDate is empty but we have Iloilo City selected, set it manually
+    const cityValue = document.getElementById("city")?.value || "";
+    const provinceValue = document.getElementById("province")?.value || "";
+    
+    if (!approvalDateValue && provinceValue === "Iloilo City" && cityValue) {
+        approvalDateValue = "2022-05-12";
+        console.log("📅 Using Iloilo City date:", approvalDateValue);
     }
     
     let record = {
@@ -5145,40 +5189,51 @@ function checkIloiloCityConditional() {
         totalArea: document.getElementById("totalArea").value,
         proposedUse: document.getElementById("proposedUse").value,
         landHoldings,
-        dateReceived: document.getElementById("dateReceived").value,
-        dateIssued: document.getElementById("dateIssued").value,
+        dateReceived: isEditing && originalRecord ? originalRecord.dateReceived : document.getElementById("dateReceived").value,
+        dateIssued: isEditing && originalRecord ? originalRecord.dateIssued : document.getElementById("dateIssued").value,
         requestedBy: document.getElementById("requestedBy").value,
         amountPaid: document.getElementById("amountPaid").value,
         orNo: document.getElementById("orNo").value,
-        orDate: document.getElementById("orDate").value,
-        remarks: "",
+        orDate: isEditing && originalRecord ? originalRecord.orDate : document.getElementById("orDate").value,
+        remarks: originalRecord?.remarks || "",
         clupStatus: document.querySelector('input[name="clupStatus"]:checked')?.value,
         city: document.getElementById("city").value,
         province: document.getElementById("province").value,
         approvedBy: document.getElementById("approvedBy").value,
         circularNo: document.getElementById("circularNo").value,
-        approvalDate: document.getElementById("approvalDate").value,
+        // CRITICAL FIX: Save the approval date
+        approvalDate: approvalDateValue,
         purpose: purposeValue,
         landClass: landClassValue,
-        status: currentEditingId
-            ? zoningCertifications.find((r) => r.id === currentEditingId)?.status || "For Review"
-            : "For Review",
+        status: isEditing ? (originalRecord?.status || "For Review") : "For Review",
         timestamp: new Date().toISOString(),
     };
     
-    if (currentEditingId) {
+    console.log("📋 Record being saved with approvalDate:", record.approvalDate);
+    
+    if (isEditing) {
         let idx = zoningCertifications.findIndex((r) => r.id === record.id);
-        if (idx !== -1) zoningCertifications[idx] = record;
-        else zoningCertifications.push(record);
+        if (idx !== -1) {
+            zoningCertifications[idx] = record;
+        } else {
+            let idxByCert = zoningCertifications.findIndex((r) => r.certificationNo === record.certificationNo);
+            if (idxByCert !== -1) {
+                zoningCertifications[idxByCert] = record;
+            } else {
+                zoningCertifications.push(record);
+            }
+        }
     } else {
-        if (!zoningCertifications.some((r) => r.id === record.id)) zoningCertifications.push(record);
+        if (!zoningCertifications.some((r) => r.id === record.id)) {
+            zoningCertifications.push(record);
+        }
     }
     
     localStorage.setItem("zoningCertifications", JSON.stringify(zoningCertifications));
     clearZoningForm();
     renderAllTables();
-    showToast(`Saved ${certNo}`);
-    await syncToSheet(record, currentEditingId ? "update" : "add");
+    showToast(isEditing ? `✅ Updated: ${certNo}` : `✅ Saved: ${certNo}`);
+    await syncToSheet(record, isEditing ? "update" : "add");
     await fetchCertifications();
     switchZoningView("status");
     return false;
@@ -5462,7 +5517,7 @@ function checkIloiloCityConditional() {
     document.getElementById("dataModal").classList.add("active");
 }
 
-     function editRecord(id) {
+    function editRecord(id) {
     console.log("✏️ editRecord called with ID:", id);
     
     let rec = zoningCertifications.find((r) => {
@@ -5474,22 +5529,51 @@ function checkIloiloCityConditional() {
         return;
     }
     
+    // CRITICAL: Store the original record ID to prevent duplication
     currentEditingId = rec.id;
+    
+    // Store ALL original date values BEFORE filling form
+    const originalData = {
+        dateReceived: rec.dateReceived || "",
+        dateIssued: rec.dateIssued || "",
+        orDate: rec.orDate || "",
+        status: rec.status || "For Review",
+        approvalDate: rec.approvalDate || ""  // <-- ADD THIS
+    };
+    
     switchZoningView("dataEntry");
     
-    // Fill form fields
+    // Fill form fields - EXCLUDE date fields
     Object.keys(rec).forEach((k) => {
         let el = document.getElementById(k);
-        if (el && k !== "id" && k !== "landHoldings" && k !== "timestamp") {
+        // Skip these fields - we'll set them manually
+        if (el && k !== "id" && k !== "landHoldings" && k !== "timestamp" && 
+            k !== "dateReceived" && k !== "dateIssued" && k !== "orDate" &&
+            k !== "approvalDate") {  // <-- ADD approvalDate to skip list
             el.value = rec[k] || "";
         }
     });
+    
+    // NOW set the date fields with the preserved values
+    if (originalData.dateReceived) {
+        document.getElementById("dateReceived").value = originalData.dateReceived;
+    }
+    if (originalData.dateIssued) {
+        document.getElementById("dateIssued").value = originalData.dateIssued;
+    }
+    if (originalData.orDate) {
+        document.getElementById("orDate").value = originalData.orDate;
+    }
+    // CRITICAL FIX: Restore approvalDate
+    if (originalData.approvalDate) {
+        document.getElementById("approvalDate").value = originalData.approvalDate;
+        console.log("🔄 Restored approvalDate:", originalData.approvalDate);
+    }
     
     // Parse certification number into parts
     if (rec.certificationNo) {
         const parts = rec.certificationNo.split('-');
         if (parts.length === 3) {
-            // SZC-RVI26-001 format -> extract "26-001"
             const yearSeq = parts[1].replace('RVI', '') + '-' + parts[2];
             document.getElementById('certNumberParts').value = yearSeq;
             updateCertPreview();
@@ -5521,8 +5605,9 @@ function checkIloiloCityConditional() {
     }
     
     document.querySelector('.zoning-view.active').scrollIntoView({ behavior: 'smooth' });
+    
+    showToast(`✏️ Editing: ${rec.certificationNo} - Dates preserved`, "info");
 }
-
         function clearZoningForm() {
     document.getElementById("zoningForm").reset();
     document.getElementById("landHoldingsContainer").innerHTML = "";
@@ -5641,37 +5726,95 @@ function checkIloiloCityConditional() {
             }
         }
 
-      function printOfficialRecord(id) {
+function printOfficialRecord(id) {
     console.log("🖨️ printOfficialRecord called with ID:", id);
     
-    // Find record by ID (numeric) OR certification number
     const rec = zoningCertifications.find((r) => {
         return String(r.id) === String(id) || String(r.certificationNo) === String(id);
     });
     
     if (!rec) {
         showToast("Record not found", "error");
-        console.log("❌ Record not found for ID:", id);
         return;
     }
     
     console.log("✅ Printing record:", rec.certificationNo);
+    console.log("📋 Record city:", rec.city);
+    console.log("📋 Record province:", rec.province);
 
-    // Helper functions for formatting
+// ====== FIX: ALWAYS FETCH FROM CLUP RECORDS ======
+let clupData = getClupDataForCity(rec.city, rec.province);
+
+// Determine city and province display
+let finalCity = rec.city || "__________";
+let finalProvince = rec.province || "__________";
+const finalApprovedBy = clupData?.Approved_By || rec.approvedBy || "Sangguniang Panlalawigan";
+const finalCircularNo = clupData?.Latest_Plan_Res || rec.circularNo || "__________";
+const finalApprovalDate = clupData?.Latest_Date_of_Approval || rec.approvalDate || "";
+
+// FIX: Handle Iloilo City vs Iloilo province municipalities
+const cityLower = finalCity.toLowerCase();
+const provinceLower = finalProvince.toLowerCase();
+
+// If it's Iloilo City or any district, display as "Iloilo City"
+if (cityLower === "iloilo city" || 
+    cityLower === "iloilo" ||
+    cityLower.includes("iloilo city district") ||
+    cityLower.includes("iloilo city") ||
+    (cityLower.includes("iloilo") && cityLower.includes("district"))) {
+    // For Iloilo City or any of its districts, use "Iloilo City"
+    finalCity = "Iloilo City";
+    // Remove the province since it's redundant
+    finalProvince = "";
+} 
+// For Iloilo province municipalities (like Pavia), keep both city and province
+// finalCity = "Pavia", finalProvince = "Iloilo" - this is already correct
+
+console.log("📋 Final City:", finalCity);
+console.log("📋 Final Province:", finalProvince);
+console.log("📋 CLUP Data used - Circular No:", finalCircularNo);
+console.log("📋 CLUP Data used - Approval Date:", finalApprovalDate);
+console.log("📋 CLUP Data used - Approved By:", finalApprovedBy);
+
+    // Helper function to format date as "May 12, 2022"
+    function formatDateForDisplay(dateStr) {
+        if (!dateStr) return "_________";
+        try {
+            let d = new Date(dateStr);
+            if (!isNaN(d.getTime())) {
+                return d.toLocaleDateString("en-US", { 
+                    month: "long", 
+                    day: "numeric", 
+                    year: "numeric" 
+                });
+            }
+        } catch (e) {}
+        return dateStr;
+    }
+
+    // Helper function for formatting other dates
     const formatMonthDayYear = (dateStr) => {
         if (!dateStr) return "_________";
-        let d = new Date(dateStr);
-        if (isNaN(d)) return dateStr;
-        return d.toLocaleDateString("en-PH", { month: "long", day: "numeric", year: "numeric" });
+        try {
+            let d = new Date(dateStr);
+            if (isNaN(d.getTime())) return dateStr;
+            return d.toLocaleDateString("en-PH", { month: "long", day: "numeric", year: "numeric" });
+        } catch (e) {
+            return dateStr;
+        }
     };
 
     const formatOrdinalDateLong = (dateStr) => {
         if (!dateStr) return "_________";
-        let d = new Date(dateStr);
-        if (isNaN(d)) return dateStr;
-        let day = d.getDate();
-        let suffix = ["th", "st", "nd", "rd"][day % 10 > 3 || Math.floor((day % 100) / 10) == 1 ? 0 : day % 10];
-        return `${day}${suffix} day of ${d.toLocaleDateString("en-PH", { month: "long", year: "numeric" })}`;
+        try {
+            let d = new Date(dateStr);
+            if (isNaN(d.getTime())) return dateStr;
+            let day = d.getDate();
+            let suffix = ["th", "st", "nd", "rd"][day % 10 > 3 || Math.floor((day % 100) / 10) == 1 ? 0 : day % 10];
+            return `${day}${suffix} day of ${d.toLocaleDateString("en-PH", { month: "long", year: "numeric" })}`;
+        } catch (e) {
+            return dateStr;
+        }
     };
 
     // Get current user info for watermark
@@ -5734,67 +5877,119 @@ function checkIloiloCityConditional() {
         <td style="border:1px solid #000000; padding:8px; text-decoration:none;"></td>
       </tr>`;
 
-    const city = rec.city || "____________________";
-    const province = rec.province || "____________________";
-    const approvedBy = rec.approvedBy || "Sangguniang Panlalawigan";
-    const circularNo = rec.circularNo || "_________";
-    const approvalDateFormatted = formatMonthDayYear(rec.approvalDate);
-    const clupStatus = rec.clupStatus || "approved";
+    // Format the approval date
+    let approvalDateFormatted = "_________";
+    if (finalApprovalDate && finalApprovalDate !== "") {
+        approvalDateFormatted = formatDateForDisplay(finalApprovalDate);
+        console.log("✅ Formatted approval date for print:", approvalDateFormatted);
+    } else {
+        console.warn("⚠️ No approval date found");
+        // If no date but it's Iloilo City, use the default
+        if (finalCity.toLowerCase().includes("iloilo city") || finalProvince === "Iloilo City") {
+            approvalDateFormatted = "May 12, 2022";
+        }
+    }
+    
+    console.log("📅 Final approval date for print:", approvalDateFormatted);
+    console.log("📋 Final Circular No for print:", finalCircularNo);
 
+    const clupStatus = rec.clupStatus || "approved";
     const check1 = clupStatus === "approved" ? "[✓]" : "[ ]";
     const check2 = clupStatus === "pending" ? "[✓]" : "[ ]";
     const check3 = clupStatus === "none" ? "[✓]" : "[ ]";
 
-    const isCity = city.toLowerCase().includes("city");
+    const isCity = finalCity.toLowerCase().includes("city");
     const lguTerm = isCity ? "city" : "municipality";
 
-    const isIloiloCity = city.toLowerCase().includes("iloilo city");
-    let extraParagraph = "";
-    if (isIloiloCity && rec.purpose === "Conversion") {
-        const landClassText = rec.landClass || "Agricultural";
-        extraParagraph = `<p style="margin-top:0.1cm; margin-left:0.5cm; text-indent:1.5cm; font-size:12pt;">THIS IS TO CERTIFY that same tract of land was within a zone classified as <strong>${escapeHtml(landClassText)}</strong> per the <strong>Comprehensive Land Use Plan/Zoning Ordinance of ${escapeHtml(city)}</strong>, that was approved on <strong>September 23, 1980</strong>, via <strong>NCC PLAN</strong> by then <strong>Human Settlements Regulatory Commission (HSRC)</strong>, now DHSUD.</p>`;
-    }
+    // Build the city/province display string
+let locationDisplay = escapeHtml(finalCity);
+if (finalProvince && finalProvince !== "" && finalProvince !== "__________") {
+    locationDisplay += `, ${escapeHtml(finalProvince)}`;
+}
 
-    const statusHtml = `
-        <!-- OPTION 1: WITH APPROVED CLUP/ZO -->
-        <div style="margin-bottom: 35px;">
-            <p style="margin:0 0 8px 0; font-size:12pt; font-weight:bold;">1. ${check1} WITH APPROVED CLUP/ZO</p>
-            <p style="margin-left:0.6cm; text-indent:1.5cm; text-align:justify; font-size:12pt; margin-top:0; margin-bottom: 15px; line-height:1.5;">
-                THIS IS TO CERTIFY that the above-described landholdings is/are zoned for use/s specified in the above table per approved Comprehensive Land Use Plan/Zoning Ordinance of <strong>${escapeHtml(city)}${province ? ", " + escapeHtml(province) : ""}</strong>, as approved by the <strong>${escapeHtml(approvedBy)}</strong> through <strong>${escapeHtml(circularNo)}</strong> dated <strong>${approvalDateFormatted}</strong> in accordance with pertinent issuances;
-            </p>
-            ${extraParagraph}
-            <p style="margin-left:0.6cm; text-indent:0.5cm; font-size:12pt; margin-top: 5px; margin-bottom: 5px; line-height:1.5;">Further, the proposed conversion:</p>
-            <p style="margin-left:1.2cm; font-size:12pt; margin-top: 2px; margin-bottom: 2px; line-height:1.5;">[ ] Conforms/is compatible with the approved land use plan and/or Zoning Ordinance.</p>
-            <p style="margin-left:1.2cm; font-size:12pt; margin-top: 0; margin-bottom: 15px; line-height:1.5;">[ ] Does not conform/is not compatible with the approved land use plan and/or Zoning Ordinance.</p>
-            <p style="margin-left:0.5cm; text-indent:1.5cm; text-align:justify; font-size:12pt; margin-top: 5px; margin-bottom: 0; line-height:1.5;">
-                Per record of this office, <strong>____________</strong> has a total zoned agricultural land of <strong>__________</strong> hectares of which <strong>__________</strong> hectares have been reclassified since <strong>__________</strong>, as approved by the DHSUD/SP per DHSUD/SP Resolution No. <strong>__________</strong> dated <strong>__________</strong>.
-            </p>
-        </div>
-        
-        <!-- OPTION 2: WITH CLUP/ZO PENDING APPROVAL BY DHSUD/SP -->
-        <div style="margin-bottom: 35px;">
-            <p style="margin:0 0 8px 0; font-size:12pt; font-weight:bold;">2. ${check2} WITH CLUP/ZO PENDING APPROVAL BY DHSUD/SP</p>
-            <p style="margin-left:0.6cm; text-indent:1.5cm; text-align:justify; font-size:12pt; margin-top:0; margin-bottom: 12px; line-height:1.5;">
-                THIS IS TO CERTIFY that the above described property lies/is is/are located within the area zoned for <strong>__________</strong> use per Comprehensive Land Use Plan/Zoning Ordinance No. <strong>__________</strong> dated <strong>__________</strong> submitted to DHSUD/SP for approval on <strong>__________</strong> and same remains pending to date.
-            </p>
-            <p style="margin-left:0.6cm; text-indent:1.5cm; text-align:justify; font-size:12pt; margin-top:0; margin-bottom: 0; line-height:1.5;">
-                THIS IS TO CERTIFY FURTHER that per record of this office-said ${lguTerm} of <strong>__________</strong> will have a total zoned agricultural land of <strong>__________</strong> hectares.
-            </p>
-        </div>
-        
-        <!-- OPTION 3: WITHOUT CLUP/ZO -->
-        <div style="margin-bottom: 20px;">
-            <p style="margin:0 0 8px 0; font-size:12pt; font-weight:bold;">3. ${check3} WITHOUT CLUP/ZO</p>
-            <p style="margin-left:0.6cm; text-indent:1.5cm; text-align:justify; font-size:12pt; margin-top:0; margin-bottom: 0; line-height:1.5;">
-                THIS IS TO CERTIFY that the ${lguTerm} of <strong>__________</strong> has not submitted its Comprehensive Land Use Plan/Zoning Ordinance to this Office.
-            </p>
-        </div>
+// Build the CLUP status HTML with the formatted data
+const statusHtml = `
+    <!-- OPTION 1: WITH APPROVED CLUP/ZO -->
+    <div style="margin-bottom: 35px;">
+        <p style="margin:0 0 8px 0; font-size:12pt; font-weight:bold;">1. ${check1} WITH APPROVED CLUP/ZO</p>
+        <p style="margin-left:0.6cm; text-indent:1.5cm; text-align:justify; font-size:12pt; margin-top:0; margin-bottom: 15px; line-height:1.5;">
+            THIS IS TO CERTIFY that the above-described landholdings is/are zoned for use/s specified in the above table per <strong>approved Comprehensive Land Use Plan/Zoning Ordinance of ${locationDisplay}</strong>, as <strong>approved by the ${escapeHtml(finalApprovedBy)} through ${escapeHtml(finalCircularNo)} dated ${approvalDateFormatted}</strong> in accordance with pertinent issuances;
+        </p>
+        <p style="margin-left:0.6cm; text-indent:0.5cm; font-size:12pt; margin-top:5px; margin-bottom:5px; line-height:1.5;">
+            Further, the proposed conversion:
+        </p>
+        <p style="margin-left:1.2cm; font-size:12pt; margin-top:2px; margin-bottom:2px;">
+            [ ] Conforms/is compatible with the approved land use plan and/or Zoning Ordinance.
+        </p>
+        <p style="margin-left:1.2cm; font-size:12pt; margin-top:0; margin-bottom:15px;">
+            [ ] Does not conform/is not compatible with the approved land use plan and/or Zoning Ordinance.
+        </p>
+        <p style="margin-left:0.6cm; text-indent:1.5cm; text-align:justify; font-size:12pt; margin-top:5px; margin-bottom:0; line-height:1.5;">
+            Per record of this office, the city/municipality of <strong>${escapeHtml(finalCity)}</strong> has a total zoned agricultural land of <strong>__________</strong> hectares of which <strong>__________</strong> hectares have been reclassified since <strong>__________</strong>, as approved by the DHSUD/SP per DHSUD/SP Resolution No. <strong>__________</strong> dated <strong>__________</strong>.
+        </p>
+    </div>
+<!-- OPTION 2: WITH CLUP/ZO PENDING APPROVAL BY DHSUD/SP -->
+<div style="margin-bottom: 35px">
+    <p style="margin: 0 0 8px 0; font-size: 12pt; font-weight: bold">
+        2. ${check2} WITH CLUP/ZO PENDING APPROVAL BY DHSUD/SP
+    </p>
+    <p
+        style="
+            margin-left: 0.6cm;
+            text-indent: 1.5cm;
+            text-align: justify;
+            font-size: 12pt;
+            margin-top: 0;
+            margin-bottom: 12px;
+            line-height: 1.5;
+        "
+    >
+        THIS IS TO CERTIFY that the above described property lies/is located within the area zoned for
+        <strong>__________</strong> use per Comprehensive Land Use Plan/Zoning Ordinance No.
+        <strong>__________</strong> dated <strong>__________</strong> submitted to DHSUD/SP for approval on
+        <strong>__________</strong> and same remains pending to date.
+    </p>
+    <p
+        style="
+            margin-left: 0.6cm;
+            text-indent: 1.5cm;
+            text-align: justify;
+            font-size: 12pt;
+            margin-top: 0;
+            margin-bottom: 0;
+            line-height: 1.5;
+        "
+    >
+        THIS IS TO CERTIFY FURTHER that per record of this office - said ${lguTerm} of <strong>__________</strong> will
+        have a total zoned agricultural land of <strong>__________</strong> hectares.
+    </p>
+</div>
+
+<!-- OPTION 3: WITHOUT CLUP/ZO -->
+<div style="margin-bottom: 20px">
+    <p style="margin: 0 0 8px 0; font-size: 12pt; font-weight: bold">3. ${check3} WITHOUT CLUP/ZO</p>
+    <p
+        style="
+            margin-left: 0.6cm;
+            text-indent: 1.5cm;
+            text-align: justify;
+            font-size: 12pt;
+            margin-top: 0;
+            margin-bottom: 0;
+            line-height: 1.5;
+        "
+    >
+        THIS IS TO CERTIFY that the ${lguTerm} of <strong>__________</strong> has not submitted its Comprehensive Land
+        Use Plan/Zoning Ordinance to this Office.
+    </p>
+</div>
+
     `;
 
     const formattedDateIssued = formatOrdinalDateLong(rec.dateIssued);
     const orDateFormatted = formatMonthDayYear(orDateRaw);
 
-    // Create the complete HTML for printing
+    // The rest of the print HTML remains the same...
     const printHtml = `<!DOCTYPE html>
         <html>
         <head>
@@ -5963,10 +6158,10 @@ function checkIloiloCityConditional() {
                            1. This certification is issued relative to the requirement of DAR regarding the implementation of the Comprehensive Agrarian Reform Law and shall not be construed as a Certificate of Eligibility for conversion.
                         </p>
                         <p style="margin:0 0 3px 0; text-indent:-0.4cm; padding-left:0.5cm; text-align:justify;">
-                           2. This certification shall not be construed as a Locational Clearance/Certificate of Zoning Compliance/Development Permit or License to Sell.
+                           2. This certification <strong>shall not</strong> be construed as a Locational Clearance/Certificate of Zoning Compliance/Development Permit or License to Sell.
                         </p>
                         <p style="margin:0 0 3px 0; text-indent:-0.4cm; padding-left:0.5cm; text-align:justify;">
-                           3. This shall not be construed as a certification as to the ownership by the applicant of the above listed parcel(s) of land.
+                           3. This <strong>shall not</strong> be construed as a certification as to the ownership by the applicant of the above listed parcel(s) of land.
                         </p>
                         <p style="margin:0 0 3px 0; text-indent:-0.4cm; padding-left:0.5cm; text-align:justify;">
                            4. Any misrepresentation on the part of the requesting party shall be a ground for cancellation of this certification.
@@ -8497,7 +8692,62 @@ getNextCertNumber = function() {
 
 // Call init when page loads
 setTimeout(initCertNumberEditor, 200);
-    </script>
 
+// Helper function to get CLUP data for a specific city
+function getClupDataForCity(city, province) {
+    if (!city && !province) return null;
+    
+    console.log("🔍 Looking for CLUP data for:", city, province);
+    
+    if (!clupRecords || clupRecords.length === 0) {
+        console.warn("⚠️ No CLUP records loaded");
+        return null;
+    }
+    
+    // First try: Find by LGU and Province (exact match)
+    let found = clupRecords.find(r => {
+        const rLGU = (r.LGU || r.lgu || "").toLowerCase().trim();
+        const rProvince = (r.Province || r.province || "").toLowerCase().trim();
+        const searchCity = (city || "").toLowerCase().trim();
+        const searchProvince = (province || "").toLowerCase().trim();
+        
+        return rLGU === searchCity && rProvince === searchProvince;
+    });
+    
+    if (found) {
+        console.log("✅ Found CLUP data by LGU + Province:", found);
+        return found;
+    }
+    
+    // Second try: Find by LGU only
+    found = clupRecords.find(r => {
+        const rLGU = (r.LGU || r.lgu || "").toLowerCase().trim();
+        const searchCity = (city || "").toLowerCase().trim();
+        return rLGU === searchCity;
+    });
+    
+    if (found) {
+        console.log("✅ Found CLUP data by LGU only:", found);
+        return found;
+    }
+    
+    // Third try: For Iloilo City districts, find the Iloilo City record
+    if (city && (city.toLowerCase().includes("iloilo city") || province === "Iloilo City")) {
+        found = clupRecords.find(r => {
+            const rLGU = (r.LGU || r.lgu || "").toLowerCase().trim();
+            const rProvince = (r.Province || r.province || "").toLowerCase().trim();
+            return rLGU === "iloilo city" || rProvince === "iloilo city";
+        });
+        if (found) {
+            console.log("✅ Found Iloilo City CLUP data:", found);
+            return found;
+        }
+    }
+    
+    console.warn("⚠️ No CLUP data found for:", city, province);
+    return null;
+}
+
+    </script>
 </body>
 </html>
