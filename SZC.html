@@ -6002,7 +6002,7 @@ function printOfficialRecord(id) {
     const totalAreaVal = parseFloat(rec.totalArea) || 0;
     const proposedUse = rec.proposedUse && rec.proposedUse.trim() !== "" ? rec.proposedUse : "";
     const requestedBy = rec.requestedBy || "____________________";
-    const amountPaid = rec.amountPaid || "_________";
+    const amountPaid = rec.amountPaid ? formatCurrency(rec.amountPaid) : "0.00";
     const orNo = rec.orNo || "_________";
     const orDateRaw = rec.orDate || rec.dateIssued;
 
@@ -8937,6 +8937,16 @@ function getClupDataForCity(city, province) {
     
     console.warn("⚠️ No CLUP data found for:", city, province);
     return null;
+}
+
+// Add this helper function near the top of your script section
+function formatCurrency(amount) {
+    if (!amount) return "0.00";
+    // Remove any existing commas and convert to number
+    let num = parseFloat(String(amount).replace(/,/g, ''));
+    if (isNaN(num)) return "0.00";
+    // Format with thousand separators and 2 decimal places
+    return num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
     </script>
