@@ -1207,7 +1207,7 @@ footer {
     }
 
     // ==================== GOOGLE SHEETS API FUNCTIONS ====================
-    async function fetchLGUsFromSheet() {
+   async function fetchLGUsFromSheet() {
   try {
     showToastMessage("Fetching data from Google Sheets...", "info");
     const url = `${GOOGLE_SCRIPT_URL}?action=get&data_type=lgu&_=${Date.now()}`;
@@ -1216,22 +1216,26 @@ footer {
     
     console.log("Fetch result:", result);
     
+    // Handle different response formats
     let data = [];
     if (Array.isArray(result)) {
       data = result;
-    } else if (result.success && result.data) {
+    } else if (result.success && Array.isArray(result.data)) {
       data = result.data;
-    } else if (result.data) {
+    } else if (result.data && Array.isArray(result.data)) {
       data = result.data;
+    } else if (result.data && !Array.isArray(result.data)) {
+      // If data is an object, try to convert
+      data = Object.values(result.data);
     }
     
     if (data && data.length > 0) {
       const lgus = data.map(record => ({
-        id: record.id || generateId(),
+        id: record.id || record["id"] || generateId(),
         psgc: record.psgc || record["PSGC"] || "",
-        incomeClass: record.incomeClass || record["Income Class"] || "",  // FIXED: Read Income Class
-        region: record.region || record["Region"] || "REGION VI (WESTERN VISAYAS)",  // FIXED: Read Region
-        province: record.province || record["Province"] || "",            // FIXED: Read Province
+        incomeClass: record.incomeClass || record["Income Class"] || "",
+        region: record.region || record["Region"] || "REGION VI (WESTERN VISAYAS)",
+        province: record.province || record["Province"] || "",
         municipality: record.municipality || record["Municipality"] || record["LGU Name"] || "",
         mayor: record.mayor || record["Name of Local Chief Executive"] || "",
         viceMayor: record.viceMayor || record["Name of Vice Governor/Mayor"] || "",
@@ -1792,29 +1796,28 @@ footer {
       const newLGU = { 
   id: generateId(),
   psgc: psgc || "",
-  incomeClass: document.getElementById("regIncomeClass").value || "",  // MUST be here
-  region: "REGION VI (WESTERN VISAYAS)",  // HARD-CODED
+  incomeClass: document.getElementById("regIncomeClass").value || "",
+  region: "REGION VI (WESTERN VISAYAS)",
   province: prov,
   municipality: mun,
   mayor: document.getElementById("regMayor").value || "",
-        incomeClass: document.getElementById("regIncomeClass").value || "",
-        viceMayor: document.getElementById("regViceMayor").value || "",
-        email: document.getElementById("regEmail").value || "",
-        landline: document.getElementById("regLandline").value || "",
-        mpdc: document.getElementById("regMpdc").value || "",
-        mpdcEmail: document.getElementById("regMpdcEmail").value || "",
-        mpdcMobile: document.getElementById("regMpdcMobile").value || "",
-        planningPeriod: document.getElementById("regPlanningPeriod").value || "",
-        clupStatus: document.getElementById("regClupStatus").value || "",
-        tableMonitoring: document.getElementById("regTableMonitoring").value || "",
-        fieldMonitoring: document.getElementById("regFieldMonitoring").value || "",
-        recentActivities: document.getElementById("regRecentActivities").value || "",
-        taNeeds: document.getElementById("regTaNeeds").value || "",
-        dateUpdated: document.getElementById("regDateUpdated").value || "",
-        remarks: document.getElementById("regRemarks").value || "",
-        contactedText: document.getElementById("regContactedText").value || "",
-        contactedFb: document.getElementById("regContactedFb").value || ""
-      };
+  viceMayor: document.getElementById("regViceMayor").value || "",
+  email: document.getElementById("regEmail").value || "",
+  landline: document.getElementById("regLandline").value || "",
+  mpdc: document.getElementById("regMpdc").value || "",
+  mpdcEmail: document.getElementById("regMpdcEmail").value || "",
+  mpdcMobile: document.getElementById("regMpdcMobile").value || "",
+  planningPeriod: document.getElementById("regPlanningPeriod").value || "",
+  clupStatus: document.getElementById("regClupStatus").value || "",
+  tableMonitoring: document.getElementById("regTableMonitoring").value || "",
+  fieldMonitoring: document.getElementById("regFieldMonitoring").value || "",
+  recentActivities: document.getElementById("regRecentActivities").value || "",
+  taNeeds: document.getElementById("regTaNeeds").value || "",
+  dateUpdated: document.getElementById("regDateUpdated").value || "",
+  remarks: document.getElementById("regRemarks").value || "",
+  contactedText: document.getElementById("regContactedText").value || "",
+  contactedFb: document.getElementById("regContactedFb").value || ""
+};
       
       const btn = document.getElementById("saveLGUBtn");
       const originalText = btn.innerHTML;
