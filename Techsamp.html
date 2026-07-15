@@ -1985,7 +1985,7 @@
     // ============================================
     // CONFIGURATION
     // ============================================
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxLScAAS-Jp8CHthNDVEyWyoRv_zVM6F1SMR4TjJwC6Sf8uZJgB9_bHul0AYf_tFUfqEA/exec';
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzRx9g_k8jQ5jtMS3q_P6mVaq1gVWCxpRYivwYoTsShBg6M-rhk79qd8A_TwXmAt9ZKbw/exec';
     const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1ikMuQVy3MBiuK6KuAEGBJ2sod-jlzLwCqsTtenORczg/edit?usp=sharing';
 
     // ============================================
@@ -2015,19 +2015,24 @@
     }
 
     async function savePICNamesToSheet(names) {
-        try {
-            const response = await fetch(WEB_APP_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'savePIC', names: names })
-            });
-            const result = await response.json();
-            return result.result === 'success';
-        } catch (error) {
-            console.error('Error saving PIC names:', error);
-            return false;
-        }
+    try {
+        // Use GET request with encoded data for no-cors compatibility
+        const encodedNames = encodeURIComponent(JSON.stringify(names));
+        const url = WEB_APP_URL + '?action=savePIC&names=' + encodedNames;
+        
+        await fetch(url, {
+            method: 'GET',
+            mode: 'no-cors'
+        });
+        
+        // Since we're using no-cors, we can't read the response
+        // We'll assume it worked if no error was thrown
+        return true;
+    } catch (error) {
+        console.error('Error saving PIC names:', error);
+        return false;
     }
+}
 
     function populatePicDropdowns() {
         const selects = ['clup_pic', 'pdpfp_pic'];
