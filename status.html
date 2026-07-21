@@ -359,6 +359,7 @@
     .badge-due { background: #fef3c7; color: #92400e; }
     .badge-none { background: #fee2e2; color: #991b1b; }
     .badge-other { background: #f1f5f9; color: #475569; }
+    .badge-under-review { background: #dbeafe; color: #1e40af; }
     .btn-view {
       background: #d9efff;
       color: #0369a1;
@@ -441,6 +442,9 @@
       padding-top: 1.5rem;
       font-size: 0.8rem;
     }
+	
+	.badge-under-review { background: #dbeafe; color: #1e40af; }
+	
     .toast-msg {
       position: fixed;
       bottom: 20px;
@@ -488,12 +492,12 @@
 </div>
 
 <div class="container">
-  <!-- STATS -->
-  <div class="stats-grid" id="statsGrid">
-    <div class="stat-card"><div class="stat-number" id="statTotalLgu">0</div><div class="stat-label">🏛️ No. of LGUs</div></div>
-    <div class="stat-card"><div class="stat-number" id="statUpdated">0</div><div class="stat-label">✅ Updated CLUP/ZO</div></div>
-    <div class="stat-card"><div class="stat-number" id="statDue">0</div><div class="stat-label">🔄 CLUPs Due for updating</div></div>
-  </div>
+<div class="stats-grid" id="statsGrid">
+  <div class="stat-card"><div class="stat-number" id="statTotalLgu">0</div><div class="stat-label">🏛️ No. of LGUs</div></div>
+  <div class="stat-card"><div class="stat-number" id="statUpdated">0</div><div class="stat-label">✅ Updated CLUP/ZO</div></div>
+  <div class="stat-card"><div class="stat-number" id="statDue">0</div><div class="stat-label">🔄 CLUPs Due for updating</div></div>
+  <div class="stat-card"><div class="stat-number" id="statUnderReview">0</div><div class="stat-label">📋 Under Review</div></div>
+</div>
 
   <!-- FILTERS -->
   <div class="filter-bar">
@@ -507,7 +511,7 @@
   <!-- CHARTS -->
   <div class="chart-grid">
     <div class="chart-box"><h4>🟢 CLUP Status</h4><canvas id="pieChart"></canvas></div>
-    <div class="chart-box"><h4>📈 Prephase Issues</h4><canvas id="lineChart"></canvas></div>
+    <div class="chart-box"><h4>📊 CLUP Status/Updates Breakdown</h4><canvas id="barChart"></canvas></div>
   </div>
 
   <!-- COLUMN CHART + TABS -->
@@ -556,7 +560,7 @@
 
 <script>
   // ========== INTEGRATED SCRIPT ==========
-  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz02fvQP7Y1WMoSHFj2M7CncSK4rH7ThBS9x0y4kztyOzW3qZYqj8SpYawkIBS8OKQ/exec";
+  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwo4bJ6qkDy7HkB4IMRu4y1E0JKHgSF9IZFilJbjeNNUdYkIfg-iv7AuZB3p6vd9Q/exec";
   let currentUser = null;
   function escapeHtml(s){ return String(s).replace(/[&<>]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
   function showToast(msg, type){ let t=document.createElement("div"); t.className="toast-msg"+(type==='error'?' error':''); t.innerText=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),3000); }
@@ -591,10 +595,10 @@
     }
   }
 
-  // ========== DASHBOARD LOGIC - USING LGUstatus SHEET ==========
+  // ========== DASHBOARD LOGIC ==========
   let rawLguData = [];
   let filteredData = [];
-  let pieChartInstance=null, lineChartInstance=null, columnChartInstance=null;
+  let pieChartInstance=null, barChartInstance=null, columnChartInstance=null;
 
   const phaseMap = {
     "Preparatory phase":"Preparatory",
@@ -621,29 +625,45 @@
   // ========== FIELD ACCESS ==========
   function getField(record, field) {
     if (!record) return "—";
+    
     // Direct match
     if (record[field] !== undefined && record[field] !== null && record[field] !== "") {
       return record[field];
     }
-    // Try trimmed match
+    
+    // Try exact trim match
     for (let key of Object.keys(record)) {
       if (key.trim() === field.trim()) {
         return record[key];
       }
     }
-    // Try case-insensitive
-    const lowerField = field.toLowerCase();
+    
+    // Try case-insensitive match
+    const lowerField = field.toLowerCase().trim();
     for (let key of Object.keys(record)) {
-      if (key.toLowerCase() === lowerField) {
+      if (key.toLowerCase().trim() === lowerField) {
         return record[key];
       }
     }
+    
+    // Try contains match (for fields like "CLUP Status" vs "CLUPStatus")
+    for (let key of Object.keys(record)) {
+      const keyLower = key.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const fieldLower = field.toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (keyLower === fieldLower || keyLower.includes(fieldLower) || fieldLower.includes(keyLower)) {
+        return record[key];
+      }
+    }
+    
     return "—";
   }
 
   function deriveClupStatus(record){
+    // Try multiple possible field names
     let status = getField(record, "CLUP Status");
     if (status === "—" || status === "") status = getField(record, "CLUPStatus/Updates");
+    if (status === "—" || status === "") status = getField(record, "PDPFP/CLUP Status");
+    if (status === "—" || status === "") status = getField(record, "Status");
     if (status === "—" || status === "") status = "Unknown";
     return status;
   }
@@ -657,19 +677,21 @@
     return "—";
   }
 
-  // ========== FIXED: Status detection with exact matching ==========
   function normalizeStatus(status){
     if (!status) return "Other";
     const s = String(status).toLowerCase().trim();
     
-    // Check for "Updated" - exact match or contains "updated"
-    if (s === "updated" || s.includes("updated")) return "Updated";
+    // Check for Updated
+    if (s === "updated" || s.includes("updated") || s === "yes") return "Updated";
     
-    // Check for "For updating" - exact match or contains "for updating" or "due"
-    if (s === "for updating" || s.includes("for updating") || s.includes("due for") || s === "due") return "For updating";
+    // Check for For Updating
+    if (s === "for updating" || s === "forupdating" || s.includes("for updating") || s.includes("due for") || s === "due") return "For updating";
     
-    // Check for "No CLUP"
-    if (s === "no clup" || s.includes("no clup") || s === "none") return "No CLUP";
+    // Check for Under Review
+    if (s === "under review" || s === "underreview" || s.includes("under review") || s.includes("review")) return "Under Review";
+    
+    // Check for No CLUP
+    if (s === "no clup" || s.includes("no clup") || s === "none" || s === "no") return "No CLUP";
     
     return "Other";
   }
@@ -683,34 +705,67 @@
   }
 
   // ========== CHART DATA ==========
-  function getLineData(records){
-    const categories = ["Data Gaps","Tech Capacity","Financial","Institutional","Others","Unknown"];
-    const counts = { "Data Gaps":0, "Tech Capacity":0, "Financial":0, "Institutional":0, "Others":0, "Unknown":0 };
+  // NEW: Bar chart for CLUP Status/Updates breakdown
+  function getBarData(records){
+    // Categories: None Indicated, Phase 5, Pre-Phase, RA3, RA5, RA7
+    const categories = ["None Indicated", "Phase 5", "Pre-Phase", "RA3", "RA5", "RA7"];
+    const counts = { "None Indicated":0, "Phase 5":0, "Pre-Phase":0, "RA3":0, "RA5":0, "RA7":0 };
+    
     records.forEach(r => {
-      const remark = String(getField(r, "Remarks") || "").toLowerCase();
-      const techAssist = String(getField(r, "Technical Assistance Provided") || "").toLowerCase();
-      const combined = remark + " " + techAssist;
-      let cat = "Unknown";
-      if (combined.includes("data") || combined.includes("gap")) cat = "Data Gaps";
-      else if (combined.includes("tech") || combined.includes("capacity") || combined.includes("assist")) cat = "Tech Capacity";
-      else if (combined.includes("financ") || combined.includes("budget") || combined.includes("fund")) cat = "Financial";
-      else if (combined.includes("institu") || combined.includes("staff") || combined.includes("org")) cat = "Institutional";
-      else if (combined.length > 0 && combined !== "—") cat = "Others";
-      counts[cat] = (counts[cat] || 0) + 1;
+      const clupUpdates = String(getField(r, "CLUPStatus/Updates") || "").toLowerCase();
+      const clupStatus = String(getField(r, "CLUP Status") || "").toLowerCase();
+      const combined = clupUpdates + " " + clupStatus;
+      
+      let matched = false;
+      
+      // Check for Phase 5
+      if (combined.includes("phase 5") || combined.includes("phase5")) {
+        counts["Phase 5"]++;
+        matched = true;
+      }
+      // Check for Pre-Phase
+      else if (combined.includes("pre-phase") || combined.includes("prephase") || combined.includes("pre phase")) {
+        counts["Pre-Phase"]++;
+        matched = true;
+      }
+      // Check for RA3
+      else if (combined.includes("ra3") || combined.includes("ra 3")) {
+        counts["RA3"]++;
+        matched = true;
+      }
+      // Check for RA5
+      else if (combined.includes("ra5") || combined.includes("ra 5")) {
+        counts["RA5"]++;
+        matched = true;
+      }
+      // Check for RA7
+      else if (combined.includes("ra7") || combined.includes("ra 7")) {
+        counts["RA7"]++;
+        matched = true;
+      }
+      
+      // If no match, count as None Indicated
+      if (!matched) {
+        counts["None Indicated"]++;
+      }
     });
+    
     return { labels: categories, data: categories.map(c => counts[c]||0) };
   }
 
   function getPieData(records){
-    const statusMap = { "Updated":0, "For updating":0, "No CLUP":0, "Other":0 };
+    const statusMap = { "Updated":0, "For updating":0, "Under Review":0 };
     records.forEach(r => {
       const status = deriveClupStatus(r);
       const st = normalizeStatus(status);
-      // Count only if it's one of our main categories
-      if (st === "Updated") statusMap["Updated"]++;
-      else if (st === "For updating") statusMap["For updating"]++;
-      else if (st === "No CLUP") statusMap["No CLUP"]++;
-      else statusMap["Other"]++;
+      if (st === "Updated") {
+        statusMap["Updated"]++;
+      } else if (st === "For updating") {
+        statusMap["For updating"]++;
+      } else {
+        // Everything else (No CLUP, Other, Unknown, etc.) goes to Under Review
+        statusMap["Under Review"]++;
+      }
     });
     return { labels: Object.keys(statusMap), data: Object.values(statusMap) };
   }
@@ -722,10 +777,11 @@
     allPhases.forEach(p => phaseCounts[p] = 0);
     
     records.forEach(r => {
-      const status = deriveClupStatus(r);
-      const updates = getField(r, "CLUPStatus/Updates") || "";
-      const combined = (status + " " + updates).toLowerCase();
+      const clupUpdates = String(getField(r, "CLUPStatus/Updates") || "").toLowerCase();
+      const clupStatus = String(getField(r, "CLUP Status") || "").toLowerCase();
+      const combined = clupUpdates + " " + clupStatus;
       let found = false;
+      
       for (let p of allPhases) {
         const pLower = p.toLowerCase();
         if (combined.includes(pLower) || pLower.includes(combined.substring(0, Math.min(combined.length, 10)))) {
@@ -757,30 +813,24 @@
     return { labels: target, values: target.map(p => phaseCounts[p]||0) };
   }
 
-  // ========== RENDER FUNCTIONS ==========
   function renderStats(records){
     const total = records.length;
-    let updated=0, due=0, noClup=0, other=0;
+    let updated=0, due=0, underReview=0;
     
     records.forEach(r => {
       const status = deriveClupStatus(r);
       const st = normalizeStatus(status);
-      
-      // Debug logging - uncomment to see what statuses are being detected
-      // console.log(`Status: "${status}" → "${st}"`);
-      
       if (st === "Updated") updated++;
       else if (st === "For updating") due++;
-      else if (st === "No CLUP") noClup++;
-      else other++;
+      else underReview++;
     });
     
     document.getElementById("statTotalLgu").innerText = total;
     document.getElementById("statUpdated").innerText = updated;
     document.getElementById("statDue").innerText = due;
+    document.getElementById("statUnderReview").innerText = underReview;
     
-    // Optional: log the breakdown
-    console.log(`📊 Status breakdown: Updated=${updated}, For updating=${due}, No CLUP=${noClup}, Other=${other}`);
+    console.log(`📊 Status breakdown: Updated=${updated}, For updating=${due}, Under Review=${underReview}`);
   }
 
   function renderPie(records){
@@ -793,30 +843,30 @@
         labels: data.labels, 
         datasets: [{ 
           data: data.data, 
-          backgroundColor: ['#16a34a','#f59e0b','#dc2626','#94a3b8'] 
+          backgroundColor: ['#16a34a', '#f59e0b', '#3b82f6']  // Green, Orange, Blue
         }] 
       },
       options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
     });
   }
 
-  function renderLine(records){
-    const data = getLineData(records);
-    const ctx = document.getElementById("lineChart").getContext("2d");
-    if (lineChartInstance) lineChartInstance.destroy();
-    const colors = ['#3b82f6','#f97316','#8b5cf6','#22c55e','#7dd3fc','#94a3b8'];
-    lineChartInstance = new Chart(ctx, {
-      type: 'line',
+  // NEW: Bar Chart for CLUP Status/Updates
+  function renderBar(records){
+    const data = getBarData(records);
+    const ctx = document.getElementById("barChart").getContext("2d");
+    if (barChartInstance) barChartInstance.destroy();
+    
+    const colors = ['#94a3b8', '#8b5cf6', '#3b82f6', '#f59e0b', '#ef4444', '#06b6d4'];
+    
+    barChartInstance = new Chart(ctx, {
+      type: 'bar',
       data: { 
         labels: data.labels, 
         datasets: [{ 
-          label: 'Prephase issues', 
+          label: 'Count', 
           data: data.data, 
-          backgroundColor: colors.map(c => c+'40'), 
-          borderColor: '#1e3a8a', 
-          tension: 0.2, 
-          fill: true,
-          pointBackgroundColor: colors
+          backgroundColor: colors,
+          borderRadius: 4
         }] 
       },
       options: { 
@@ -839,7 +889,8 @@
         datasets: [{ 
           label: 'Count', 
           data: data.values, 
-          backgroundColor: colors 
+          backgroundColor: colors,
+          borderRadius: 4
         }] 
       },
       options: { 
@@ -869,7 +920,7 @@
       const normalized = normalizeStatus(status);
       const statusClass = normalized === "Updated" ? "badge-updated" : 
                           normalized === "For updating" ? "badge-due" : 
-                          normalized === "No CLUP" ? "badge-none" : "badge-other";
+                          normalized === "Under Review" ? "badge-under-review" : "badge-other";
       
       html += `<tr>
         <td>${escapeHtml(region)}</td>
@@ -958,7 +1009,7 @@
     filteredData = filtered;
     renderStats(filtered);
     renderPie(filtered);
-    renderLine(filtered);
+    renderBar(filtered);
     const activeView = document.querySelector('#columnTabs .active')?.dataset.view || 'preparatory';
     renderColumn(filtered, activeView);
     renderTable(filtered);
@@ -969,6 +1020,14 @@
     try {
       const resp = await fetch(`${GOOGLE_SCRIPT_URL}?action=get&data_type=lgu_status&_=${Date.now()}`);
       const data = await resp.json();
+      
+      // Debug: Log the first record to see what fields are available
+      if (Array.isArray(data) && data.length > 0) {
+        console.log("📋 First LGU Status record:", data[0]);
+        console.log("📋 Available fields:", Object.keys(data[0]));
+        console.log("📋 CLUP Status value:", data[0]["CLUP Status"]);
+      }
+      
       if (Array.isArray(data) && data.length > 0) {
         rawLguData = data;
         return rawLguData;
@@ -985,11 +1044,12 @@
   function getFallbackData(){
     return [
       { "Region":"Region VI", "Income Class":"1st", "PSGC":"604010000", "City/Municipality":"Bacolod City", "Province":"Negros Occidental", "Start Year":"2020", "End Year":"2029", "Resolution Number of the Latest Plan":"R-2020-001", "Approval date of the Latest plan (MM/DD/YYYY)":"01/15/2021", "CLUP Status":"Updated", "CLUPStatus/Updates":"Updated", "Technical Assistance Provided":"Yes", "Support from Other Institutions":"Yes", "If with Support from other institutions, Name/s of Institutions":"NEDA, DILG", "LGU with Local Shelter Plan":"Yes", "LGU with Communications Plan":"Yes", "Remarks":"On track" },
-      { "Region":"Region VI", "Income Class":"2nd", "PSGC":"604020000", "City/Municipality":"Bago City", "Province":"Negros Occidental", "Start Year":"2018", "End Year":"2027", "Resolution Number of the Latest Plan":"R-2018-005", "Approval date of the Latest plan (MM/DD/YYYY)":"03/10/2019", "CLUP Status":"For updating", "CLUPStatus/Updates":"For updating", "Technical Assistance Provided":"No", "Support from Other Institutions":"No", "If with Support from other institutions, Name/s of Institutions":"", "LGU with Local Shelter Plan":"No", "LGU with Communications Plan":"Yes", "Remarks":"Tech capacity needed" },
-      { "Region":"Region VI", "Income Class":"3rd", "PSGC":"604030000", "City/Municipality":"Cadiz City", "Province":"Negros Occidental", "Start Year":"2019", "End Year":"2028", "Resolution Number of the Latest Plan":"R-2019-003", "Approval date of the Latest plan (MM/DD/YYYY)":"06/20/2020", "CLUP Status":"Updated", "CLUPStatus/Updates":"Updated", "Technical Assistance Provided":"Yes", "Support from Other Institutions":"Yes", "If with Support from other institutions, Name/s of Institutions":"DILG", "LGU with Local Shelter Plan":"Yes", "LGU with Communications Plan":"Yes", "Remarks":"Data gaps identified" },
-      { "Region":"Region VI", "Income Class":"4th", "PSGC":"603001000", "City/Municipality":"Ajuy", "Province":"Iloilo", "Start Year":"2017", "End Year":"2026", "Resolution Number of the Latest Plan":"R-2017-002", "Approval date of the Latest plan (MM/DD/YYYY)":"08/15/2018", "CLUP Status":"For updating", "CLUPStatus/Updates":"For updating", "Technical Assistance Provided":"Yes", "Support from Other Institutions":"No", "If with Support from other institutions, Name/s of Institutions":"", "LGU with Local Shelter Plan":"No", "LGU with Communications Plan":"No", "Remarks":"Financial support needed" },
-      { "Region":"Region VI", "Income Class":"5th", "PSGC":"603002000", "City/Municipality":"Badiangan", "Province":"Iloilo", "Start Year":"2016", "End Year":"2025", "Resolution Number of the Latest Plan":"R-2016-001", "Approval date of the Latest plan (MM/DD/YYYY)":"12/10/2017", "CLUP Status":"No CLUP", "CLUPStatus/Updates":"No CLUP", "Technical Assistance Provided":"No", "Support from Other Institutions":"No", "If with Support from other institutions, Name/s of Institutions":"", "LGU with Local Shelter Plan":"No", "LGU with Communications Plan":"No", "Remarks":"Institutional barriers" },
-      { "Region":"Region VI", "Income Class":"4th", "PSGC":"603003000", "City/Municipality":"Altavas", "Province":"Aklan", "Start Year":"2021", "End Year":"2030", "Resolution Number of the Latest Plan":"R-2021-004", "Approval date of the Latest plan (MM/DD/YYYY)":"02/28/2022", "CLUP Status":"Updated", "CLUPStatus/Updates":"Updated", "Technical Assistance Provided":"Yes", "Support from Other Institutions":"Yes", "If with Support from other institutions, Name/s of Institutions":"NEDA", "LGU with Local Shelter Plan":"Yes", "LGU with Communications Plan":"Yes", "Remarks":"Ongoing monitoring" }
+      { "Region":"Region VI", "Income Class":"2nd", "PSGC":"604020000", "City/Municipality":"Bago City", "Province":"Negros Occidental", "Start Year":"2018", "End Year":"2027", "Resolution Number of the Latest Plan":"R-2018-005", "Approval date of the Latest plan (MM/DD/YYYY)":"03/10/2019", "CLUP Status":"For updating", "CLUPStatus/Updates":"Phase 5", "Technical Assistance Provided":"No", "Support from Other Institutions":"No", "If with Support from other institutions, Name/s of Institutions":"", "LGU with Local Shelter Plan":"No", "LGU with Communications Plan":"Yes", "Remarks":"Tech capacity needed" },
+      { "Region":"Region VI", "Income Class":"3rd", "PSGC":"604030000", "City/Municipality":"Cadiz City", "Province":"Negros Occidental", "Start Year":"2019", "End Year":"2028", "Resolution Number of the Latest Plan":"R-2019-003", "Approval date of the Latest plan (MM/DD/YYYY)":"06/20/2020", "CLUP Status":"Updated", "CLUPStatus/Updates":"Pre-Phase", "Technical Assistance Provided":"Yes", "Support from Other Institutions":"Yes", "If with Support from other institutions, Name/s of Institutions":"DILG", "LGU with Local Shelter Plan":"Yes", "LGU with Communications Plan":"Yes", "Remarks":"Data gaps identified" },
+      { "Region":"Region VI", "Income Class":"4th", "PSGC":"603001000", "City/Municipality":"Ajuy", "Province":"Iloilo", "Start Year":"2017", "End Year":"2026", "Resolution Number of the Latest Plan":"R-2017-002", "Approval date of the Latest plan (MM/DD/YYYY)":"08/15/2018", "CLUP Status":"For updating", "CLUPStatus/Updates":"RA3", "Technical Assistance Provided":"Yes", "Support from Other Institutions":"No", "If with Support from other institutions, Name/s of Institutions":"", "LGU with Local Shelter Plan":"No", "LGU with Communications Plan":"No", "Remarks":"Financial support needed" },
+      { "Region":"Region VI", "Income Class":"5th", "PSGC":"603002000", "City/Municipality":"Badiangan", "Province":"Iloilo", "Start Year":"2016", "End Year":"2025", "Resolution Number of the Latest Plan":"R-2016-001", "Approval date of the Latest plan (MM/DD/YYYY)":"12/10/2017", "CLUP Status":"No CLUP", "CLUPStatus/Updates":"RA5", "Technical Assistance Provided":"No", "Support from Other Institutions":"No", "If with Support from other institutions, Name/s of Institutions":"", "LGU with Local Shelter Plan":"No", "LGU with Communications Plan":"No", "Remarks":"Institutional barriers" },
+      { "Region":"Region VI", "Income Class":"4th", "PSGC":"603003000", "City/Municipality":"Altavas", "Province":"Aklan", "Start Year":"2021", "End Year":"2030", "Resolution Number of the Latest Plan":"R-2021-004", "Approval date of the Latest plan (MM/DD/YYYY)":"02/28/2022", "CLUP Status":"Updated", "CLUPStatus/Updates":"RA7", "Technical Assistance Provided":"Yes", "Support from Other Institutions":"Yes", "If with Support from other institutions, Name/s of Institutions":"NEDA", "LGU with Local Shelter Plan":"Yes", "LGU with Communications Plan":"Yes", "Remarks":"Ongoing monitoring" },
+      { "Region":"Region VI", "Income Class":"4th", "PSGC":"603004000", "City/Municipality":"Banga", "Province":"Aklan", "Start Year":"2020", "End Year":"2029", "Resolution Number of the Latest Plan":"R-2020-002", "Approval date of the Latest plan (MM/DD/YYYY)":"05/20/2021", "CLUP Status":"For updating", "CLUPStatus/Updates":"", "Technical Assistance Provided":"No", "Support from Other Institutions":"No", "If with Support from other institutions, Name/s of Institutions":"", "LGU with Local Shelter Plan":"No", "LGU with Communications Plan":"No", "Remarks":"No updates provided" }
     ];
   }
 
