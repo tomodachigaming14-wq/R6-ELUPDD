@@ -628,6 +628,7 @@ footer {
         <h2>📎 Report Dashboard</h2>
         <div class="filter-group">
           <select id="reportTypeSelect" class="report-selector" onchange="switchReportType()">
+            <option value="all">📊 All Released</option>
             <option value="locational">📍 Locational Clearance (Released)</option>
             <option value="zoning">🗺️ Site Zoning Certification (Released)</option>
           </select>
@@ -674,15 +675,29 @@ footer {
   </div>
 
   <script>
-    // === CONFIGURATION ===
-    // IMPORTANT: Replace this URL with your ACTUAL deployed Google Apps Script URL
+    // ============================================
+    // CONFIGURATION - Use the same backend URL as lc.html and SZC.html
+    // ============================================
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwo4bJ6qkDy7HkB4IMRu4y1E0JKHgSF9IZFilJbjeNNUdYkIfg-iv7AuZB3p6vd9Q/exec";
     
-    let locationalReleased = [], zoningReleased = [], currentReportType = "locational", filteredData = [], currentMonthFilter = "all";
+    // Data stores
+    let locationalReleased = [];
+    let zoningReleased = [];
+    let currentReportType = "all";
+    let filteredData = [];
+    let currentMonthFilter = "all";
     let currentUser = null;
 
+    // ============================================
+    // UTILITY FUNCTIONS
+    // ============================================
     function encodePassword(p) { return btoa(p); }
-    function escapeHtml(s) { return s ? String(s).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]) : ""; }
+    
+    function escapeHtml(s) { 
+      if (s == null) return "";
+      return String(s).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); 
+    }
+    
     function showToastMessage(msg, type="info") { 
       let t = document.querySelector(".toast-msg"); 
       if(t) t.remove(); 
@@ -694,6 +709,42 @@ footer {
       setTimeout(() => toast.remove(), 3000); 
     }
     
+    function formatDateShort(d){
+      if(!d) return "";
+      const dt = new Date(d);
+      if(isNaN(dt.getTime())) return d;
+      return dt.toLocaleDateString("en-US", {year:"numeric", month:"short", day:"numeric"});
+    }
+    
+    function getMonthKey(d){
+      if(!d) return "";
+      const dt = new Date(d);
+      if(isNaN(dt.getTime())) return "";
+      return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}`;
+    }
+    
+    function getMonthYear(d){
+      if(!d) return "";
+      const dt = new Date(d);
+      if(isNaN(dt.getTime())) return "";
+      return dt.toLocaleDateString("en-US", {year:"numeric", month:"long"});
+    }
+    
+    function calcProcessDays(received, issued){
+      if(!received || !issued) return null;
+      const s = new Date(received), e = new Date(issued);
+      if(isNaN(s.getTime())||isNaN(e.getTime())) return null;
+      const diff = Math.abs(e - s);
+      return Math.ceil(diff/(1000*60*60*24));
+    }
+    
+    function getTimeliness(d){ 
+      return d === null ? "—" : (d <= 30 ? "On Time" : "Delayed"); 
+    }
+
+    // ============================================
+    // AUTHENTICATION FUNCTIONS
+    // ============================================
     function checkSession() {
       const raw = localStorage.getItem("dhsud_session");
       if (raw) { 
@@ -730,10 +781,10 @@ footer {
     }
     
     function renderMainNavigation() {
-    const container = document.getElementById("mainNavContainer");
-    if (!container) return;
-    let navHtml = `<a href="index.html">Home</a>`;
-    if (currentUser) {
+      const container = document.getElementById("mainNavContainer");
+      if (!container) return;
+      let navHtml = `<a href="index.html">Home</a>`;
+      if (currentUser) {
         navHtml += `<div class="dropdown" id="certDropdown"><button class="dropbtn">Certification</button><div class="dropdown-content"><a href="lc.html">Locational Clearance</a><a href="SZC.html">Site Zoning Certification</a></div></div>
             <div class="dropdown" id="landUseDropdown"><button class="dropbtn">Land Use Plans</button><div class="dropdown-content"><div class="dropdown-submenu" id="clupSubmenu"><button class="submenu-trigger">CLUP & ZO <span class="arrow-right">▸</span></button><div class="submenu-content"><a href="inventory.html">Inventory</a><a href="status.html">Status</a></div></div><a href="status.html">PDPFP</a></div></div>
             <a href="Techsamp.html">Technical Assistance</a>
@@ -743,24 +794,23 @@ footer {
             <a href="issuance.html">Issuances</a>
             <a href="#about">About</a>
             <a href="#contact">Contact</a>`;
-    } else { navHtml += `<a href="#about">About</a><a href="#contact">Contact</a>`; }
-    container.innerHTML = navHtml;
-    // Keep click functionality for submenu items if needed
-    setTimeout(() => {
+      } else { navHtml += `<a href="#about">About</a><a href="#contact">Contact</a>`; }
+      container.innerHTML = navHtml;
+      setTimeout(() => {
         document.querySelectorAll(".dropdown-submenu .submenu-trigger").forEach((trigger) => {
-            trigger.addEventListener("click", (e) => {
-                e.stopPropagation();
-                const submenu = trigger.closest(".dropdown-submenu");
-                if (submenu) submenu.classList.toggle("open");
-            });
+          trigger.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const submenu = trigger.closest(".dropdown-submenu");
+            if (submenu) submenu.classList.toggle("open");
+          });
         });
         document.addEventListener("click", function (e) {
-            if (!e.target.closest(".dropdown-submenu")) {
-                document.querySelectorAll(".dropdown-submenu.open").forEach((s) => s.classList.remove("open"));
-            }
+          if (!e.target.closest(".dropdown-submenu")) {
+            document.querySelectorAll(".dropdown-submenu.open").forEach((s) => s.classList.remove("open"));
+          }
         });
-    }, 10);
-}
+      }, 10);
+    }
 
     function renderUserMenu() {
       const container = document.getElementById("userMenuContainer"); 
@@ -814,7 +864,7 @@ footer {
       btn.innerHTML = "⏳ Authenticating..."; 
       btn.disabled = true;
       try {
-        const resp = await fetch(`https://script.google.com/macros/s/AKfycby1nLcpKSsbF-RuLnECJYRT4sMiEnTV43Vi8CNga-Vol7nIdihJ-wRxiSBOYAHlMzHB0g/exec?action=get&data_type=users&_=${Date.now()}`);
+        const resp = await fetch(`${GOOGLE_SCRIPT_URL}?action=get&data_type=users&_=${Date.now()}`);
         const users = await resp.json();
         const user = users.find(u => u.email?.toLowerCase() === email);
         if (!user) { 
@@ -843,79 +893,48 @@ footer {
       return false;
     }
 
-    // report specific core functions
-    function formatDateShort(d){
-      if(!d) return "";
-      const dt = new Date(d);
-      if(isNaN(dt.getTime())) return d;
-      return dt.toLocaleDateString("en-US", {year:"numeric", month:"short", day:"numeric"});
-    }
+    // ============================================
+    // DATA FETCHING FUNCTIONS - Uses the same pattern as lc.html and SZC.html
+    // ============================================
     
-    function getMonthKey(d){
-      if(!d) return "";
-      const dt = new Date(d);
-      if(isNaN(dt.getTime())) return "";
-      return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}`;
-    }
-    
-    function getMonthYear(d){
-      if(!d) return "";
-      const dt = new Date(d);
-      if(isNaN(dt.getTime())) return "";
-      return dt.toLocaleDateString("en-US", {year:"numeric", month:"long"});
-    }
-    
-    function calcProcessDays(r,i){
-      if(!r||!i) return null;
-      const s = new Date(r), e = new Date(i);
-      if(isNaN(s.getTime())||isNaN(e.getTime())) return null;
-      const diff = Math.abs(e - s);
-      const days = Math.ceil(diff/(1000*60*60*24));
-      return days;
-    }
-    
-    function getTimeliness(d){ 
-      return d===null ? "—" : (d<=30 ? "On Time" : "Delayed"); 
-    }
-    
-    async function testConnection() {
-      try {
-        const testUrl = `${GOOGLE_SCRIPT_URL}?action=ping&_=${Date.now()}`;
-        console.log("Testing connection to:", testUrl);
-        const response = await fetch(testUrl);
-        const data = await response.json();
-        console.log("Connection test result:", data);
-        return data.success === true;
-      } catch(e) {
-        console.error("Connection test failed:", e);
-        return false;
-      }
-    }
-    
+    // Fetch Locational Clearance records (released only)
     async function fetchLocationalReleased() {
       try {
         const url = `${GOOGLE_SCRIPT_URL}?action=get&data_type=locational&_=${Date.now()}`;
         console.log("Fetching locational data from:", url);
         
-        const response = await fetch(url);
+        const response = await fetch(url, { mode: "cors" });
         
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         
         const data = await response.json();
-        console.log("Raw locational response type:", typeof data);
-        console.log("Is array?", Array.isArray(data));
+        console.log("Raw locational response:", data);
         
-        if (data && data.success === false) {
-          throw new Error(data.error || "Server returned error");
+        // Handle different response formats
+        let records = [];
+        if (Array.isArray(data)) {
+          records = data;
+        } else if (data && data.success === true && Array.isArray(data.data)) {
+          records = data.data;
+        } else if (data && data.data && Array.isArray(data.data)) {
+          records = data.data;
+        } else if (data && typeof data === 'object') {
+          // Try to find any array property
+          for (let key in data) {
+            if (Array.isArray(data[key]) && data[key].length > 0) {
+              records = data[key];
+              break;
+            }
+          }
         }
         
-        let records = Array.isArray(data) ? data : (data.data ? data.data : []);
         console.log(`Received ${records.length} total locational records`);
         
+        // Filter ONLY released records (case insensitive)
         locationalReleased = records.filter(rec => {
-          const status = rec.status ? String(rec.status).toLowerCase() : "";
+          const status = rec.status ? String(rec.status).toLowerCase().trim() : "";
           return status === "released";
         });
         
@@ -928,30 +947,44 @@ footer {
       }
     }
 
+    // Fetch Site Zoning Certification records (released only)
     async function fetchZoningReleased() {
       try {
         const url = `${GOOGLE_SCRIPT_URL}?action=get&data_type=zoning&_=${Date.now()}`;
         console.log("Fetching zoning data from:", url);
         
-        const response = await fetch(url);
+        const response = await fetch(url, { mode: "cors" });
         
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         
         const data = await response.json();
-        console.log("Raw zoning response type:", typeof data);
-        console.log("Is array?", Array.isArray(data));
+        console.log("Raw zoning response:", data);
         
-        if (data && data.success === false) {
-          throw new Error(data.error || "Server returned error");
+        // Handle different response formats
+        let records = [];
+        if (Array.isArray(data)) {
+          records = data;
+        } else if (data && data.success === true && Array.isArray(data.data)) {
+          records = data.data;
+        } else if (data && data.data && Array.isArray(data.data)) {
+          records = data.data;
+        } else if (data && typeof data === 'object') {
+          // Try to find any array property
+          for (let key in data) {
+            if (Array.isArray(data[key]) && data[key].length > 0) {
+              records = data[key];
+              break;
+            }
+          }
         }
         
-        let records = Array.isArray(data) ? data : (data.data ? data.data : []);
         console.log(`Received ${records.length} total zoning records`);
         
+        // Filter ONLY released records (case insensitive)
         zoningReleased = records.filter(rec => {
-          const status = rec.status ? String(rec.status).toLowerCase() : "";
+          const status = rec.status ? String(rec.status).toLowerCase().trim() : "";
           return status === "released";
         });
         
@@ -964,33 +997,25 @@ footer {
       }
     }
 
+    // Main fetch function
     async function fetchLiveData() {
       const dot = document.getElementById("statusDot");
       const txt = document.getElementById("statusText");
       
-      if (dot) {
-        dot.innerHTML = "🟡";
-        txt.innerText = "Syncing...";
-      }
+      if (dot) { dot.innerHTML = "🟡"; txt.innerText = "Syncing..."; }
       
       try {
-        // Test connection first
-        const isConnected = await testConnection();
-        if (!isConnected) {
-          throw new Error("Cannot connect to Google Sheets. Check your internet and script URL.");
-        }
-        
+        // Fetch both datasets directly (no ping needed)
         await Promise.all([fetchLocationalReleased(), fetchZoningReleased()]);
         
+        // Populate month filter and render
         populateMonthFilter();
         renderReportTable();
         
         if (dot) {
           dot.innerHTML = "🟢";
           txt.innerText = "Connected";
-          setTimeout(() => {
-            if (txt) txt.innerText = "Live";
-          }, 2000);
+          setTimeout(() => { if (txt) txt.innerText = "Live"; }, 2000);
         }
         
         showToastMessage(`Sync complete! Loaded ${locationalReleased.length + zoningReleased.length} released records.`, "success");
@@ -1005,13 +1030,22 @@ footer {
         
         // Show error in table
         const tbody = document.getElementById("tableBody");
-        tbody.innerHTML = `<tr class="empty-row"><td colspan="12">❌ Failed to load data: ${e.message}<br><br>Check browser console (F12) for details.<br><br><button onclick="fetchLiveData()" style="padding:8px 16px; background:#2563eb; color:white; border:none; border-radius:8px;">Retry</button></td></tr>`;
+        if (tbody) {
+          tbody.innerHTML = `<tr class="empty-row"><td colspan="12">❌ Failed to load data: ${escapeHtml(e.message)}<br><br>Check browser console (F12) for details.<br><br><button onclick="fetchLiveData()" style="padding:8px 16px; background:#2563eb; color:white; border:none; border-radius:8px; cursor:pointer;">Retry</button></td></tr>`;
+        }
       }
     }
 
-    const LOCATIONAL_COLS = ["Application No.","Decision No.","Requesting Party","Date Issued","Report Month","Owner/Proponents","Location","Total Area (ha)","No. of Days Processed","On Time / Delayed","Amount Paid","O.R. No.","Remarks"];
-    const ZONING_COLS = ["Certification No.","Requesting Party","Certification Issued","Date Issued","Report Month","Owner/Proponents","Location","No. of Parcels","Total Area (ha)","No. of Days Processed","On Time / Delayed","Amount Paid","O.R. No.","Remarks","Approved By","Resolution No."];
+    // ============================================
+    // REPORT TABLE RENDERING FUNCTIONS
+    // ============================================
     
+    // Define column sets for each report type
+    const ALL_COLS = ["Control No.", "Type", "Requesting Party", "Date Issued", "Report Month", "Location", "Total Area", "No. of Days", "Timeliness", "Status"];
+    const LOCATIONAL_COLS = ["Application No.", "Decision No.", "Requesting Party", "Date Issued", "Report Month", "Owner/Proponents", "Location", "Total Area", "No. of Days", "On Time / Delayed", "Amount Paid", "O.R. No.", "Status"];
+    const ZONING_COLS = ["Certification No.", "Type", "Requesting Party", "Date Issued", "Report Month", "Owner/Proponents", "Location", "No. of Parcels", "Total Area (ha)", "No. of Days", "On Time / Delayed", "Amount Paid", "O.R. No.", "Status"];
+
+    // Map a locational record to row data
     function mapLocationalToRow(r) {
       const days = calcProcessDays(r.dateReceipt, r.dateIssue);
       const timeliness = getTimeliness(days);
@@ -1030,22 +1064,25 @@ footer {
       }
       
       return {
-        "Application No.": r.applicationNo ? String(r.applicationNo) : "",
-        "Decision No.": r.decisionNo ? String(r.decisionNo) : "",
+        "Control No.": r.applicationNo ? String(r.applicationNo) : "",
+        "Type": "Locational Clearance",
         "Requesting Party": r.applicant ? String(r.applicant) : "",
         "Date Issued": formatDateShort(r.dateIssue),
         "Report Month": reportMonth,
         "Owner/Proponents": owner,
         "Location": areaLocationStr,
-        "Total Area (ha)": area,
-        "No. of Days Processed": days !== null ? days : "",
-        "On Time / Delayed": timeliness,
+        "Total Area": area,
+        "No. of Days": days !== null ? days : "",
+        "Timeliness": timeliness,
+        "Status": "Released",
         "Amount Paid": r.amountPaid ? `₱ ${r.amountPaid}` : "",
         "O.R. No.": r.orNo ? String(r.orNo) : "",
-        "Remarks": r.decision ? String(r.decision) : (r.conditions ? String(r.conditions) : "")
+        "Decision No.": r.decisionNo ? String(r.decisionNo) : "",
+        "Application No.": r.applicationNo ? String(r.applicationNo) : ""
       };
     }
 
+    // Map a zoning record to row data
     function mapZoningToRow(r) {
       const days = calcProcessDays(r.dateReceived, r.dateIssued);
       const timeliness = getTimeliness(days);
@@ -1072,151 +1109,180 @@ footer {
       const parcels = r.parcels || (r.landHoldings?.length || "1");
       
       return {
-        "Certification No.": r.certificationNo || "",
+        "Control No.": r.certificationNo || "",
+        "Type": r.certificationIssued || "Site Zoning Certification",
         "Requesting Party": r.requestedBy || "",
-        "Certification Issued": r.certificationIssued || "Site Zoning Certification",
         "Date Issued": formatDateShort(r.dateIssued),
         "Report Month": reportMonth,
         "Owner/Proponents": ownerProp,
         "Location": (typeof r.location === 'string' ? r.location : (r.location ? String(r.location) : "")) || "",
-        "No. of Parcels": parcels,
-        "Total Area (ha)": totalArea,
-        "No. of Days Processed": days !== null ? days : "",
-        "On Time / Delayed": timeliness,
+        "Total Area": totalArea,
+        "No. of Days": days !== null ? days : "",
+        "Timeliness": timeliness,
+        "Status": "Released",
         "Amount Paid": r.amountPaid ? `₱ ${r.amountPaid}` : "",
         "O.R. No.": r.orNo || "",
-        "Remarks": r.remarks || r.proposedUse || "",
-        "Approved By": r.approvedBy || "",
-        "Resolution No.": r.circularNo || ""
+        "Certification No.": r.certificationNo || "",
+        "No. of Parcels": parcels
       };
     }
 
-    function getCurrentReleased(){ 
-      return currentReportType === "locational" ? locationalReleased : zoningReleased; 
-    }
-    
-    function populateMonthFilter(){
-      const records = getCurrentReleased(); 
-      const months = new Set();
-      records.forEach(rec => {
-        const d = currentReportType === "locational" ? rec.dateIssue : rec.dateIssued; 
-        if(d){
-          const key = getMonthKey(d);
-          if(key) months.add(key);
-        }
+    // Get current records based on report type
+    function getCurrentRecords() {
+      if (currentReportType === "locational") return locationalReleased;
+      if (currentReportType === "zoning") return zoningReleased;
+      // "all" - combine both
+      const allRecords = [];
+      locationalReleased.forEach(r => {
+        const mapped = mapLocationalToRow(r);
+        mapped._sourceType = "locational";
+        allRecords.push(mapped);
       });
-      const sorted = Array.from(months).sort().reverse(); 
-      const sel = document.getElementById("monthFilter"); 
+      zoningReleased.forEach(r => {
+        const mapped = mapZoningToRow(r);
+        mapped._sourceType = "zoning";
+        allRecords.push(mapped);
+      });
+      return allRecords;
+    }
+
+    // Populate month filter dropdown
+    function populateMonthFilter() {
+      const records = getCurrentRecords();
+      const months = new Set();
+      
+      records.forEach(rec => {
+        const monthKey = rec["Report Month"] || "";
+        if (monthKey) months.add(monthKey);
+      });
+      
+      const sorted = Array.from(months).sort((a, b) => {
+        // Try to parse dates for proper sorting
+        const dateA = new Date(a);
+        const dateB = new Date(b);
+        if (!isNaN(dateA) && !isNaN(dateB)) {
+          return dateB - dateA; // newest first
+        }
+        return a.localeCompare(b);
+      });
+      
+      const sel = document.getElementById("monthFilter");
       const cur = sel.value;
       sel.innerHTML = '<option value="all">📅 All Months</option>';
-      sorted.forEach(key => {
-        const [year, month] = key.split("-");
-        const name = new Date(year, month-1).toLocaleDateString("en-US", {month:"long", year:"numeric"});
+      sorted.forEach(month => {
         const opt = document.createElement("option");
-        opt.value = key;
-        opt.textContent = name;
+        opt.value = month;
+        opt.textContent = month;
         sel.appendChild(opt);
       });
-      if(cur !== "all" && sorted.includes(cur)) sel.value = cur;
-      else if(cur !== "all") { sel.value = "all"; currentMonthFilter = "all"; }
+      
+      if (cur !== "all" && sorted.includes(cur)) {
+        sel.value = cur;
+      } else {
+        sel.value = "all";
+        currentMonthFilter = "all";
+      }
     }
-    
-    function clearMonthFilter(){
+
+    // Clear month filter
+    function clearMonthFilter() {
       document.getElementById("monthFilter").value = "all";
       currentMonthFilter = "all";
       filterReportTable();
     }
-    
-    function filterReportTable(){
+
+    // Filter and render the report table
+    function filterReportTable() {
       currentMonthFilter = document.getElementById("monthFilter").value;
       renderReportTable();
     }
-    
-    function renderReportTable(){
-      let records = getCurrentReleased(); 
-      const search = document.getElementById("reportSearchInput")?.value.toLowerCase() || ""; 
+
+    // Main render function
+    function renderReportTable() {
+      let records = getCurrentRecords();
+      const search = document.getElementById("reportSearchInput")?.value.toLowerCase() || "";
       const monthFilter = currentMonthFilter;
-      let filtered = records;
       
+      // Apply search filter
+      let filtered = records;
       if (search) {
         filtered = filtered.filter(rec => {
-          let cn, party, loc, owner;
-          if (currentReportType === "locational") {
-            cn = rec.applicationNo ? String(rec.applicationNo) : "";
-            party = rec.applicant ? String(rec.applicant) : "";
-            loc = rec.areaLocation ? String(rec.areaLocation) : "";
-            owner = rec.applicant ? String(rec.applicant) : "";
-          } else {
-            cn = rec.certificationNo ? String(rec.certificationNo) : "";
-            party = rec.requestedBy ? String(rec.requestedBy) : "";
-            loc = rec.location ? String(rec.location) : "";
-            if (rec.landHoldings && Array.isArray(rec.landHoldings)) {
-              owner = rec.landHoldings.map(h => h.registeredOwner).join(" ");
-            } else {
-              owner = rec.requestedBy ? String(rec.requestedBy) : "";
-            }
-          }
-          return (cn.toLowerCase().includes(search) || 
-                  party.toLowerCase().includes(search) || 
-                  loc.toLowerCase().includes(search) || 
-                  owner.toLowerCase().includes(search));
-        });
-      }
-
-      if(monthFilter !== "all"){
-        filtered = filtered.filter(rec => {
-          const d = currentReportType === "locational" ? rec.dateIssue : rec.dateIssued;
-          const key = getMonthKey(d);
-          return key === monthFilter;
+          const controlNo = (rec["Control No."] || "").toLowerCase();
+          const requestingParty = (rec["Requesting Party"] || "").toLowerCase();
+          const location = (rec["Location"] || "").toLowerCase();
+          const owner = (rec["Owner/Proponents"] || "").toLowerCase();
+          return controlNo.includes(search) || 
+                 requestingParty.includes(search) || 
+                 location.includes(search) || 
+                 owner.includes(search);
         });
       }
       
-      filteredData = filtered; 
-      const totalReleased = records.length; 
+      // Apply month filter
+      if (monthFilter !== "all") {
+        filtered = filtered.filter(rec => {
+          return rec["Report Month"] === monthFilter;
+        });
+      }
+      
+      filteredData = filtered;
+      
+      // Calculate statistics
+      const totalReleased = records.length;
       const filteredCount = filteredData.length;
       
-      let totalDays = 0, daysCount = 0; 
+      let totalDays = 0, daysCount = 0;
       filteredData.forEach(rec => {
-        const d1 = currentReportType === "locational" ? rec.dateReceipt : rec.dateReceived;
-        const d2 = currentReportType === "locational" ? rec.dateIssue : rec.dateIssued;
-        const days = calcProcessDays(d1, d2);
-        if(days !== null && !isNaN(days)){
+        const days = parseInt(rec["No. of Days"]);
+        if (!isNaN(days) && days > 0) {
           totalDays += days;
           daysCount++;
         }
       });
-      const avgDays = daysCount > 0 ? (totalDays/daysCount).toFixed(1) : "0";
+      const avgDays = daysCount > 0 ? (totalDays / daysCount).toFixed(1) : "0";
       
       document.getElementById("totalCount").innerText = totalReleased;
       document.getElementById("monthCount").innerText = filteredCount;
       document.getElementById("avgDays").innerText = avgDays;
       
-      const cols = currentReportType === "locational" ? LOCATIONAL_COLS : ZONING_COLS; 
-      const thead = document.getElementById("tableHeader"); 
-      thead.innerHTML = `<tr>${cols.map(c => `<th>${c}</th>`).join("")}</tr>`;
+      // Determine columns based on report type
+      let cols = ALL_COLS;
+      if (currentReportType === "locational") {
+        cols = LOCATIONAL_COLS;
+      } else if (currentReportType === "zoning") {
+        cols = ZONING_COLS;
+      }
       
-      const tbody = document.getElementById("tableBody"); 
-      if(filteredData.length === 0){
+      // Render header
+      const thead = document.getElementById("tableHeader");
+      if (thead) {
+        thead.innerHTML = `<tr>${cols.map(c => `<th>${c}</th>`).join("")}</tr>`;
+      }
+      
+      // Render body
+      const tbody = document.getElementById("tableBody");
+      if (!tbody) return;
+      
+      if (filteredData.length === 0) {
         tbody.innerHTML = `<tr class="empty-row"><td colspan="${cols.length}">📭 No released records found for the selected filter.</td></tr>`;
         return;
       }
       
-      let rows = ""; 
+      // Build rows
+      let rows = "";
       filteredData.forEach(rec => {
-        let vals = []; 
-        if(currentReportType === "locational"){
-          const m = mapLocationalToRow(rec); 
-          vals = LOCATIONAL_COLS.map(c => m[c] || "");
-        } else {
-          const m = mapZoningToRow(rec); 
-          vals = ZONING_COLS.map(c => m[c] || "");
-        } 
-        rows += `<tr>${vals.map(v => `<td>${escapeHtml(String(v))}</td>`).join("")}</tr>`;
-      }); 
+        const rowCells = cols.map(col => {
+          let value = rec[col] !== undefined ? rec[col] : "";
+          return `<td>${escapeHtml(String(value))}</td>`;
+        });
+        rows += `<tr>${rowCells.join("")}</tr>`;
+      });
+      
       tbody.innerHTML = rows;
     }
-    
-    function switchReportType(){
+
+    // Switch report type
+    function switchReportType() {
       const sel = document.getElementById("reportTypeSelect");
       currentReportType = sel.value;
       currentMonthFilter = "all";
@@ -1224,89 +1290,103 @@ footer {
       populateMonthFilter();
       renderReportTable();
     }
+
+    // ============================================
+    // EXPORT FUNCTIONS
+    // ============================================
     
-    function exportCurrentReportToExcel(){
-      let records = filteredData.length > 0 ? filteredData : getCurrentReleased(); 
-      const search = document.getElementById("reportSearchInput")?.value.toLowerCase() || ""; 
-      const monthFilter = currentMonthFilter; 
-      let exportRecords = [...records]; 
+    function exportCurrentReportToExcel() {
+      let records = filteredData.length > 0 ? filteredData : getCurrentRecords();
+      const search = document.getElementById("reportSearchInput")?.value.toLowerCase() || "";
+      const monthFilter = currentMonthFilter;
       
-      if(search && filteredData.length === 0){
-        exportRecords = exportRecords.filter(rec => {
-          let cn, party, loc, owner; 
-          if(currentReportType === "locational"){
-            cn = rec.applicationNo;
-            party = rec.applicant;
-            loc = rec.areaLocation;
-            owner = rec.applicant;
-          } else {
-            cn = rec.certificationNo;
-            party = rec.requestedBy;
-            loc = rec.location;
-            if(rec.landHoldings && Array.isArray(rec.landHoldings)){
-              owner = rec.landHoldings.map(h => h.registeredOwner).join(" ");
-            } else {
-              owner = rec.requestedBy || "";
-            }
-          } 
-          return (cn?.toLowerCase().includes(search) || 
-                  party?.toLowerCase().includes(search) || 
-                  loc?.toLowerCase().includes(search) || 
-                  owner?.toLowerCase().includes(search));
-        });
-      } 
+      let exportRecords = [...records];
       
-      if(monthFilter !== "all" && filteredData.length === 0){
+      if (search) {
         exportRecords = exportRecords.filter(rec => {
-          const d = currentReportType === "locational" ? rec.dateIssue : rec.dateIssued;
-          const key = getMonthKey(d);
-          return key === monthFilter;
+          const controlNo = (rec["Control No."] || "").toLowerCase();
+          const requestingParty = (rec["Requesting Party"] || "").toLowerCase();
+          const location = (rec["Location"] || "").toLowerCase();
+          return controlNo.includes(search) || 
+                 requestingParty.includes(search) || 
+                 location.includes(search);
         });
       }
       
-      let sheetData = [], cols = []; 
-      if(currentReportType === "locational"){
-        cols = LOCATIONAL_COLS; 
-        sheetData = exportRecords.map(rec => {
-          const row = mapLocationalToRow(rec); 
-          const out = {}; 
-          cols.forEach(c => out[c] = row[c] || ""); 
-          return out;
-        });
-      } else {
-        cols = ZONING_COLS; 
-        sheetData = exportRecords.map(rec => {
-          const row = mapZoningToRow(rec); 
-          const out = {}; 
-          cols.forEach(c => out[c] = row[c] || ""); 
-          return out;
+      if (monthFilter !== "all") {
+        exportRecords = exportRecords.filter(rec => {
+          return rec["Report Month"] === monthFilter;
         });
       }
       
-      if(sheetData.length === 0){
+      if (exportRecords.length === 0) {
         alert("No records to export.");
         return;
-      } 
+      }
       
-      const ws = XLSX.utils.json_to_sheet(sheetData); 
-      const wb = XLSX.utils.book_new(); 
-      const name = currentReportType === "locational" ? "Locational_Clearance_Released" : "Site_Zoning_Released"; 
-      XLSX.utils.book_append_sheet(wb, ws, name); 
+      // Determine columns for export
+      let cols = ALL_COLS;
+      if (currentReportType === "locational") {
+        cols = LOCATIONAL_COLS;
+      } else if (currentReportType === "zoning") {
+        cols = ZONING_COLS;
+      }
+      
+      // Build sheet data
+      const sheetData = exportRecords.map(rec => {
+        const row = {};
+        cols.forEach(col => {
+          row[col] = rec[col] !== undefined ? rec[col] : "";
+        });
+        return row;
+      });
+      
+      const ws = XLSX.utils.json_to_sheet(sheetData);
+      const wb = XLSX.utils.book_new();
+      const name = currentReportType === "all" ? "All_Released" : 
+                   currentReportType === "locational" ? "Locational_Clearance_Released" : "Site_Zoning_Released";
+      XLSX.utils.book_append_sheet(wb, ws, name);
       XLSX.writeFile(wb, `${name}_${new Date().toISOString().slice(0,10)}.xlsx`);
+      showToastMessage(`Exported ${exportRecords.length} records to Excel`, "success");
     }
 
-    async function init(){
-      checkSession(); 
-      renderMainNavigation(); 
-      renderUserMenu(); 
+    // ============================================
+    // INITIALIZATION
+    // ============================================
+    
+    async function init() {
+      checkSession();
+      renderMainNavigation();
+      renderUserMenu();
+      
       document.getElementById("tableHeader").innerHTML = `<tr><th colspan="12">Loading released records...</th></tr>`;
-      await fetchLiveData(); 
+      
+      // Set initial report type to "all"
+      document.getElementById("reportTypeSelect").value = "all";
+      currentReportType = "all";
+      
+      await fetchLiveData();
+      
+      // Auto-refresh every 60 seconds
       setInterval(() => {
-        fetchLiveData().catch(e => console.warn(e));
+        fetchLiveData().catch(e => console.warn("Auto-refresh error:", e));
       }, 60000);
     }
     
+    // Start the application
     init();
+
+    // ============================================
+    // GLOBAL EXPOSURES
+    // ============================================
+    window.switchReportType = switchReportType;
+    window.filterReportTable = filterReportTable;
+    window.clearMonthFilter = clearMonthFilter;
+    window.exportCurrentReportToExcel = exportCurrentReportToExcel;
+    window.fetchLiveData = fetchLiveData;
+    window.openLoginModal = openLoginModal;
+    window.toggleModalPassword = toggleModalPassword;
+    window.handleModalLogin = handleModalLogin;
   </script>
 </body>
 </html>
