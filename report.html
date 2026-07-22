@@ -183,7 +183,6 @@ header {
     border: 1px solid #eef2ff;
     padding: 0.3rem 0;
 }
-/* ADD THIS - Show dropdown on hover */
 .dropdown:hover .dropdown-content {
     display: block;
 }
@@ -238,7 +237,6 @@ header {
     z-index: 1001;
     padding: 0.3rem 0;
 }
-/* ADD THIS - Show submenu on hover */
 .dropdown-submenu:hover .submenu-content {
     display: block;
 }
@@ -589,7 +587,6 @@ footer {
         justify-content: flex-end;
     }
 }
-/* ADD THIS - Dropdown arrow indicator */
 .dropbtn::after {
     content: " ▾";
     font-size: 0.7rem;
@@ -628,7 +625,6 @@ footer {
         <h2>📎 Report Dashboard</h2>
         <div class="filter-group">
           <select id="reportTypeSelect" class="report-selector" onchange="switchReportType()">
-            <option value="all">📊 All Released</option>
             <option value="locational">📍 Locational Clearance (Released)</option>
             <option value="zoning">🗺️ Site Zoning Certification (Released)</option>
           </select>
@@ -676,14 +672,14 @@ footer {
 
   <script>
     // ============================================
-    // CONFIGURATION - Use the same backend URL as lc.html and SZC.html
+    // CONFIGURATION - Same backend URL as lc.html and SZC.html
     // ============================================
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwo4bJ6qkDy7HkB4IMRu4y1E0JKHgSF9IZFilJbjeNNUdYkIfg-iv7AuZB3p6vd9Q/exec";
     
     // Data stores
     let locationalReleased = [];
     let zoningReleased = [];
-    let currentReportType = "all";
+    let currentReportType = "locational"; // Default to locational
     let filteredData = [];
     let currentMonthFilter = "all";
     let currentUser = null;
@@ -894,7 +890,7 @@ footer {
     }
 
     // ============================================
-    // DATA FETCHING FUNCTIONS - Uses the same pattern as lc.html and SZC.html
+    // DATA FETCHING FUNCTIONS
     // ============================================
     
     // Fetch Locational Clearance records (released only)
@@ -921,7 +917,6 @@ footer {
         } else if (data && data.data && Array.isArray(data.data)) {
           records = data.data;
         } else if (data && typeof data === 'object') {
-          // Try to find any array property
           for (let key in data) {
             if (Array.isArray(data[key]) && data[key].length > 0) {
               records = data[key];
@@ -971,7 +966,6 @@ footer {
         } else if (data && data.data && Array.isArray(data.data)) {
           records = data.data;
         } else if (data && typeof data === 'object') {
-          // Try to find any array property
           for (let key in data) {
             if (Array.isArray(data[key]) && data[key].length > 0) {
               records = data[key];
@@ -1005,7 +999,7 @@ footer {
       if (dot) { dot.innerHTML = "🟡"; txt.innerText = "Syncing..."; }
       
       try {
-        // Fetch both datasets directly (no ping needed)
+        // Fetch both datasets
         await Promise.all([fetchLocationalReleased(), fetchZoningReleased()]);
         
         // Populate month filter and render
@@ -1041,9 +1035,8 @@ footer {
     // ============================================
     
     // Define column sets for each report type
-    const ALL_COLS = ["Control No.", "Type", "Requesting Party", "Date Issued", "Report Month", "Location", "Total Area", "No. of Days", "Timeliness", "Status"];
-    const LOCATIONAL_COLS = ["Application No.", "Decision No.", "Requesting Party", "Date Issued", "Report Month", "Owner/Proponents", "Location", "Total Area", "No. of Days", "On Time / Delayed", "Amount Paid", "O.R. No.", "Status"];
-    const ZONING_COLS = ["Certification No.", "Type", "Requesting Party", "Date Issued", "Report Month", "Owner/Proponents", "Location", "No. of Parcels", "Total Area (ha)", "No. of Days", "On Time / Delayed", "Amount Paid", "O.R. No.", "Status"];
+    const LOCATIONAL_COLS = ["Application No.", "Decision No.", "Requesting Party", "Date Issued", "Report Month", "Owner/Proponents", "Location", "Total Area", "No. of Days", "On Time / Delayed", "Amount Paid", "O.R. No."];
+    const ZONING_COLS = ["Certification No.", "Type", "Requesting Party", "Date Issued", "Report Month", "Owner/Proponents", "Location", "No. of Parcels", "Total Area (ha)", "No. of Days", "On Time / Delayed", "Amount Paid", "O.R. No."];
 
     // Map a locational record to row data
     function mapLocationalToRow(r) {
@@ -1064,8 +1057,8 @@ footer {
       }
       
       return {
-        "Control No.": r.applicationNo ? String(r.applicationNo) : "",
-        "Type": "Locational Clearance",
+        "Application No.": r.applicationNo ? String(r.applicationNo) : "",
+        "Decision No.": r.decisionNo ? String(r.decisionNo) : "",
         "Requesting Party": r.applicant ? String(r.applicant) : "",
         "Date Issued": formatDateShort(r.dateIssue),
         "Report Month": reportMonth,
@@ -1073,12 +1066,9 @@ footer {
         "Location": areaLocationStr,
         "Total Area": area,
         "No. of Days": days !== null ? days : "",
-        "Timeliness": timeliness,
-        "Status": "Released",
+        "On Time / Delayed": timeliness,
         "Amount Paid": r.amountPaid ? `₱ ${r.amountPaid}` : "",
-        "O.R. No.": r.orNo ? String(r.orNo) : "",
-        "Decision No.": r.decisionNo ? String(r.decisionNo) : "",
-        "Application No.": r.applicationNo ? String(r.applicationNo) : ""
+        "O.R. No.": r.orNo ? String(r.orNo) : ""
       };
     }
 
@@ -1109,41 +1099,30 @@ footer {
       const parcels = r.parcels || (r.landHoldings?.length || "1");
       
       return {
-        "Control No.": r.certificationNo || "",
+        "Certification No.": r.certificationNo || "",
         "Type": r.certificationIssued || "Site Zoning Certification",
         "Requesting Party": r.requestedBy || "",
         "Date Issued": formatDateShort(r.dateIssued),
         "Report Month": reportMonth,
         "Owner/Proponents": ownerProp,
         "Location": (typeof r.location === 'string' ? r.location : (r.location ? String(r.location) : "")) || "",
-        "Total Area": totalArea,
+        "No. of Parcels": parcels,
+        "Total Area (ha)": totalArea,
         "No. of Days": days !== null ? days : "",
-        "Timeliness": timeliness,
-        "Status": "Released",
+        "On Time / Delayed": timeliness,
         "Amount Paid": r.amountPaid ? `₱ ${r.amountPaid}` : "",
-        "O.R. No.": r.orNo || "",
-        "Certification No.": r.certificationNo || "",
-        "No. of Parcels": parcels
+        "O.R. No.": r.orNo || ""
       };
     }
 
     // Get current records based on report type
     function getCurrentRecords() {
-      if (currentReportType === "locational") return locationalReleased;
-      if (currentReportType === "zoning") return zoningReleased;
-      // "all" - combine both
-      const allRecords = [];
-      locationalReleased.forEach(r => {
-        const mapped = mapLocationalToRow(r);
-        mapped._sourceType = "locational";
-        allRecords.push(mapped);
-      });
-      zoningReleased.forEach(r => {
-        const mapped = mapZoningToRow(r);
-        mapped._sourceType = "zoning";
-        allRecords.push(mapped);
-      });
-      return allRecords;
+      if (currentReportType === "locational") {
+        return locationalReleased;
+      } else if (currentReportType === "zoning") {
+        return zoningReleased;
+      }
+      return [];
     }
 
     // Populate month filter dropdown
@@ -1152,16 +1131,16 @@ footer {
       const months = new Set();
       
       records.forEach(rec => {
-        const monthKey = rec["Report Month"] || "";
+        const dateIssued = rec.dateIssue || rec.dateIssued;
+        const monthKey = getMonthYear(dateIssued);
         if (monthKey) months.add(monthKey);
       });
       
       const sorted = Array.from(months).sort((a, b) => {
-        // Try to parse dates for proper sorting
         const dateA = new Date(a);
         const dateB = new Date(b);
         if (!isNaN(dateA) && !isNaN(dateB)) {
-          return dateB - dateA; // newest first
+          return dateB - dateA;
         }
         return a.localeCompare(b);
       });
@@ -1207,21 +1186,20 @@ footer {
       let filtered = records;
       if (search) {
         filtered = filtered.filter(rec => {
-          const controlNo = (rec["Control No."] || "").toLowerCase();
-          const requestingParty = (rec["Requesting Party"] || "").toLowerCase();
-          const location = (rec["Location"] || "").toLowerCase();
-          const owner = (rec["Owner/Proponents"] || "").toLowerCase();
+          const controlNo = (rec.applicationNo || rec.certificationNo || "").toLowerCase();
+          const requestingParty = (rec.applicant || rec.requestedBy || "").toLowerCase();
+          const location = (rec.areaLocation || rec.location || "").toLowerCase();
           return controlNo.includes(search) || 
                  requestingParty.includes(search) || 
-                 location.includes(search) || 
-                 owner.includes(search);
+                 location.includes(search);
         });
       }
       
       // Apply month filter
       if (monthFilter !== "all") {
         filtered = filtered.filter(rec => {
-          return rec["Report Month"] === monthFilter;
+          const dateIssued = rec.dateIssue || rec.dateIssued;
+          return getMonthYear(dateIssued) === monthFilter;
         });
       }
       
@@ -1233,8 +1211,10 @@ footer {
       
       let totalDays = 0, daysCount = 0;
       filteredData.forEach(rec => {
-        const days = parseInt(rec["No. of Days"]);
-        if (!isNaN(days) && days > 0) {
+        const received = rec.dateReceipt || rec.dateReceived;
+        const issued = rec.dateIssue || rec.dateIssued;
+        const days = calcProcessDays(received, issued);
+        if (days !== null && !isNaN(days) && days > 0) {
           totalDays += days;
           daysCount++;
         }
@@ -1246,12 +1226,7 @@ footer {
       document.getElementById("avgDays").innerText = avgDays;
       
       // Determine columns based on report type
-      let cols = ALL_COLS;
-      if (currentReportType === "locational") {
-        cols = LOCATIONAL_COLS;
-      } else if (currentReportType === "zoning") {
-        cols = ZONING_COLS;
-      }
+      let cols = currentReportType === "locational" ? LOCATIONAL_COLS : ZONING_COLS;
       
       // Render header
       const thead = document.getElementById("tableHeader");
@@ -1271,11 +1246,15 @@ footer {
       // Build rows
       let rows = "";
       filteredData.forEach(rec => {
-        const rowCells = cols.map(col => {
-          let value = rec[col] !== undefined ? rec[col] : "";
-          return `<td>${escapeHtml(String(value))}</td>`;
-        });
-        rows += `<tr>${rowCells.join("")}</tr>`;
+        let rowCells = [];
+        if (currentReportType === "locational") {
+          const row = mapLocationalToRow(rec);
+          rowCells = LOCATIONAL_COLS.map(col => row[col] !== undefined ? row[col] : "");
+        } else {
+          const row = mapZoningToRow(rec);
+          rowCells = ZONING_COLS.map(col => row[col] !== undefined ? row[col] : "");
+        }
+        rows += `<tr>${rowCells.map(c => `<td>${escapeHtml(String(c))}</td>`).join("")}</tr>`;
       });
       
       tbody.innerHTML = rows;
@@ -1304,9 +1283,9 @@ footer {
       
       if (search) {
         exportRecords = exportRecords.filter(rec => {
-          const controlNo = (rec["Control No."] || "").toLowerCase();
-          const requestingParty = (rec["Requesting Party"] || "").toLowerCase();
-          const location = (rec["Location"] || "").toLowerCase();
+          const controlNo = (rec.applicationNo || rec.certificationNo || "").toLowerCase();
+          const requestingParty = (rec.applicant || rec.requestedBy || "").toLowerCase();
+          const location = (rec.areaLocation || rec.location || "").toLowerCase();
           return controlNo.includes(search) || 
                  requestingParty.includes(search) || 
                  location.includes(search);
@@ -1315,7 +1294,8 @@ footer {
       
       if (monthFilter !== "all") {
         exportRecords = exportRecords.filter(rec => {
-          return rec["Report Month"] === monthFilter;
+          const dateIssued = rec.dateIssue || rec.dateIssued;
+          return getMonthYear(dateIssued) === monthFilter;
         });
       }
       
@@ -1324,27 +1304,31 @@ footer {
         return;
       }
       
-      // Determine columns for export
-      let cols = ALL_COLS;
+      // Build sheet data
+      let sheetData = [];
+      let cols = [];
+      
       if (currentReportType === "locational") {
         cols = LOCATIONAL_COLS;
-      } else if (currentReportType === "zoning") {
-        cols = ZONING_COLS;
-      }
-      
-      // Build sheet data
-      const sheetData = exportRecords.map(rec => {
-        const row = {};
-        cols.forEach(col => {
-          row[col] = rec[col] !== undefined ? rec[col] : "";
+        sheetData = exportRecords.map(rec => {
+          const row = mapLocationalToRow(rec);
+          const out = {};
+          cols.forEach(c => out[c] = row[c] !== undefined ? row[c] : "");
+          return out;
         });
-        return row;
-      });
+      } else {
+        cols = ZONING_COLS;
+        sheetData = exportRecords.map(rec => {
+          const row = mapZoningToRow(rec);
+          const out = {};
+          cols.forEach(c => out[c] = row[c] !== undefined ? row[c] : "");
+          return out;
+        });
+      }
       
       const ws = XLSX.utils.json_to_sheet(sheetData);
       const wb = XLSX.utils.book_new();
-      const name = currentReportType === "all" ? "All_Released" : 
-                   currentReportType === "locational" ? "Locational_Clearance_Released" : "Site_Zoning_Released";
+      const name = currentReportType === "locational" ? "Locational_Clearance_Released" : "Site_Zoning_Released";
       XLSX.utils.book_append_sheet(wb, ws, name);
       XLSX.writeFile(wb, `${name}_${new Date().toISOString().slice(0,10)}.xlsx`);
       showToastMessage(`Exported ${exportRecords.length} records to Excel`, "success");
@@ -1361,9 +1345,9 @@ footer {
       
       document.getElementById("tableHeader").innerHTML = `<tr><th colspan="12">Loading released records...</th></tr>`;
       
-      // Set initial report type to "all"
-      document.getElementById("reportTypeSelect").value = "all";
-      currentReportType = "all";
+      // Set initial report type to locational
+      document.getElementById("reportTypeSelect").value = "locational";
+      currentReportType = "locational";
       
       await fetchLiveData();
       
