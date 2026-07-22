@@ -7,1100 +7,200 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    body {
-      font-family: "Inter", sans-serif;
-      background: #f4f9fe;
-      color: #0a2540;
-      line-height: 1.5;
-      scroll-behavior: smooth;
-    }
-    .container {
-      max-width: 1280px;
-      margin: 0 auto;
-      padding: 0 24px;
-    }
-    @keyframes fadeUp {
-      0% { opacity: 0; transform: translateY(25px); }
-      100% { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes slideInLeft {
-      0% { opacity: 0; transform: translateX(-40px); }
-      100% { opacity: 1; transform: translateX(0); }
-    }
-    @keyframes slideInRight {
-      0% { opacity: 0; transform: translateX(40px); }
-      100% { opacity: 1; transform: translateX(0); }
-    }
-    @keyframes float {
-      0% { transform: translateY(0px); }
-      50% { transform: translateY(-8px); }
-      100% { transform: translateY(0px); }
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: "Inter", sans-serif; background: #f4f9fe; color: #0a2540; line-height: 1.5; scroll-behavior: smooth; }
+    .container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+    @keyframes fadeUp { 0% { opacity: 0; transform: translateY(25px); } 100% { opacity: 1; transform: translateY(0); } }
+    @keyframes slideInLeft { 0% { opacity: 0; transform: translateX(-40px); } 100% { opacity: 1; transform: translateX(0); } }
+    @keyframes slideInRight { 0% { opacity: 0; transform: translateX(40px); } 100% { opacity: 1; transform: translateX(0); } }
+    @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-8px); } 100% { transform: translateY(0px); } }
     .animate-fadeUp { animation: fadeUp 0.7s ease forwards; }
     .animate-slideLeft { animation: slideInLeft 0.6s ease forwards; }
     .animate-slideRight { animation: slideInRight 0.6s ease forwards; }
-    .scroll-reveal {
-      opacity: 0;
-      transform: translateY(30px);
-      transition: opacity 0.8s cubic-bezier(0.2, 0.9, 0.4, 1.1), transform 0.8s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-    }
-    .scroll-reveal.revealed {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    header {
-      background: #ffffff;
-      border-bottom: 1px solid #e2edf7;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      backdrop-filter: blur(2px);
-      background: rgba(255, 255, 255, 0.98);
-    }
-    .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.8rem 0;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
-    .logo-area-header {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-    .header-logo-img {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      background: #f0f6fe;
-      padding: 6px 20px;
-      border-radius: 60px;
-      transition: all 0.2s;
-    }
-    .header-logo-img img {
-      height: 40px;
-      width: auto;
-      transition: transform 0.2s;
-    }
-    .header-logo-img span {
-      font-weight: 700;
-      font-size: 0.9rem;
-      color: #1e3a8a;
-      letter-spacing: -0.2px;
-      white-space: nowrap;
-    }
-    .nav-right .login-prompt,
-    .user-menu {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: #f1f5f9;
-      padding: 0.2rem 0.6rem 0.2rem 0.8rem;
-      border-radius: 60px;
-      cursor: pointer;
-      position: relative;
-    }
-    .login-prompt:hover {
-      background: #2563eb;
-      color: white;
-      transform: translateY(-2px);
-    }
-    .nav-bottom {
-      background: white;
-      border-top: 1px solid #eef2ff;
-      padding: 0.5rem 0;
-    }
-    .main-nav-links {
-      display: flex;
-      align-items: center;
-      gap: 1.5rem;
-      flex-wrap: wrap;
-    }
-    .main-nav-links a,
-    .dropbtn {
-      text-decoration: none;
-      font-weight: 500;
-      font-size: 0.85rem;
-      color: #1f3a5f;
-      padding: 0.5rem 0;
-      transition: 0.2s;
-      letter-spacing: -0.2px;
-    }
-    .main-nav-links a:hover,
-    .dropbtn:hover {
-      color: #2563eb;
-      transform: translateY(-1px);
-    }
-    .dropdown {
-      position: relative;
-      display: inline-block;
-    }
-    .dropbtn {
-      background: none;
-      border: none;
-      font-family: inherit;
-      cursor: pointer;
-    }
-    .dropdown-content {
-      display: none;
-      position: absolute;
-      background: white;
-      min-width: 220px;
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
-      border-radius: 16px;
-      z-index: 1000;
-      top: 30px;
-      left: 0;
-      border: 1px solid #eef2ff;
-      padding: 0.3rem 0;
-    }
-    .dropdown:hover .dropdown-content {
-      display: block;
-    }
-    .dropdown-content a {
-      display: block;
-      padding: 0.7rem 1.2rem;
-      color: #1e293b;
-      font-size: 0.8rem;
-      text-decoration: none;
-    }
-    .dropdown-content a:hover {
-      background: #eff6ff;
-    }
-    .dropdown-submenu {
-      position: relative;
-    }
-    .submenu-trigger {
-      background: none;
-      border: none;
-      width: 100%;
-      text-align: left;
-      padding: 0.7rem 1.2rem;
-      font-size: 0.8rem;
-      font-weight: 500;
-      color: #1e293b;
-      cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-family: inherit;
-    }
-    .submenu-trigger:hover {
-      background: #eff6ff;
-    }
-    .arrow-right {
-      font-size: 0.7rem;
-      margin-left: 1rem;
-    }
-    .submenu-content {
-      display: none;
-      position: absolute;
-      left: 100%;
-      top: 0;
-      background: white;
-      min-width: 180px;
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
-      border-radius: 16px;
-      border: 1px solid #eef2ff;
-      z-index: 1001;
-      padding: 0.3rem 0;
-    }
-    .dropdown-submenu:hover .submenu-content {
-      display: block;
-    }
-    .submenu-content a {
-      padding: 0.7rem 1.2rem;
-    }
-    .hero-innovations {
-      background: linear-gradient(135deg, #eef5ff 0%, #ffffff 100%);
-      border-radius: 2rem;
-      margin: 2rem 0;
-      padding: 2.8rem 2rem;
-      box-shadow: 0 15px 35px -12px rgba(0, 0, 0, 0.05);
-      position: relative;
-      overflow: hidden;
-    }
-    .innov-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 2rem;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .innov-text {
-      flex: 1.2;
-    }
-    .innov-text h1 {
-      font-size: 2.5rem;
-      font-weight: 800;
-      background: linear-gradient(135deg, #0f2b3a, #1e4a76);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      margin-bottom: 1rem;
-    }
-    .innov-text p {
-      font-size: 1rem;
-      color: #2c4c6e;
-      margin-bottom: 1.8rem;
-      max-width: 90%;
-    }
-    .innov-buttons {
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-    .btn-primary {
-      background: #2563eb;
-      color: white;
-      border: none;
-      padding: 0.8rem 1.8rem;
-      border-radius: 40px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.25s;
-      box-shadow: 0 5px 12px rgba(37, 99, 235, 0.2);
-    }
-    .btn-primary:hover {
-      background: #1d4ed8;
-      transform: translateY(-3px);
-      box-shadow: 0 12px 20px -8px #2563eb70;
-    }
-    .btn-outline {
-      background: transparent;
-      border: 1.5px solid #2563eb;
-      color: #2563eb;
-      padding: 0.8rem 1.8rem;
-      border-radius: 40px;
-      font-weight: 600;
-      transition: 0.2s;
-      cursor: pointer;
-    }
-    .btn-outline:hover {
-      background: #2563eb10;
-      transform: translateY(-2px);
-    }
-    .innov-image {
-      flex: 0.8;
-      text-align: center;
-      animation: float 4s ease-in-out infinite;
-    }
-    .innov-image img {
-      max-width: 800px;
-      border-radius: 32px;
-      box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.1);
-      background: white;
-      padding: 0.8rem;
-      border: 1px solid #eef2ff;
-    }
-    .platform-badges {
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-      margin-top: 1.5rem;
-    }
-    .badge-pill {
-      background: white;
-      border-radius: 60px;
-      padding: 0.3rem 1rem;
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: #1e3a8a;
-      border: 1px solid #cbdff2;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
-    }
-    .articles-section {
-      margin: 3rem 0;
-    }
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      flex-wrap: wrap;
-      margin-bottom: 1.8rem;
-      border-left: 6px solid #2563eb;
-      padding-left: 1rem;
-    }
-    .section-header h2 {
-      font-size: 1.8rem;
-      font-weight: 700;
-      color: #0f2b3a;
-    }
-    .articles-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 2rem;
-    }
-    .article-card {
-      background: white;
-      border-radius: 28px;
-      padding: 1.4rem;
-      transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-      border: 1px solid #e4edf5;
-      cursor: pointer;
-    }
-    .article-card:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 22px 35px -12px rgba(0, 0, 0, 0.1);
-      border-color: #cbdff2;
-    }
-    .article-date {
-      font-size: 0.75rem;
-      color: #2563eb;
-      font-weight: 600;
-      margin-bottom: 0.6rem;
-    }
-    .article-title {
-      font-size: 1.2rem;
-      font-weight: 700;
-      margin-bottom: 0.6rem;
-    }
-    .article-desc {
-      font-size: 0.85rem;
-      color: #4a627a;
-    }
-    .view-link {
-      margin-top: 1rem;
-      display: inline-block;
-      color: #2563eb;
-      font-weight: 600;
-      font-size: 0.8rem;
-    }
-    .video-gallery-section {
-      margin: 3rem 0;
-    }
-    .video-gallery-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-      gap: 2rem;
-      margin-top: 1.5rem;
-    }
-    .video-card {
-      background: white;
-      border-radius: 28px;
-      overflow: hidden;
-      transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-      border: 1px solid #e4edf5;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-    }
-    .video-card:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 22px 35px -12px rgba(0, 0, 0, 0.15);
-      border-color: #cbdff2;
-    }
-    .video-thumbnail {
-      position: relative;
-      cursor: pointer;
-      background: #0a2540;
-    }
-    .video-thumbnail img {
-      width: 100%;
-      height: auto;
-      display: block;
-      transition: transform 0.3s ease;
-    }
-    .video-card:hover .video-thumbnail img {
-      transform: scale(1.02);
-    }
-    .play-button-overlay {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 60px;
-      height: 60px;
-      background: rgba(0, 0, 0, 0.7);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.3s ease;
-      opacity: 0.9;
-    }
-    .play-button-overlay i {
-      color: white;
-      font-size: 28px;
-      margin-left: 4px;
-    }
-    .video-thumbnail:hover .play-button-overlay {
-      background: #ff0000;
-      transform: translate(-50%, -50%) scale(1.1);
-    }
-    .video-info {
-      padding: 1rem 1.2rem 1.2rem;
-    }
-    .video-title {
-      font-size: 1rem;
-      font-weight: 700;
-      color: #0f2b3a;
-      margin-bottom: 0.3rem;
-    }
-    .video-source {
-      font-size: 0.7rem;
-      color: #2563eb;
-      font-weight: 500;
-    }
-    .video-source i {
-      margin-right: 4px;
-    }
-    .watch-on-youtube {
-      display: inline-block;
-      margin-top: 0.5rem;
-      font-size: 0.7rem;
-      color: #ff0000;
-      text-decoration: none;
-      font-weight: 500;
-    }
-    .watch-on-youtube:hover {
-      text-decoration: underline;
-    }
-    .video-modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.9);
-      backdrop-filter: blur(8px);
-      align-items: center;
-      justify-content: center;
-      z-index: 20000;
-    }
-    .video-modal.active {
-      display: flex;
-    }
-    .video-modal-content {
-      position: relative;
-      width: 90%;
-      max-width: 1000px;
-      background: black;
-      border-radius: 20px;
-      overflow: hidden;
-    }
-    .video-modal-content iframe {
-      width: 100%;
-      height: 500px;
-      border: none;
-    }
-    .close-video-modal {
-      position: absolute;
-      top: -40px;
-      right: 0;
-      background: none;
-      border: none;
-      color: white;
-      font-size: 30px;
-      cursor: pointer;
-      padding: 10px;
-    }
-    @media (max-width: 800px) {
-      .video-modal-content iframe { height: 300px; }
-      .play-button-overlay { width: 45px; height: 45px; }
-      .play-button-overlay i { font-size: 20px; }
-    }
-    .calendar-widget {
-      background: white;
-      border-radius: 32px;
-      padding: 1.8rem;
-      box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.08);
-      border: 1px solid #eef2ff;
-      transition: all 0.2s;
-    }
-    .calendar-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-      margin-bottom: 1.8rem;
-    }
-    .calendar-header h3 {
-      font-size: 1.3rem;
-      font-weight: 700;
-      color: #1e3a8a;
-    }
-    .calendar-nav button {
-      background: #eef2ff;
-      border: none;
-      border-radius: 30px;
-      padding: 6px 12px;
-      cursor: pointer;
-      font-family: inherit;
-      font-weight: 500;
-    }
-    .calendar-nav button:hover {
-      background: #2563eb;
-      color: white;
-    }
-    .calendar-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 10px;
-      margin: 1rem 0;
-    }
-    .calendar-weekday {
-      font-weight: 700;
-      font-size: 0.8rem;
-      text-align: center;
-      padding: 0.5rem 0;
-      background: #f8fcff;
-      border-radius: 20px;
-    }
-    .calendar-day {
-      aspect-ratio: 1;
-      background: #fbfeff;
-      border-radius: 18px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 500;
-      cursor: pointer;
-      transition: 0.1s;
-      font-size: 0.85rem;
-      border: 1px solid #eef2ff;
-    }
-    .calendar-day.has-event {
-      background: #2563eb;
-      color: white;
-      box-shadow: 0 2px 8px #2563eb30;
-      transform: scale(0.98);
-    }
-    .calendar-day.today {
-      border: 2px solid #f5b042;
-      background: #fff6e5;
-    }
-    .calendar-legend {
-      display: flex;
-      gap: 1rem;
-      margin-top: 0.5rem;
-      font-size: 0.7rem;
-      color: #475569;
-    }
-    .legend-dot {
-      display: inline-block;
-      width: 12px;
-      height: 12px;
-      border-radius: 12px;
-      margin-right: 6px;
-    }
+    .scroll-reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.8s cubic-bezier(0.2, 0.9, 0.4, 1.1), transform 0.8s cubic-bezier(0.2, 0.9, 0.4, 1.1); }
+    .scroll-reveal.revealed { opacity: 1; transform: translateY(0); }
+    header { background: #ffffff; border-bottom: 1px solid #e2edf7; position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(2px); background: rgba(255, 255, 255, 0.98); }
+    .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 0; flex-wrap: wrap; gap: 1rem; }
+    .logo-area-header { display: flex; align-items: center; gap: 16px; }
+    .header-logo-img { display: flex; align-items: center; gap: 12px; background: #f0f6fe; padding: 6px 20px; border-radius: 60px; transition: all 0.2s; }
+    .header-logo-img img { height: 40px; width: auto; transition: transform 0.2s; }
+    .header-logo-img span { font-weight: 700; font-size: 0.9rem; color: #1e3a8a; letter-spacing: -0.2px; white-space: nowrap; }
+    .nav-right .login-prompt, .user-menu { display: flex; align-items: center; gap: 0.5rem; background: #f1f5f9; padding: 0.2rem 0.6rem 0.2rem 0.8rem; border-radius: 60px; cursor: pointer; position: relative; }
+    .login-prompt:hover { background: #2563eb; color: white; transform: translateY(-2px); }
+    .nav-bottom { background: white; border-top: 1px solid #eef2ff; padding: 0.5rem 0; }
+    .main-nav-links { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
+    .main-nav-links a, .dropbtn { text-decoration: none; font-weight: 500; font-size: 0.85rem; color: #1f3a5f; padding: 0.5rem 0; transition: 0.2s; letter-spacing: -0.2px; }
+    .main-nav-links a:hover, .dropbtn:hover { color: #2563eb; transform: translateY(-1px); }
+    .dropdown { position: relative; display: inline-block; }
+    .dropbtn { background: none; border: none; font-family: inherit; cursor: pointer; }
+    .dropdown-content { display: none; position: absolute; background: white; min-width: 220px; box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1); border-radius: 16px; z-index: 1000; top: 30px; left: 0; border: 1px solid #eef2ff; padding: 0.3rem 0; }
+    .dropdown:hover .dropdown-content { display: block; }
+    .dropdown-content a { display: block; padding: 0.7rem 1.2rem; color: #1e293b; font-size: 0.8rem; text-decoration: none; }
+    .dropdown-content a:hover { background: #eff6ff; }
+    .dropdown-submenu { position: relative; }
+    .submenu-trigger { background: none; border: none; width: 100%; text-align: left; padding: 0.7rem 1.2rem; font-size: 0.8rem; font-weight: 500; color: #1e293b; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-family: inherit; }
+    .submenu-trigger:hover { background: #eff6ff; }
+    .arrow-right { font-size: 0.7rem; margin-left: 1rem; }
+    .submenu-content { display: none; position: absolute; left: 100%; top: 0; background: white; min-width: 180px; box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1); border-radius: 16px; border: 1px solid #eef2ff; z-index: 1001; padding: 0.3rem 0; }
+    .dropdown-submenu:hover .submenu-content { display: block; }
+    .submenu-content a { padding: 0.7rem 1.2rem; }
+    .hero-innovations { background: linear-gradient(135deg, #eef5ff 0%, #ffffff 100%); border-radius: 2rem; margin: 2rem 0; padding: 2.8rem 2rem; box-shadow: 0 15px 35px -12px rgba(0, 0, 0, 0.05); position: relative; overflow: hidden; }
+    .innov-grid { display: flex; flex-wrap: wrap; gap: 2rem; align-items: center; justify-content: space-between; }
+    .innov-text { flex: 1.2; }
+    .innov-text h1 { font-size: 2.5rem; font-weight: 800; background: linear-gradient(135deg, #0f2b3a, #1e4a76); -webkit-background-clip: text; background-clip: text; color: transparent; margin-bottom: 1rem; }
+    .innov-text p { font-size: 1rem; color: #2c4c6e; margin-bottom: 1.8rem; max-width: 90%; }
+    .innov-buttons { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .btn-primary { background: #2563eb; color: white; border: none; padding: 0.8rem 1.8rem; border-radius: 40px; font-weight: 600; cursor: pointer; transition: all 0.25s; box-shadow: 0 5px 12px rgba(37, 99, 235, 0.2); }
+    .btn-primary:hover { background: #1d4ed8; transform: translateY(-3px); box-shadow: 0 12px 20px -8px #2563eb70; }
+    .btn-outline { background: transparent; border: 1.5px solid #2563eb; color: #2563eb; padding: 0.8rem 1.8rem; border-radius: 40px; font-weight: 600; transition: 0.2s; cursor: pointer; }
+    .btn-outline:hover { background: #2563eb10; transform: translateY(-2px); }
+    .innov-image { flex: 0.8; text-align: center; animation: float 4s ease-in-out infinite; }
+    .innov-image img { max-width: 800px; border-radius: 32px; box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.1); background: white; padding: 0.8rem; border: 1px solid #eef2ff; }
+    .platform-badges { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem; }
+    .badge-pill { background: white; border-radius: 60px; padding: 0.4rem 1.2rem; font-size: 0.75rem; font-weight: 600; color: #1e3a8a; border: 1px solid #cbdff2; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02); cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+    .badge-pill:hover { background: #2563eb; color: white; border-color: #2563eb; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(37,99,235,0.2); }
+    .badge-pill i { font-size: 0.8rem; }
+    .articles-section { margin: 3rem 0; }
+    .section-header { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; margin-bottom: 1.8rem; border-left: 6px solid #2563eb; padding-left: 1rem; }
+    .section-header h2 { font-size: 1.8rem; font-weight: 700; color: #0f2b3a; }
+    .articles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem; }
+    .article-card { background: white; border-radius: 28px; padding: 1.4rem; transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1); border: 1px solid #e4edf5; cursor: pointer; }
+    .article-card:hover { transform: translateY(-8px); box-shadow: 0 22px 35px -12px rgba(0, 0, 0, 0.1); border-color: #cbdff2; }
+    .article-date { font-size: 0.75rem; color: #2563eb; font-weight: 600; margin-bottom: 0.6rem; }
+    .article-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.6rem; }
+    .article-desc { font-size: 0.85rem; color: #4a627a; }
+    .view-link { margin-top: 1rem; display: inline-block; color: #2563eb; font-weight: 600; font-size: 0.8rem; }
+    .video-gallery-section { margin: 3rem 0; }
+    .video-gallery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2rem; margin-top: 1.5rem; }
+    .video-card { background: white; border-radius: 28px; overflow: hidden; transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1); border: 1px solid #e4edf5; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); }
+    .video-card:hover { transform: translateY(-8px); box-shadow: 0 22px 35px -12px rgba(0, 0, 0, 0.15); border-color: #cbdff2; }
+    .video-thumbnail { position: relative; cursor: pointer; background: #0a2540; }
+    .video-thumbnail img { width: 100%; height: auto; display: block; transition: transform 0.3s ease; }
+    .video-card:hover .video-thumbnail img { transform: scale(1.02); }
+    .play-button-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60px; height: 60px; background: rgba(0, 0, 0, 0.7); border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; opacity: 0.9; }
+    .play-button-overlay i { color: white; font-size: 28px; margin-left: 4px; }
+    .video-thumbnail:hover .play-button-overlay { background: #ff0000; transform: translate(-50%, -50%) scale(1.1); }
+    .video-info { padding: 1rem 1.2rem 1.2rem; }
+    .video-title { font-size: 1rem; font-weight: 700; color: #0f2b3a; margin-bottom: 0.3rem; }
+    .video-source { font-size: 0.7rem; color: #2563eb; font-weight: 500; }
+    .video-source i { margin-right: 4px; }
+    .watch-on-youtube { display: inline-block; margin-top: 0.5rem; font-size: 0.7rem; color: #ff0000; text-decoration: none; font-weight: 500; }
+    .watch-on-youtube:hover { text-decoration: underline; }
+    .video-modal { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.9); backdrop-filter: blur(8px); align-items: center; justify-content: center; z-index: 20000; }
+    .video-modal.active { display: flex; }
+    .video-modal-content { position: relative; width: 90%; max-width: 1000px; background: black; border-radius: 20px; overflow: hidden; }
+    .video-modal-content iframe { width: 100%; height: 500px; border: none; }
+    .close-video-modal { position: absolute; top: -40px; right: 0; background: none; border: none; color: white; font-size: 30px; cursor: pointer; padding: 10px; }
+    @media (max-width: 800px) { .video-modal-content iframe { height: 300px; } .play-button-overlay { width: 45px; height: 45px; } .play-button-overlay i { font-size: 20px; } }
+    .calendar-widget { background: white; border-radius: 32px; padding: 1.8rem; box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.08); border: 1px solid #eef2ff; transition: all 0.2s; }
+    .calendar-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 0.5rem; }
+    .calendar-header h3 { font-size: 1.3rem; font-weight: 700; color: #1e3a8a; }
+    .calendar-nav { display: flex; align-items: center; gap: 0.5rem; }
+    .calendar-nav button { background: #eef2ff; border: none; border-radius: 30px; padding: 6px 12px; cursor: pointer; font-family: inherit; font-weight: 500; }
+    .calendar-nav button:hover { background: #2563eb; color: white; }
+    .calendar-nav .month-display { font-weight: 600; font-size: 0.9rem; min-width: 100px; text-align: center; }
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin: 1rem 0; }
+    .calendar-weekday { font-weight: 700; font-size: 0.8rem; text-align: center; padding: 0.5rem 0; background: #f8fcff; border-radius: 20px; }
+    .calendar-day { aspect-ratio: 1; background: #fbfeff; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-weight: 500; cursor: pointer; transition: 0.1s; font-size: 0.85rem; border: 1px solid #eef2ff; }
+    .calendar-day.has-event { background: #2563eb; color: white; box-shadow: 0 2px 8px #2563eb30; transform: scale(0.98); }
+    .calendar-day.today { border: 2px solid #f5b042; background: #fff6e5; }
+    .calendar-legend { display: flex; gap: 1rem; margin-top: 0.5rem; font-size: 0.7rem; color: #475569; }
+    .legend-dot { display: inline-block; width: 12px; height: 12px; border-radius: 12px; margin-right: 6px; }
     .legend-dot.event { background: #2563eb; }
     .legend-dot.today { background: #f5b042; }
-    .view-calendar-link {
-      display: inline-block;
-      margin-top: 1rem;
-      color: #2563eb;
-      font-weight: 500;
-      text-decoration: none;
-      font-size: 0.8rem;
-    }
-    .news-section {
-      background: white;
-      border-radius: 32px;
-      padding: 1.5rem;
-      border: 1px solid #eef2ff;
-      height: 100%;
-      box-shadow: 0 10px 25px -12px rgba(0, 0, 0, 0.05);
-    }
-    .news-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      margin-bottom: 1rem;
-    }
-    .news-header h3 {
-      font-size: 1.3rem;
-      font-weight: 700;
-    }
-    .news-tabs {
-      display: flex;
-      gap: 0.5rem;
-    }
-    .news-tab-btn {
-      background: none;
-      border: none;
-      padding: 0.4rem 1rem;
-      border-radius: 40px;
-      font-weight: 600;
-      font-size: 0.7rem;
-      cursor: pointer;
-      color: #475569;
-      transition: 0.2s;
-    }
-    .news-tab-btn.active {
-      background: #2563eb;
-      color: white;
-    }
-    .news-list {
-      max-height: 380px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 0.7rem;
-    }
-    .news-card {
-      background: #fafdff;
-      border-radius: 20px;
-      padding: 0.9rem;
-      border: 1px solid #eef2ff;
-      transition: 0.1s;
-      cursor: pointer;
-      display: flex;
-      gap: 1rem;
-    }
-    .news-card:hover {
-      background: #f0f6ff;
-      transform: translateX(6px);
-    }
-    .news-date {
-      min-width: 60px;
-      text-align: center;
-      background: #f1f5f9;
-      border-radius: 16px;
-      padding: 0.3rem;
-    }
-    .news-date .day {
-      font-size: 1.1rem;
-      font-weight: 800;
-      color: #2563eb;
-    }
-    .news-date .month {
-      font-size: 0.7rem;
-    }
-    .news-title {
-      font-weight: 700;
-      font-size: 0.85rem;
-    }
-    .news-desc {
-      font-size: 0.7rem;
-      color: #64748b;
-    }
-    .news-badge {
-      background: #dbeafe;
-      color: #1e40af;
-      font-size: 0.6rem;
-      padding: 0.2rem 0.6rem;
-      border-radius: 30px;
-      display: inline-block;
-      margin-top: 0.3rem;
-    }
-    .values-section {
-      margin: 3rem 0;
-    }
-    .values-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 2rem;
-      margin-bottom: 2rem;
-    }
-    .value-card {
-      background: white;
-      border-radius: 28px;
-      padding: 2rem 1.5rem;
-      text-align: center;
-      transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-      border: 1px solid #e4edf5;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-    }
-    .value-card:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 22px 35px -12px rgba(0, 0, 0, 0.15);
-      border-color: #cbdff2;
-    }
-    .value-icon {
-      width: 70px;
-      height: 70px;
-      background: linear-gradient(135deg, #eef5ff, #dbeafe);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 1.2rem;
-    }
-    .value-icon i {
-      font-size: 2rem;
-      color: #2563eb;
-    }
-    .value-card h3 {
-      font-size: 1.4rem;
-      font-weight: 700;
-      color: #1e3a8a;
-      margin-bottom: 1rem;
-    }
-    .value-card p {
-      font-size: 0.9rem;
-      color: #475569;
-      line-height: 1.6;
-    }
-    .core-values-list {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 0.6rem;
-      margin: 1rem 0;
-    }
-    .value-tag {
-      background: #dbeafe;
-      color: #1e40af;
-      padding: 0.4rem 1rem;
-      border-radius: 40px;
-      font-size: 0.75rem;
-      font-weight: 600;
-    }
-    .core-values-note {
-      font-size: 0.75rem;
-      font-style: italic;
-      color: #64748b;
-      margin-top: 0.8rem;
-    }
-    .mandate-card {
-      background: white;
-      border-radius: 28px;
-      padding: 2rem;
-      border: 1px solid #e4edf5;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-      margin-top: 1rem;
-    }
-    .mandate-header {
-      display: flex;
-      align-items: center;
-      gap: 0.8rem;
-      margin-bottom: 1.5rem;
-      padding-bottom: 0.8rem;
-      border-bottom: 2px solid #2563eb;
-    }
-    .mandate-header i {
-      font-size: 1.8rem;
-      color: #2563eb;
-    }
-    .mandate-header h3 {
-      font-size: 1.3rem;
-      font-weight: 700;
-      color: #1e3a8a;
-    }
-    .mandate-content p, .mandate-content li {
-      font-size: 0.85rem;
-      color: #334155;
-      line-height: 1.6;
-      margin-bottom: 0.8rem;
-    }
-    .mandate-content ul {
-      margin-left: 1.5rem;
-      margin-bottom: 1rem;
-    }
-    .mandate-content li {
-      margin-bottom: 0.5rem;
-    }
-    .contact-section {
-      background: #0a2540;
-      color: white;
-      border-radius: 2rem;
-      padding: 2.5rem;
-      margin: 2rem 0;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 2rem;
-    }
-    .contact-info h3, .contact-form h3 {
-      font-size: 1.3rem;
-      font-weight: 700;
-      margin-bottom: 1rem;
-    }
-    .contact-details {
-      margin: 1.2rem 0;
-    }
-    .contact-details div {
-      margin-bottom: 0.7rem;
-      display: flex;
-      align-items: center;
-      gap: 0.8rem;
-      flex-wrap: wrap;
-    }
-    .contact-details i {
-      width: 24px;
-      color: #3b82f6;
-    }
-    .map-container {
-      margin-top: 1.2rem;
-      border-radius: 20px;
-      overflow: hidden;
-      border: 2px solid #ffffff20;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-    }
-    .map-container iframe {
-      width: 100%;
-      height: 250px;
-      border: none;
-      display: block;
-    }
-    .contact-form input,
-    .contact-form textarea {
-      width: 100%;
-      padding: 12px;
-      border-radius: 28px;
-      border: none;
-      margin-bottom: 12px;
-      background: #ffffff20;
-      color: white;
-    }
-    .contact-form input::placeholder,
-    .contact-form textarea::placeholder {
-      color: #cbd5e1;
-    }
-    .contact-form button {
-      background: #2563eb;
-      margin-top: 0.5rem;
-    }
-    @media (max-width: 800px) {
-      .contact-section { grid-template-columns: 1fr; }
-      .map-container iframe { height: 200px; }
-    }
-    .footer-new {
-      background: #0a2540;
-      color: #b9d0e7;
-      padding: 2rem 0;
-      margin-top: 3rem;
-      border-top: 1px solid #2d4f6e;
-    }
-    .footer-grid {
-      display: flex;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 2rem;
-    }
-    .social-icons i {
-      font-size: 1.6rem;
-      margin-right: 1rem;
-      color: white;
-      transition: 0.2s;
-      cursor: pointer;
-    }
-    .social-icons i:hover {
-      transform: translateY(-4px);
-      color: #3b82f6;
-    }
-
-    /* ---- MODERN LOGIN MODAL (matching login.html style) ---- */
-    .login-modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.5);
-      backdrop-filter: blur(4px);
-      align-items: center;
-      justify-content: center;
-      z-index: 10000;
-    }
-    .login-modal.active {
-      display: flex;
-    }
-    .login-modal-content {
-      background: white;
-      border-radius: 2.5rem;
-      max-width: 460px;
-      width: 92%;
-      overflow: hidden;
-      box-shadow: 0 30px 60px -20px rgba(0,0,0,0.4);
-      animation: fadeUp 0.3s ease;
-    }
-    .login-modal-brand {
-      background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
-      padding: 2rem 1.5rem 1.8rem;
-      text-align: center;
-      color: white;
-    }
-    .login-modal-brand img {
-      width: 130px;
-      height: auto;
-      background: white;
-      border-radius: 20px;
-      padding: 14px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-      display: inline-block;
-      margin-bottom: 0.8rem;
-      transition: transform 0.2s;
-    }
-    .login-modal-brand img:hover {
-      transform: scale(1.02);
-    }
-    .login-modal-brand h3 {
-      font-size: 1.6rem;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      margin-bottom: 0.2rem;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-    .login-modal-brand p {
-      font-size: 0.75rem;
-      opacity: 0.85;
-      margin: 0;
-    }
-    .login-modal-body {
-      padding: 2rem 1.8rem 1.8rem;
-    }
-    .login-modal-body .input-group {
-      margin-bottom: 1.3rem;
-    }
-    .login-modal-body .input-group label {
-      display: block;
-      font-size: 0.7rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      color: #54708f;
-      margin-bottom: 0.4rem;
-      letter-spacing: 0.3px;
-    }
-    .login-modal-body .input-group input {
-      width: 100%;
-      padding: 0.85rem 1rem;
-      border: 1.5px solid #e2e8f0;
-      border-radius: 1rem;
-      font-size: 0.9rem;
-      font-family: 'Inter', sans-serif;
-      transition: all 0.2s;
-    }
-    .login-modal-body .input-group input:focus {
-      outline: none;
-      border-color: #2563eb;
-      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
-    }
-    .login-submit-btn {
-      width: 100%;
-      padding: 0.9rem;
-      background: #2563eb;
-      color: white;
-      border: none;
-      border-radius: 1.2rem;
-      font-weight: 700;
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: all 0.2s;
-      margin-top: 0.3rem;
-      font-family: 'Inter', sans-serif;
-    }
-    .login-submit-btn:hover {
-      background: #1d4ed8;
-      transform: translateY(-1px);
-    }
-    .login-submit-btn:disabled {
-      background: #94a3b8;
-      cursor: not-allowed;
-      transform: none;
-    }
-    .login-modal-footer {
-      text-align: center;
-      font-size: 0.65rem;
-      color: #94a3b8;
-      padding: 0.4rem 0 1.2rem;
-      border-top: 1px solid #eef2ff;
-      margin: 0 1.8rem;
-    }
-    .login-modal-close {
-      position: absolute;
-      top: 16px;
-      right: 20px;
-      background: none;
-      border: none;
-      font-size: 2rem;
-      color: white;
-      cursor: pointer;
-      opacity: 0.7;
-      transition: 0.2s;
-      z-index: 10;
-    }
-    .login-modal-close:hover {
-      opacity: 1;
-      transform: scale(1.1);
-    }
-    .login-modal-brand {
-      position: relative;
-    }
-    .toast-msg {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #1e293b;
-      color: white;
-      padding: 10px 20px;
-      border-radius: 40px;
-      z-index: 9999;
-      font-size: 0.8rem;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
+    .view-calendar-link { display: inline-block; margin-top: 1rem; color: #2563eb; font-weight: 500; text-decoration: none; font-size: 0.8rem; }
+    .news-section { background: white; border-radius: 32px; padding: 1.5rem; border: 1px solid #eef2ff; height: 100%; box-shadow: 0 10px 25px -12px rgba(0, 0, 0, 0.05); }
+    .news-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 1rem; }
+    .news-header h3 { font-size: 1.3rem; font-weight: 700; }
+    .news-tabs { display: flex; gap: 0.5rem; }
+    .news-tab-btn { background: none; border: none; padding: 0.4rem 1rem; border-radius: 40px; font-weight: 600; font-size: 0.7rem; cursor: pointer; color: #475569; transition: 0.2s; }
+    .news-tab-btn.active { background: #2563eb; color: white; }
+    .news-list { max-height: 380px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.7rem; }
+    .news-card { background: #fafdff; border-radius: 20px; padding: 0.9rem; border: 1px solid #eef2ff; transition: 0.1s; cursor: pointer; display: flex; gap: 1rem; }
+    .news-card:hover { background: #f0f6ff; transform: translateX(6px); }
+    .news-date { min-width: 60px; text-align: center; background: #f1f5f9; border-radius: 16px; padding: 0.3rem; }
+    .news-date .day { font-size: 1.1rem; font-weight: 800; color: #2563eb; }
+    .news-date .month { font-size: 0.7rem; }
+    .news-title { font-weight: 700; font-size: 0.85rem; }
+    .news-desc { font-size: 0.7rem; color: #64748b; }
+    .news-badge { background: #dbeafe; color: #1e40af; font-size: 0.6rem; padding: 0.2rem 0.6rem; border-radius: 30px; display: inline-block; margin-top: 0.3rem; }
+    .values-section { margin: 3rem 0; }
+    .values-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; margin-bottom: 2rem; }
+    .value-card { background: white; border-radius: 28px; padding: 2rem 1.5rem; text-align: center; transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1); border: 1px solid #e4edf5; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); }
+    .value-card:hover { transform: translateY(-8px); box-shadow: 0 22px 35px -12px rgba(0, 0, 0, 0.15); border-color: #cbdff2; }
+    .value-icon { width: 70px; height: 70px; background: linear-gradient(135deg, #eef5ff, #dbeafe); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.2rem; }
+    .value-icon i { font-size: 2rem; color: #2563eb; }
+    .value-card h3 { font-size: 1.4rem; font-weight: 700; color: #1e3a8a; margin-bottom: 1rem; }
+    .value-card p { font-size: 0.9rem; color: #475569; line-height: 1.6; }
+    .core-values-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.6rem; margin: 1rem 0; }
+    .value-tag { background: #dbeafe; color: #1e40af; padding: 0.4rem 1rem; border-radius: 40px; font-size: 0.75rem; font-weight: 600; }
+    .core-values-note { font-size: 0.75rem; font-style: italic; color: #64748b; margin-top: 0.8rem; }
+    .mandate-card { background: white; border-radius: 28px; padding: 2rem; border: 1px solid #e4edf5; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); margin-top: 1rem; }
+    .mandate-header { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1.5rem; padding-bottom: 0.8rem; border-bottom: 2px solid #2563eb; }
+    .mandate-header i { font-size: 1.8rem; color: #2563eb; }
+    .mandate-header h3 { font-size: 1.3rem; font-weight: 700; color: #1e3a8a; }
+    .mandate-content p, .mandate-content li { font-size: 0.85rem; color: #334155; line-height: 1.6; margin-bottom: 0.8rem; }
+    .mandate-content ul { margin-left: 1.5rem; margin-bottom: 1rem; }
+    .mandate-content li { margin-bottom: 0.5rem; }
+    .contact-section { background: #0a2540; color: white; border-radius: 2rem; padding: 2.5rem; margin: 2rem 0; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+    .contact-info h3, .contact-form h3 { font-size: 1.3rem; font-weight: 700; margin-bottom: 1rem; }
+    .contact-details { margin: 1.2rem 0; }
+    .contact-details div { margin-bottom: 0.7rem; display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
+    .contact-details i { width: 24px; color: #3b82f6; }
+    .map-container { margin-top: 1.2rem; border-radius: 20px; overflow: hidden; border: 2px solid #ffffff20; box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+    .map-container iframe { width: 100%; height: 250px; border: none; display: block; }
+    .contact-form input, .contact-form textarea { width: 100%; padding: 12px; border-radius: 28px; border: none; margin-bottom: 12px; background: #ffffff20; color: white; }
+    .contact-form input::placeholder, .contact-form textarea::placeholder { color: #cbd5e1; }
+    .contact-form button { background: #2563eb; margin-top: 0.5rem; }
+    @media (max-width: 800px) { .contact-section { grid-template-columns: 1fr; } .map-container iframe { height: 200px; } }
+    .footer-new { background: #0a2540; color: #b9d0e7; padding: 2rem 0; margin-top: 3rem; border-top: 1px solid #2d4f6e; }
+    .footer-grid { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 2rem; }
+    .social-icons i { font-size: 1.6rem; margin-right: 1rem; color: white; transition: 0.2s; cursor: pointer; }
+    .social-icons i:hover { transform: translateY(-4px); color: #3b82f6; }
+    .login-modal { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); align-items: center; justify-content: center; z-index: 10000; }
+    .login-modal.active { display: flex; }
+    .login-modal-content { background: white; border-radius: 2.5rem; max-width: 460px; width: 92%; overflow: hidden; box-shadow: 0 30px 60px -20px rgba(0,0,0,0.4); animation: fadeUp 0.3s ease; }
+    .login-modal-brand { background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); padding: 2rem 1.5rem 1.8rem; text-align: center; color: white; position: relative; }
+    .login-modal-brand img { width: 130px; height: auto; background: white; border-radius: 20px; padding: 14px; box-shadow: 0 8px 20px rgba(0,0,0,0.2); display: inline-block; margin-bottom: 0.8rem; transition: transform 0.2s; }
+    .login-modal-brand img:hover { transform: scale(1.02); }
+    .login-modal-brand h3 { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 0.2rem; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    .login-modal-brand p { font-size: 0.75rem; opacity: 0.85; margin: 0; }
+    .login-modal-body { padding: 2rem 1.8rem 1.8rem; }
+    .login-modal-body .input-group { margin-bottom: 1.3rem; }
+    .login-modal-body .input-group label { display: block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: #54708f; margin-bottom: 0.4rem; letter-spacing: 0.3px; }
+    .login-modal-body .input-group input { width: 100%; padding: 0.85rem 1rem; border: 1.5px solid #e2e8f0; border-radius: 1rem; font-size: 0.9rem; font-family: 'Inter', sans-serif; transition: all 0.2s; }
+    .login-modal-body .input-group input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+    .login-submit-btn { width: 100%; padding: 0.9rem; background: #2563eb; color: white; border: none; border-radius: 1.2rem; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; margin-top: 0.3rem; font-family: 'Inter', sans-serif; }
+    .login-submit-btn:hover { background: #1d4ed8; transform: translateY(-1px); }
+    .login-submit-btn:disabled { background: #94a3b8; cursor: not-allowed; transform: none; }
+    .login-modal-footer { text-align: center; font-size: 0.65rem; color: #94a3b8; padding: 0.4rem 0 1.2rem; border-top: 1px solid #eef2ff; margin: 0 1.8rem; }
+    .login-modal-close { position: absolute; top: 16px; right: 20px; background: none; border: none; font-size: 2rem; color: white; cursor: pointer; opacity: 0.7; transition: 0.2s; z-index: 10; }
+    .login-modal-close:hover { opacity: 1; transform: scale(1.1); }
+    .toast-msg { position: fixed; bottom: 20px; right: 20px; background: #1e293b; color: white; padding: 10px 20px; border-radius: 40px; z-index: 9999; font-size: 0.8rem; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
     .toast-msg.success { background: #166534; }
     .toast-msg.error { background: #b91c1c; }
-    .user-avatar {
-      width: 28px;
-      height: 28px;
-      background: #2563eb;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: 700;
-      font-size: 0.75rem;
-    }
-    .user-name {
-      font-size: 0.7rem;
-      font-weight: 500;
-    }
-    .role-badge-header {
-      background: #e2e8f0;
-      padding: 0.15rem 0.5rem;
-      border-radius: 20px;
-      font-size: 0.6rem;
-      font-weight: 600;
-      margin-left: 0.3rem;
-    }
+    .user-avatar { width: 28px; height: 28px; background: #2563eb; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.75rem; }
+    .user-name { font-size: 0.7rem; font-weight: 500; }
+    .role-badge-header { background: #e2e8f0; padding: 0.15rem 0.5rem; border-radius: 20px; font-size: 0.6rem; font-weight: 600; margin-left: 0.3rem; }
     .role-badge-header.admin { background: #dcfce7; color: #166534; }
     .role-badge-header.staff { background: #dbeafe; color: #1e40af; }
-    .user-dropdown-menu {
-      position: absolute;
-      top: 48px;
-      right: 0;
-      background: white;
-      border-radius: 20px;
-      min-width: 180px;
-      box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.15);
-      border: 1px solid #eef2ff;
-      overflow: hidden;
-      display: none;
-      z-index: 200;
-    }
-    .user-dropdown-item {
-      padding: 0.8rem 1.2rem;
-      border-bottom: 1px solid #f1f5f9;
-      cursor: pointer;
-      font-size: 0.8rem;
-    }
-    .user-dropdown-item:hover {
-      background: #f8fafc;
-    }
-    @media (max-width: 800px) {
-      .hero-grid { flex-direction: column; }
-      .calendar-widget { min-width: auto; }
-      .top-bar { flex-direction: column; align-items: stretch; }
-      .header-logo-img span { white-space: normal; font-size: 0.7rem; }
-      .video-gallery-grid { grid-template-columns: 1fr; }
-      .values-grid { grid-template-columns: 1fr; }
-      .mandate-card { padding: 1.5rem; }
-      .login-modal-brand img { width: 100px; }
-    }
-    .dropbtn::after {
-      content: " ▾";
-      font-size: 0.7rem;
-      opacity: 0.6;
-    }
-    .dropdown:hover .dropbtn::after {
-      content: " ▾";
-      opacity: 1;
-    }
+    .user-dropdown-menu { position: absolute; top: 48px; right: 0; background: white; border-radius: 20px; min-width: 180px; box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.15); border: 1px solid #eef2ff; overflow: hidden; display: none; z-index: 200; }
+    .user-dropdown-item { padding: 0.8rem 1.2rem; border-bottom: 1px solid #f1f5f9; cursor: pointer; font-size: 0.8rem; }
+    .user-dropdown-item:hover { background: #f8fafc; }
+    @media (max-width: 800px) { .hero-grid { flex-direction: column; } .calendar-widget { min-width: auto; } .top-bar { flex-direction: column; align-items: stretch; } .header-logo-img span { white-space: normal; font-size: 0.7rem; } .video-gallery-grid { grid-template-columns: 1fr; } .values-grid { grid-template-columns: 1fr; } .mandate-card { padding: 1.5rem; } .login-modal-brand img { width: 100px; } }
+    .dropbtn::after { content: " ▾"; font-size: 0.7rem; opacity: 0.6; }
+    .dropdown:hover .dropbtn::after { content: " ▾"; opacity: 1; }
+
+    /* Event details below calendar */
+    .event-detail-panel { background: #f8fcff; border-radius: 24px; padding: 1.2rem 1.5rem; border: 1px solid #e2edf7; margin-top: 1.2rem; }
+    .event-detail-panel h4 { font-size: 0.9rem; font-weight: 700; color: #0a2540; margin-bottom: 0.8rem; }
+    .event-detail-item { display: flex; gap: 0.8rem; padding: 0.6rem 0; border-bottom: 1px solid #eef2ff; }
+    .event-detail-item:last-child { border-bottom: none; }
+    .event-detail-date { min-width: 80px; font-weight: 600; color: #2563eb; font-size: 0.8rem; }
+    .event-detail-name { font-size: 0.85rem; color: #1f3a5f; font-weight: 600; }
+    .event-detail-location { font-size: 0.75rem; color: #64748b; }
+    .no-events-msg { color: #94a3b8; font-size: 0.85rem; padding: 0.5rem 0; }
+    .event-time { font-size: 0.7rem; color: #2563eb; font-weight: 500; }
   </style>
 </head>
 <body>
@@ -1128,13 +228,13 @@
           <div class="innov-text">
             <h1>ELUPDD</h1>
             <p>The Environmental, Land Use, and Urban Planning and Development Division (ELUPDD)—along with its national counterpart, the Bureau (ELUPDB)—is a core division under the Department of Human Settlements and Urban Development (DHSUD) in the Philippines. It leads the country's initiatives in human settlements planning, urban development policies, and spatial land allocation.</p>
-            <div class="platform-badges">
-              <span class="badge-pill"><i class="fas fa-map-marker-alt"></i> HazardHunterPH</span>
-              <span class="badge-pill"><i class="fas fa-chart-line"></i> GeoAnalyticsPH</span>
-              <span class="badge-pill"><i class="fas fa-draw-polygon"></i> GeoMapperPH</span>
-              <span class="badge-pill"><i class="fas fa-layer-group"></i> Map&Feature</span>
-              <span class="badge-pill"><i class="fas fa-globe-asia"></i> 3D Earth Risk</span>
-              <span class="badge-pill"><i class="fas fa-city"></i> PlanSmart</span>
+            <div class="platform-badges" id="platformBadges">
+              <span class="badge-pill" data-url="https://hazardhunter.georisk.gov.ph/"><i class="fas fa-map-marker-alt"></i> HazardHunterPH</span>
+              <span class="badge-pill" data-url="https://geoanalytics.georisk.gov.ph/"><i class="fas fa-chart-line"></i> GeoAnalyticsPH</span>
+              <span class="badge-pill" data-url="https://georisk.gov.ph/login"><i class="fas fa-draw-polygon"></i> GeoMapperPH</span>
+              <span class="badge-pill" data-url="https://georisk.gov.ph/"><i class="fas fa-layer-group"></i> Map&Feature</span>
+              <span class="badge-pill" data-url="https://data.georisk.gov.ph/"><i class="fas fa-globe-asia"></i> 3D Earth Risk</span>
+              <span class="badge-pill" data-url="https://plansmart.georisk.gov.ph/"><i class="fas fa-city"></i> PlanSmart</span>
             </div>
           </div>
           <div class="innov-image">
@@ -1157,14 +257,16 @@
 
       <!-- Calendar + News -->
       <div class="hero-grid scroll-reveal" style="display:flex; flex-wrap:wrap; gap:2rem; margin:2rem 0">
+        <!-- Calendar Widget with Event Details Below -->
         <div class="calendar-widget" style="flex:1.2">
           <div class="calendar-header">
             <h3><i class="far fa-calendar-alt"></i> Calendar of Activities</h3>
-            <div class="calendar-nav">
-              <button id="prevMonthWidget">◀ Prev</button>
-              <span id="currentMonthDisplay" style="margin:0 12px; font-weight:600"></span>
-              <button id="nextMonthWidget">Next ▶</button>
-            </div>
+          </div>
+          <!-- Navigation moved to just above the calendar grid -->
+          <div class="calendar-nav" style="display:flex; justify-content:center; align-items:center; gap:1rem; margin-bottom:0.5rem;">
+            <button id="prevMonthWidget">◀ Prev</button>
+            <span id="currentMonthDisplay" style="font-weight:600; font-size:1rem; min-width:120px; text-align:center;"></span>
+            <button id="nextMonthWidget">Next ▶</button>
           </div>
           <div id="miniCalendarGrid" class="calendar-grid"></div>
           <div class="calendar-legend">
@@ -1172,7 +274,15 @@
             <span><span class="legend-dot today"></span> Today</span>
           </div>
           <a href="calendar.html" class="view-calendar-link">📆 View Full Calendar →</a>
+          
+          <!-- Event Details Panel - BELOW CALENDAR -->
+          <div id="eventDetailPanel" class="event-detail-panel">
+            <h4>📌 Events on selected date</h4>
+            <div id="eventDetailList"><div class="no-events-msg">Click a date with events to see details.</div></div>
+          </div>
         </div>
+        
+        <!-- News Section -->
         <div class="news-section" style="flex:1">
           <div class="news-header">
             <h3>📰 News & Activities</h3>
@@ -1298,7 +408,7 @@
     </div>
   </div>
 
-  <div id="eventModal" class="event-modal"><div class="event-modal-content"></div></div>
+  <div id="eventModal" class="event-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); backdrop-filter:blur(4px); align-items:center; justify-content:center; z-index:20000;"><div class="event-modal-content" style="background:white; border-radius:2rem; max-width:500px; width:90%; padding:2rem; max-height:80vh; overflow-y:auto;"></div></div>
   <div id="videoModal" class="video-modal">
     <div class="video-modal-content">
       <button class="close-video-modal" onclick="closeVideoModal()">&times;</button>
@@ -1311,6 +421,7 @@
     let currentUser = null;
     let activities = [];
     let widgetCurrentDate = new Date();
+    let selectedDateForDetail = null;
 
     const videoData = [
       { id: 1, title: "DHSUD Geospatial Innovation and Resilience", videoId: "IG7Y-S0jUpM", source: "YouTube", thumbnail: "https://img.youtube.com/vi/IG7Y-S0jUpM/hqdefault.jpg" },
@@ -1328,21 +439,21 @@
     function getRoleClass(r) { if (r === "admin") return "admin"; if (r === "encoder" || r === "staff") return "staff"; return "viewer"; }
 
     function renderMainNavigation() {
-    const container = document.getElementById("mainNavContainer");
-    if (!container) return;
-    let navHtml = `<a href="index.html">Home</a>`;
-    if (currentUser) {
+      const container = document.getElementById("mainNavContainer");
+      if (!container) return;
+      let navHtml = `<a href="index.html">Home</a>`;
+      if (currentUser) {
         navHtml += `<div class="dropdown" id="certDropdown"><button class="dropbtn">Certification</button><div class="dropdown-content"><a href="lc.html">Locational Clearance</a><a href="SZC.html">Site Zoning Certification</a></div></div>
-            <div class="dropdown" id="landUseDropdown"><button class="dropbtn">Land Use Plans</button><div class="dropdown-content"><div class="dropdown-submenu" id="clupSubmenu"><button class="submenu-trigger">CLUP & ZO <span class="arrow-right">▸</span></button><div class="submenu-content"><a href="inventory.html">Inventory</a><a href="status.html">Status</a></div></div><a href="status.html">PDPFP</a></div></div>
-            <a href="Techsamp.html">Technical Assistance</a>
-            <a href="lgu-info.html">LGU Information</a>
-            <a href="report.html">Reports</a>
-            <a href="calendar.html">Calendar of Activities</a>
-            <a href="issuance.html">Issuances</a>
-            <a href="#about">About</a>
-            <a href="#contact">Contact</a>`;
-    } else { navHtml += `<a href="#about">About</a><a href="#contact">Contact</a>`; }
-    container.innerHTML = navHtml;
+          <div class="dropdown" id="landUseDropdown"><button class="dropbtn">Land Use Plans</button><div class="dropdown-content"><div class="dropdown-submenu" id="clupSubmenu"><button class="submenu-trigger">CLUP & ZO <span class="arrow-right">▸</span></button><div class="submenu-content"><a href="inventory.html">Inventory</a><a href="status.html">Status</a></div></div><a href="status.html">PDPFP</a></div></div>
+          <a href="Techsamp.html">Technical Assistance</a>
+          <a href="lgu-info.html">LGU Information</a>
+          <a href="report.html">Reports</a>
+          <a href="calendar.html">Calendar of Activities</a>
+          <a href="issuance.html">Issuances</a>
+          <a href="#about">About</a>
+          <a href="#contact">Contact</a>`;
+      } else { navHtml += `<a href="#about">About</a><a href="#contact">Contact</a>`; }
+      container.innerHTML = navHtml;
       setTimeout(() => {
         document.querySelectorAll(".dropdown-submenu .submenu-trigger").forEach((trigger) => {
           trigger.addEventListener("click", (e) => {
@@ -1379,13 +490,9 @@
       }
     }
 
-    // --- MODERN LOGIN MODAL ---
-    function openLoginModal() {
-      document.getElementById("loginModal").classList.add("active");
-    }
-    function closeLoginModal() {
-      document.getElementById("loginModal").classList.remove("active");
-    }
+    function openLoginModal() { document.getElementById("loginModal").classList.add("active"); }
+    function closeLoginModal() { document.getElementById("loginModal").classList.remove("active"); }
+
     async function handleModalLogin(e) {
       e.preventDefault();
       const email = document.getElementById("modalLoginEmail").value.trim().toLowerCase();
@@ -1405,25 +512,27 @@
           showToastMessage(`Welcome ${user.fullName?.split(" ")[0] || ""}!`, "success");
           closeLoginModal();
           setTimeout(() => window.location.reload(), 1000);
-        } else {
-          showToastMessage("Invalid password.", "error");
-        }
-      } catch (error) {
-        showToastMessage("Connection error.", "error");
-      } finally {
-        btn.innerHTML = originalText;
-        btn.disabled = false;
-      }
+        } else { showToastMessage("Invalid password.", "error"); }
+      } catch (error) { showToastMessage("Connection error.", "error"); }
+      finally { btn.innerHTML = originalText; btn.disabled = false; }
       return false;
     }
 
-    // Attach event listener after DOM ready
     document.addEventListener("DOMContentLoaded", () => {
       const form = document.getElementById("modalLoginForm");
       if (form) form.addEventListener("submit", handleModalLogin);
     });
 
-    // Video modal
+    // Platform badges click
+    document.addEventListener("DOMContentLoaded", function() {
+      document.querySelectorAll('.badge-pill').forEach(badge => {
+        badge.addEventListener('click', function(e) {
+          const url = this.getAttribute('data-url');
+          if (url) window.open(url, '_blank');
+        });
+      });
+    });
+
     function openVideoModal(videoId) {
       const modal = document.getElementById("videoModal");
       const iframe = document.getElementById("videoIframe");
@@ -1442,22 +551,46 @@
       container.innerHTML = videoData.map(video => `<div class="video-card"><div class="video-thumbnail" onclick="openVideoModal('${video.videoId}')"><img src="${video.thumbnail}" alt="${escapeHtml(video.title)}" onerror="this.src='https://via.placeholder.com/480x360?text=Video+Thumbnail'"><div class="play-button-overlay"><i class="fab fa-youtube"></i></div></div><div class="video-info"><div class="video-title">${escapeHtml(video.title)}</div><div class="video-source"><i class="fab fa-youtube"></i> ${escapeHtml(video.source)}</div><a href="https://www.youtube.com/watch?v=${video.videoId}" target="_blank" class="watch-on-youtube"><i class="fab fa-youtube"></i> Watch on YouTube →</a></div></div>`).join("");
     }
 
-    // Calendar & activities
+    // Activities and calendar
     function loadActivities() {
       const stored = localStorage.getItem("calendarActivities");
-      if (stored) activities = JSON.parse(stored);
-      else {
-        const now = new Date();
+      if (stored) {
+        activities = JSON.parse(stored);
+      } else {
+        // Seed events for July 2026 as per the calendar image
         activities = [
-          { id: 101, name: "CLUP Formulation Workshop", type: "Workshop", startDateTime: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 2, 9, 0).toISOString(), endDateTime: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 4, 17, 0).toISOString(), purpose: "CLUP workshop", location: "DHSUD Hall", status: "upcoming", meetingLink: "" },
-          { id: 102, name: "Zoning Ordinance Review", type: "Meeting", startDateTime: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 10, 0).toISOString(), endDateTime: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 16, 0).toISOString(), purpose: "ZO amendments", location: "Zoom", status: "upcoming", meetingLink: "https://zoom.us/j/123456789" }
+          { id: 101, name: "CDRA Training for LGU Pavia, Iloilo", type: "Training", startDateTime: "2026-07-14T09:00:00", endDateTime: "2026-07-14T17:00:00", purpose: "CDRA Training", location: "District 21 Hotel, Iloilo City", status: "upcoming", meetingLink: "" },
+          { id: 102, name: "Zoning Ordinance Review", type: "Meeting", startDateTime: "2026-07-15T10:00:00", endDateTime: "2026-07-15T16:00:00", purpose: "ZO amendments review", location: "Zoom Meeting", status: "upcoming", meetingLink: "https://zoom.us/j/123456789" },
+          { id: 103, name: "Regional Planning Session", type: "Workshop", startDateTime: "2026-07-16T08:30:00", endDateTime: "2026-07-16T12:00:00", purpose: "Regional planning and coordination", location: "Conference Room B", status: "upcoming", meetingLink: "" },
+          { id: 104, name: "LGU Consultation Meeting", type: "Meeting", startDateTime: "2026-07-22T13:00:00", endDateTime: "2026-07-22T15:00:00", purpose: "Consultation with LGUs", location: "Online via Google Meet", status: "upcoming", meetingLink: "https://meet.google.com/abc-defg" }
         ];
-        activities.forEach((a) => { const end = new Date(a.endDateTime); a.status = end < new Date() ? "completed" : "upcoming"; });
         localStorage.setItem("calendarActivities", JSON.stringify(activities));
       }
+      // Update status based on current date
+      const now = new Date();
+      activities.forEach((a) => {
+        const end = new Date(a.endDateTime);
+        a.status = end < now ? "completed" : "upcoming";
+      });
       renderMiniCalendar();
       renderNewsAndActivities();
+      // Show today's events or first available
+      const today = new Date().toISOString().split("T")[0];
+      const todayEvents = getEventsForDate(today);
+      if (todayEvents.length > 0) {
+        updateEventDetailPanel(today);
+      } else {
+        // Find first date with events
+        const allDates = activities.map(a => new Date(a.startDateTime).toISOString().split("T")[0]);
+        const uniqueDates = [...new Set(allDates)].sort();
+        if (uniqueDates.length > 0) {
+          updateEventDetailPanel(uniqueDates[0]);
+        } else {
+          updateEventDetailPanel(null);
+        }
+      }
     }
+
     function getEventsForDate(dateStr) {
       return activities.filter((act) => {
         const start = new Date(act.startDateTime).toISOString().split("T")[0];
@@ -1465,6 +598,7 @@
         return start <= dateStr && end >= dateStr;
       });
     }
+
     function renderMiniCalendar() {
       const year = widgetCurrentDate.getFullYear(), month = widgetCurrentDate.getMonth();
       const firstDay = new Date(year, month, 1).getDay();
@@ -1485,7 +619,7 @@
           let cls = "calendar-day";
           if (hasEvent) cls += " has-event";
           if (isToday) cls += " today";
-          html += `<div class="${cls}" onclick="showDateEvents('${dateStr}')"><span>${dayCount}</span></div>`;
+          html += `<div class="${cls}" onclick="handleDateClick('${dateStr}')"><span>${dayCount}</span></div>`;
           dayCount++;
         }
       }
@@ -1494,13 +628,40 @@
       const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
       document.getElementById("currentMonthDisplay").innerText = `${monthNames[month]} ${year}`;
     }
-    window.showDateEvents = function (dateStr) {
-      const events = getEventsForDate(dateStr);
-      const formatted = new Date(dateStr).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
-      const modalDiv = document.getElementById("eventModal");
-      modalDiv.style.display = "flex";
-      modalDiv.querySelector(".event-modal-content").innerHTML = `<div style="display:flex; justify-content:space-between;"><h3>📅 ${formatted}</h3><button onclick="document.getElementById('eventModal').style.display='none'" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button></div><div id="modalEventsList">${events.length ? events.map((ev) => `<div style="background:#f8fafc; border-radius:16px; padding:0.8rem; margin-bottom:0.6rem; border-left:4px solid #2563eb;"><strong>${escapeHtml(ev.name)}</strong><br><span style="font-size:0.7rem;">📅 ${new Date(ev.startDateTime).toLocaleString()}</span><br><span style="font-size:0.7rem;">📍 ${escapeHtml(ev.location || "Online")}</span>${ev.meetingLink && ev.meetingLink.trim() !== "" ? `<div style="margin-top:0.3rem;"><a href="${escapeHtml(ev.meetingLink)}" target="_blank" style="color:#2563eb;">🔗 Join Meeting →</a></div>` : ""}<div><span style="font-size:0.65rem; background:#e2e8f0; padding:2px 8px; border-radius:20px;">${ev.status}</span></div></div>`).join("") : '<div style="padding:1rem;text-align:center;">No events scheduled.</div>'}</div>`;
+
+    window.handleDateClick = function(dateStr) {
+      selectedDateForDetail = dateStr;
+      updateEventDetailPanel(dateStr);
     };
+
+    function updateEventDetailPanel(dateStr) {
+      const container = document.getElementById("eventDetailList");
+      if (!container) return;
+      let events = [];
+      if (dateStr) {
+        events = getEventsForDate(dateStr);
+      }
+      if (events.length === 0) {
+        container.innerHTML = `<div class="no-events-msg">${dateStr ? 'No events on this date.' : 'Click a date with events to see details.'}</div>`;
+        return;
+      }
+      const sorted = events.sort((a,b) => new Date(a.startDateTime) - new Date(b.startDateTime));
+      let html = '';
+      sorted.forEach(ev => {
+        const start = new Date(ev.startDateTime);
+        const dateLabel = start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const timeLabel = start.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        html += `<div class="event-detail-item">
+          <div class="event-detail-date">${dateLabel}<br><span class="event-time">${timeLabel}</span></div>
+          <div><div class="event-detail-name">${escapeHtml(ev.name)}</div>
+          <div class="event-detail-location"><i class="fas fa-map-pin" style="font-size:0.6rem;"></i> ${escapeHtml(ev.location || 'Online')} ${ev.meetingLink && ev.meetingLink.trim() !== "" ? `<a href="${ev.meetingLink}" target="_blank" style="color:#2563eb;font-size:0.7rem;">🔗 Join</a>` : ''}</div>
+          </div>
+        </div>`;
+      });
+      container.innerHTML = html;
+    }
+
+    // News
     const announcements = [
       { id: 1, title: "MC 2025-018 Released", description: "New guidelines for CLUP formulation.", date: "2026-05-01", category: "announcement", badge: "Policy" },
       { id: 2, title: "Online Portal Launch", description: "Integrated CLUP/ZO system live.", date: "2026-04-28", category: "announcement", badge: "System" },
@@ -1520,8 +681,20 @@
       container.innerHTML = items.map((item) => `<div class="news-card" onclick="handleNewsClick('${item.category}', ${item.id})"><div class="news-date"><div class="day">${item.formattedDate.day}</div><div class="month">${item.formattedDate.month}</div></div><div><div class="news-title">${escapeHtml(item.title)}</div><div class="news-desc">${escapeHtml(item.description?.substring(0,80) || "")}</div>${item.badge ? `<span class="news-badge">${escapeHtml(item.badge)}</span>` : ""}</div></div>`).join("");
     }
     window.handleNewsClick = function (category, id) {
-      if (category === "announcement") alert("📢 " + announcements.find((a) => a.id === id)?.title);
-      else { const ev = activities.find((a) => a.id === id); if (ev) showDateEvents(new Date(ev.startDateTime).toISOString().split("T")[0]); }
+      if (category === "announcement") {
+        const a = announcements.find((a) => a.id === id);
+        if (a) alert("📢 " + a.title + "\n" + a.description);
+      } else {
+        const ev = activities.find((a) => a.id === id);
+        if (ev) {
+          const d = new Date(ev.startDateTime).toISOString().split("T")[0];
+          handleDateClick(d);
+          // switch to upcoming tab to show context
+          document.querySelectorAll(".news-tab-btn").forEach(b => b.classList.remove("active"));
+          document.querySelector(".news-tab-btn[data-tab='upcoming']")?.classList.add("active");
+          renderNewsAndActivities();
+        }
+      }
     };
     function setupNewsTabs() {
       document.querySelectorAll(".news-tab-btn").forEach((btn) => {
@@ -1558,8 +731,64 @@
       setupArticles();
       renderVideoGallery();
       initScrollReveal();
-      document.getElementById("prevMonthWidget")?.addEventListener("click", () => { widgetCurrentDate.setMonth(widgetCurrentDate.getMonth() - 1); renderMiniCalendar(); });
-      document.getElementById("nextMonthWidget")?.addEventListener("click", () => { widgetCurrentDate.setMonth(widgetCurrentDate.getMonth() + 1); renderMiniCalendar(); });
+      
+      // Calendar navigation
+      document.getElementById("prevMonthWidget")?.addEventListener("click", () => { 
+        widgetCurrentDate.setMonth(widgetCurrentDate.getMonth() - 1); 
+        renderMiniCalendar(); 
+        // Keep the detail panel showing the same date if possible, or find first event
+        if (selectedDateForDetail) {
+          const events = getEventsForDate(selectedDateForDetail);
+          if (events.length > 0) {
+            updateEventDetailPanel(selectedDateForDetail);
+          } else {
+            // Find first date with events in this month
+            const year = widgetCurrentDate.getFullYear();
+            const month = widgetCurrentDate.getMonth();
+            const monthStr = `${year}-${String(month + 1).padStart(2, "0")}`;
+            const dates = activities
+              .map(a => new Date(a.startDateTime).toISOString().split("T")[0])
+              .filter(d => d.startsWith(monthStr))
+              .sort();
+            if (dates.length > 0) {
+              updateEventDetailPanel(dates[0]);
+            } else {
+              updateEventDetailPanel(null);
+            }
+          }
+        } else {
+          updateEventDetailPanel(null);
+        }
+      });
+      
+      document.getElementById("nextMonthWidget")?.addEventListener("click", () => { 
+        widgetCurrentDate.setMonth(widgetCurrentDate.getMonth() + 1); 
+        renderMiniCalendar();
+        // Keep the detail panel showing the same date if possible, or find first event
+        if (selectedDateForDetail) {
+          const events = getEventsForDate(selectedDateForDetail);
+          if (events.length > 0) {
+            updateEventDetailPanel(selectedDateForDetail);
+          } else {
+            // Find first date with events in this month
+            const year = widgetCurrentDate.getFullYear();
+            const month = widgetCurrentDate.getMonth();
+            const monthStr = `${year}-${String(month + 1).padStart(2, "0")}`;
+            const dates = activities
+              .map(a => new Date(a.startDateTime).toISOString().split("T")[0])
+              .filter(d => d.startsWith(monthStr))
+              .sort();
+            if (dates.length > 0) {
+              updateEventDetailPanel(dates[0]);
+            } else {
+              updateEventDetailPanel(null);
+            }
+          }
+        } else {
+          updateEventDetailPanel(null);
+        }
+      });
+      
       window.onclick = function (e) {
         const modal = document.getElementById("loginModal");
         if (e.target === modal) closeLoginModal();
@@ -1570,7 +799,6 @@
       };
       window.openVideoModal = openVideoModal;
       window.closeVideoModal = closeVideoModal;
-      // Expose login functions globally
       window.openLoginModal = openLoginModal;
       window.closeLoginModal = closeLoginModal;
     }
